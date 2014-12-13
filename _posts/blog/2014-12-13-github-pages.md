@@ -7,4 +7,4 @@ category: blog
 
 第一次使用，参考
 [BeiYuu：使用Github Pages建独立博客](http://beiyuu.com/github-pages/ "http://beiyuu.com/github-pages/")
-做的。感谢 [BeiYuu](http://beiyuu.com "http://beiyuu.com")。
+做的。感谢 [BeiYuu](http://beiyuu.com "http://beiyuu.com")，非常感谢~
