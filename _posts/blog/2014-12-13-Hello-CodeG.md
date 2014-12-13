@@ -3,6 +3,7 @@ layout: post
 title: 你好，编码哥
 description: 
 category: blog
+tag: hello
 ---
 
 哥都不记得上次写博客的具体时间了，中间一直说写点什么，就是没有动手。原因有几：
