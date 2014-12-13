@@ -21,7 +21,50 @@ layout: default
     </div>
 
     <div class="sidenav">
-        <iframe width="100%" height="75" class="share_self"  frameborder="0" scrolling="no" ><wb:follow-button uid="1748928303" type="red_1" width="67" height="24" ></wb:follow-button></iframe>
+		<style type="text/css">
+		#so360{white-space:nowrap}
+		#so360 form{margin:0;padding:0}
+		#so360_keyword{width:172px;height:24px;line-height:24px;font:14px arial;padding:2px 5px;margin-right:5px;
+		border:2px solid #3FB30E;outline:0;vertical-align:middle}
+		#so360_keyword{background:url(http://p3.qhimg.com/d/inn/d84bf96d/bg.png) no-repeat right center}
+		#so360_submit{width:60px;height:32px;border:0;color:#fff;background:#3FB30E;
+		font-weight:bold;font:bold 14px arial;padding:0;padding-top:3px\9;cursor:pointer;
+		vertical-align:middle}
+		</style>
+		<div id="so360">
+		    <form action="http://www.so.com/s" target="_blank" id="so360form">
+		   <input type="text" autocomplete="off" name="q" id="so360_keyword">
+		        <input type="submit" id="so360_submit" value="搜 索">
+		        <input type="hidden" name="ie" value="utf8">
+		        <input type="hidden" name="src" value="zz">
+		        <input type="hidden" name="site" value="zieckey.github.io">
+		        <input type="hidden" name="rg" value="0">
+		    </form>
+		</div>
+		<script type="text/javascript">
+		(function() {
+		   function $(id) {
+		      return document.getElementById(id);
+		   }
+		   function addEvent(node , type , fn) {
+		       if(node.addEventListener) {
+		           node.addEventListener(type , fn , false);
+		       } else if(node.attachEvent){
+		           node.attachEvent("on" + type , fn);
+		       } else {
+		           node["on" + type] = fn;
+		       }
+		   };
+		   var form = $("so360form");
+		   if(!form) {
+		       return;
+		   }
+		   addEvent(form , "submit" , function() {
+		       form.src.value = "zz_" + window.location.host.replace(/\./g , "_");
+		       return true;
+		   });
+		})();
+		</script>
     </div>
 
     <div class="sidenav">
