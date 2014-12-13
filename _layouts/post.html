@@ -103,6 +103,16 @@ layout: default
         {% endfor %}
         </ul>
     </div>
+    <div class="sidenav">
+						<h2>Categories</h2>
+						<ul>
+							{% for category in site.categories %}
+							<li class="cat-item cat-item-{{category | last | size }}"><a
+								href="/category/{{category | first}}.html"
+								title="View all posts filed under {{category | first}}">{{category| first}} ({{category | last | size }})</a></li> 
+							{% endfor %}
+						</ul>
+    </div>    
 </div>
 
 <script src="/js/post.js" type="text/javascript"></script>
