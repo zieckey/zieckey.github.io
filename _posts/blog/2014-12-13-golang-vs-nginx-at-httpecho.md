@@ -96,4 +96,6 @@ cp nginx.conf $NGINXINSTALL/conf/
 
 下面是对比测试的服务器基础信息：
 
+To be continue ...
+
 [CodeG]:    http://codeg.cn  "CodeG"
