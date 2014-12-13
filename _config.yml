@@ -9,3 +9,12 @@ title: CodeG.cn
 url: http://codeg.cn
 feed: /atom.xml
 author_info: <a href="http://codeg.cn/">CodeG</a>
+
+# Settings for comments helper
+# Set 'provider' to the comment provider you want to use.
+# Set 'provider' to false to turn commenting off globally.
+#
+comments:
+provider: disqus
+disqus:
+short_name: codegcn
