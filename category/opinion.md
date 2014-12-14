@@ -15,6 +15,7 @@ layout: home
         <ul class="artical-list">
         {% for post in site.categories.opinion %}
             <li>
+                <span style="float:right">{{ post.date|date:"%Y-%m-%d"}}</span>
                 <h2>
                     <a href="{{ post.url }}">{{ post.title }}</a>
                 </h2>
