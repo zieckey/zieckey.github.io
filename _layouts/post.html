@@ -117,7 +117,7 @@ layout: default
 						<ul>
 							{% for category in site.tags %}
 							<li class="cat-item cat-item-{{category | last | size }}"><a
-								href="/tag"
+								href="/tag#{{category[0]}}-ref"
 								title="View all posts filed under {{category | first}}">{{category| first}} ({{category | last | size }})</a></li> 
 							{% endfor %}
 						</ul>		
