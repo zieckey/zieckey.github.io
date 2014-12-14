@@ -115,10 +115,10 @@ layout: default
 						
 						<h2>Tags</h2>
 						<ul>
-							{% for category in site.tags %}
-							<li class="cat-item cat-item-{{category | last | size }}"><a
-								href="/tag#{{category[0]}}-ref"
-								title="View all posts filed under {{category | first}}">{{category| first}} ({{category | last | size }})</a></li> 
+							{% for tag in site.tags %}
+							<li class="cat-item cat-item-{{tag | last | size }}"><a
+								href="/tag#{{tag[0]}}-ref"
+								title="View all posts filed under {{tag | first}}">{{tag| first}} ({{tag | last | size }})</a></li> 
 							{% endfor %}
 						</ul>		
     </div>    
