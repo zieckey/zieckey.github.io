@@ -11,8 +11,8 @@ layout: home
         <ul class="artical-list">
         {% for tag in site.tags %}
             <li>
-             	<h2 id="{{ tag[0] }}-ref">
-	                   <a href="/tag#{{tag[0]}}-ref"
+             	<h2 id="{{tag[0]}}">
+	                   <a href="/tag#{{tag[0]}}"
 								title="View all posts filed under {{tag | first}}">
 								{{ tag[0] }} </a>
 	             </h2>
@@ -26,5 +26,8 @@ layout: home
         </ul>
     </div>
     <div class="aside">
+    </div>
+    <div class="aside">
+		{% include aside_taglist.html %}
     </div>
 </div>

@@ -1,0 +1,8 @@
+<br/><br/><br/><br/><br/><br/><br/>
+<h2>&nbsp&nbspTags</h2>
+<ul>
+	{% for tag in site.tags %}
+	<li class="cat-item cat-item-{{tag | last | size }}">
+	   <a href="/tag#{{tag[0]}}" title="View all posts filed under {{tag | first}}"><font color="#FBFFFD">&nbsp&nbsp&nbsp&nbsp{{tag| first}} ({{tag | last | size }})</font> </a></li> 
+	{% endfor %}
+</ul>

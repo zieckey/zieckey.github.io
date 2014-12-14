@@ -23,4 +23,8 @@ layout: home
     </div>
     <div class="aside">
     </div>
+    <div class="aside">
+		{% include aside_taglist.html %}
+    </div>
+
 </div>
