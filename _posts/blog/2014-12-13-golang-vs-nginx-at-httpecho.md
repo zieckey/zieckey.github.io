@@ -19,7 +19,7 @@ import (
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	buf, err := ioutil.ReadAll(r.Body) //Read the http body
-	if err != nil {
+	if err == nil {
 		w.Write(buf)
 		return
 	}
@@ -95,8 +95,14 @@ cd -
 cp nginx.conf $NGINXINSTALL/conf/
 ```
 
-下面是对比测试的服务器基础信息：
+下面是对比测试的相关的基础信息：
 
-To be continue ...
+- Golang 1.3.3
+- Nginx 1.7.4
+- Linux 2.6.32-220.7.1.el6.x86_64 #1 SMP Wed Mar 7 00:52:02 GMT 2012 x86_64 x86_64 x86_64 GNU/Linux
+- GCC version 4.4.6 20110731 (Red Hat 4.4.6-3) (GCC)
+- Intel(R) Xeon(R) CPU E5-2630 0 @ 2.30GHz
+
+![性能测试报告](https://raw.githubusercontent.com/zieckey/blog/master/image/golang-http-vs-nginx.png)
 
 [CodeG]:    http://codeg.cn  "CodeG"
