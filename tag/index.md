@@ -12,10 +12,8 @@ layout: home
         {% for tag in site.tags %}
             <li>
              	<h2 id="{{tag[0]}}">
-	                   <a href="/tag#{{tag[0]}}"
-								title="View all posts filed under {{tag | first}}">
-								{{ tag[0] }} </a>
-	             </h2>
+	                <a href="/tag#{{tag[0]}}" title="View all posts filed under {{tag|first}}">{{tag[0]}}</a>
+	            </h2>
 	             	{% assign pages_list = tag[1] %}
             			{% for post in pages_list %}
                    <div class="title-desc">
