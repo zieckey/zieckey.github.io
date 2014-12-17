@@ -16,4 +16,4 @@ tags : [About, Hello]
 
 插，从此以后，请叫我编码哥。
 
-[CodeG]:    http://codeg.cn  "CodeG"
+[CodeG]:    http://blog.codeg.cn  "CodeG"

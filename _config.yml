@@ -5,10 +5,10 @@ pygments: true
 paginate: 8
 permalink: /:year/:month/:day/:title
 
-title: CodeG.cn
-url: http://codeg.cn
+title: CodeG|编码哥BLOG
+url: http://blog.codeg.cn
 feed: /atom.xml
-author_info: <a href="http://codeg.cn/">CodeG</a>
+author_info: <a href="http://blog.codeg.cn/">CodeG</a>
 
 # Settings for comments helper
 # Set 'provider' to the comment provider you want to use.

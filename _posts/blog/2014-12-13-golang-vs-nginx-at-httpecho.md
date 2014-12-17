@@ -105,4 +105,4 @@ cp nginx.conf $NGINXINSTALL/conf/
 
 ![性能测试报告](https://raw.githubusercontent.com/zieckey/blog/master/image/golang-http-vs-nginx.png)
 
-[CodeG]:    http://codeg.cn  "CodeG"
+[CodeG]:    http://blog.codeg.cn  "CodeG"

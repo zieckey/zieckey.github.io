@@ -9,4 +9,4 @@ category: blog
 
 
 
-[CodeG]:    http://codeg.cn  "CodeG"
+[CodeG]:    http://blog.codeg.cn  "CodeG"
