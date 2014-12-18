@@ -11,6 +11,8 @@ tags : [Jekyll, Github, Ruby]
 - [张丹(Conan)的文章](http://blog.fens.me/jekyll-bootstarp-github/)
 - [jekyll issues#1409](https://github.com/jekyll/jekyll/issues/1409)
 - [Jekyll教程——精心收藏 - paxster](http://www.tuicool.com/articles/Q3QJrq)
+- [Jekyll quick start](http://jekyllbootstrap.com/usage/jekyll-quick-start.html)
+- [Ruby和DevKit下载](http://rubyinstaller.org/downloads/)
 
 注意事项：
 

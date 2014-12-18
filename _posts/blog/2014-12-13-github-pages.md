@@ -6,6 +6,12 @@ category: blog
 tags : [Hello, Github]
 ---
 
-第一次使用，参考
-[BeiYuu：使用Github Pages建独立博客](http://beiyuu.com/github-pages/ "http://beiyuu.com/github-pages/")
-做的。感谢 [BeiYuu](http://beiyuu.com "http://beiyuu.com")，非常感谢~
+本博客框架是直接在
+[BeiYuu：使用Github Pages建独立博客](http://beiyuu.com/github-pages/ "http://beiyuu.com/github-pages/") 上改造而来的。增加了下列特性：
+
+- 文章Tags
+- Tags聚合
+- 时间显示
+- 作者显示
+
+感谢 [BeiYuu](http://beiyuu.com "http://beiyuu.com")，非常感谢~

@@ -17,7 +17,7 @@ layout: home
 	             	{% assign pages_list = tag[1] %}
             			{% for post in pages_list %}
                    <div class="title-desc">
-                          <a href="{{ post.url }}">{{post.title}}</a></div>
+                          <a href="{{ post.url }}">{{post.title}}</a> {{ post.date|date:"%Y-%m-%d"}}</div>
         				{% endfor %}
             </li>
         {% endfor %}
