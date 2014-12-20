@@ -84,13 +84,13 @@ pre ol{margin-left:25px;list-style-type:decimal;}
     background-position:50% 50%;
 }
 .blog .aside{
-    background-image:url(http://img2.duitang.com/uploads/item/201111/27/20111127143057_P24ka.jpg);
+    background-image:url(https://raw.githubusercontent.com/zieckey/blog/master/image/t01350a92079a0ae742.jpg);
 }
 .opinion .aside{
-    background-image:url(http://p1.so.qhimg.com/t01e13a87376b6d9e0b.jpg);
+    background-image:url(https://raw.githubusercontent.com/zieckey/blog/master/image/t01e13a87376b6d9e0b.jpg);
 }
 .project .aside{
-    background-image:url('http://p0.so.qhimg.com/t01185d63ff18bb6405.jpg')
+    background-image:url(https://raw.githubusercontent.com/zieckey/blog/master/image/t018135248d3d4c8aff.jpg)
 }
 .index-content .section { margin-left:30%; padding-top:80px; padding-right:15%; ;}
 
