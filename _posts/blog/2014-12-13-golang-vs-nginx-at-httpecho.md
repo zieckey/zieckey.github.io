@@ -6,7 +6,7 @@ category: blog
 tags : [Golang, Nginx]
 ---
 
-Golang写网络程序的确很简单，一个HTTP Echo服务，几行源码就可以搞定。[Golang源码](https://github.com/zieckey/gohello/blob/master/benchmark/httpecho/main.go "")如下：
+Golang写网络程序的确很简单，一个HTTP Echo服务，几行源码就可以搞定。[Golang源码](https://github.com/zieckey/golangbenchmark/blob/master/httpecho/main.go "")如下：
 
 ```go
 package main
@@ -69,7 +69,7 @@ http {
 }
 ```
 
-为了让大家方便搭建nginx的HTTP echo服务，我写了个build脚本，[请见](https://github.com/zieckey/gohello/blob/master/benchmark/httpecho/nginx/buildnginx.sh)：
+为了让大家方便搭建nginx的HTTP echo服务，我写了个build脚本，[请见](https://github.com/zieckey/golangbenchmark/blob/master/httpecho/nginx/buildnginx.sh)：
 
 ```shell
 #!/usr/bin/env bash
