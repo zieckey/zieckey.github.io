@@ -16,7 +16,7 @@ layout: default
 <div id="content">
     <div class="entry">
         <h1 class="entry-title"><a href="{{ page.url }}" title="{{ page.title }}">{{ page.title }}</a></h1>
-        <p class="entry-date"> By CodeG | {{ page.date|date:"%Y-%m-%d" }} | Tags : {% for tag in page.tags %}                
+        <p class="entry-date"> By <a href="http://blog.codeg.cn">CodeG</a> | {{ page.date|date:"%Y-%m-%d" }} | Tags : {% for tag in page.tags %}                
                 	<a href="/tag#{{tag}}" title="View all posts filed under {{tag}}">{{tag}}</a>
                 {% endfor %} 
         </p>
