@@ -1,16 +1,19 @@
 ---
 layout: post
-title: Golang源码阅读-Buf/Vec
-description: 对Golang源码中的`src/cmd/dist/buf.c`文件进行阅读和整理。该文件提供两个数据结构：Buf、Vec，分别用来取代`char *`和`char **`的相关操作。
+title: Golang源码阅读
+description: 对Golang源码中的`src/cmd/dist/buf.c`文件进行阅读和整理。
 category: blog
 tags : [Golang]
 ---
 
-### 总览
+# 总览
 
-本文对Golang源码中的`src/cmd/dist/buf.c`文件进行阅读和整理。该文件提供两个数据结构：Buf、Vec，分别用来取代`char *`和`char **`的相关操作。
 
-Buf和Vec这两个数据结构非常简单易懂，其他C语言项目如有需要，可以比较方便的拿过去使用，因此记录在此。
+
+1. 对Golang源码中的`src/cmd/dist/buf.c`文件进行阅读和整理。该文件提供两个数据结构：Buf、Vec，分别用来取代`char *`和`char **`的相关操作。Buf和Vec这两个数据结构非常简单易懂，其他C语言项目如有需要，可以比较方便的拿过去使用，因此记录在此。
+2. 新增`src/lib9/cleanname.c`的阅读
+
+## 1. src/cmd/dist/buf.c
 
 ### Buf定义
 
@@ -64,3 +67,8 @@ struct Vec
 - void vuniq(Vec *v) 对Vec排序，然后去掉重复的元素
 - void splitlines(Vec *v, char *p) 将字符串`p`按照`\n`(如果前面有`\r`会自动trim掉)分割为多段添加到Vec中。
 - void splitfields(Vec *v, char *p) 将字符串`p`按照空格（`'\n'、'\t'、'\r'、' '`)分割为多段添加到Vec中。
+
+
+## 2. src/lib9/cleanname.c
+
+`char* cleanname(char *name)` 该函数实现了Unix下的原地路径压缩功能，能够处理多个 `/` `.` `..`等等组合路径问题。
