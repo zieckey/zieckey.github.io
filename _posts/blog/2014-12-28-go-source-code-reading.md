@@ -8,10 +8,12 @@ tags : [Golang]
 
 ## 总览
 
-1. `src/cmd/dist/buf.c` 该文件提供两个数据结构：Buf、Vec，分别用来取代`char *`和`char **`的相关操作。Buf和Vec这两个数据结构非常简单易懂，其他C语言项目如有需要，可以比较方便的拿过去使用，因此记录在此。
+1. `src/cmd/dist/buf.c` 该文件提供两个数据结构：Buf、Vec，分别用来取代`char*`和`char**`的相关操作。Buf和Vec这两个数据结构非常简单易懂，其他C语言项目如有需要，可以比较方便的拿过去使用，因此记录在此。
 2. `src/lib9/cleanname.c` Unix下的路径压缩功能
 3. `cmd/dist/windows.c` windows平台相关的一些功能函数
 4. `src/unicode/utf8/utf8.go` utf8编码问题
+5. `src/io/pipe.go` 进程内的单工管道
+6. `src/net/pipe.go` 进程内的双工管道
 
 
 ## 1. src/cmd/dist/buf.c
@@ -84,3 +86,35 @@ struct Vec
 
 - `func EncodeRune(p []byte, r rune)` int 将Rune转换为utf8格式编码存储到字节数组p中。
 - `func DecodeRune(p []byte) (r rune, size int) ` 将字节数组p中的第一个utf8编码转换为Rune
+
+## 5. src/io/pipe.go 进程内的单工管道
+
+该管道是单工的，一端只能写，另一端只能读。这里提供了两个接口`PipeReader`和`PipeWriter`，其底层使用的`pipe`结构体定义如下：
+
+```go
+// A pipe is the shared pipe structure underlying PipeReader and PipeWriter.
+type pipe struct {
+	rl    sync.Mutex // 读锁，每次只允许一个消费者(reader)
+	wl    sync.Mutex // 写锁，每次只允许一个生产者(writer)
+	l     sync.Mutex // 整体锁，保护下面所有的成员变量
+	data  []byte     // data remaining in pending write
+	rwait sync.Cond  // waiting reader
+	wwait sync.Cond  // waiting writer
+	rerr  error      // if reader closed, error to give writes
+	werr  error      // if writer closed, error to give reads
+}
+```
+
+实现时，使用一个公共的**字节缓冲区**，通过读锁、写锁和整体锁这三把锁对这个缓冲区做好保护，实现在进程内的不同goroutine直接传递数据。
+
+
+## 6. src/net/pipe.go 进程内的双工管道
+
+使用 `io.PipeReader`和`io.PipeWriter`组合实现的双工管道，并且实现了`net.Conn`接口，其底层使用的`pipe`结构体定义如下：
+
+```go
+type pipe struct {
+	*io.PipeReader
+	*io.PipeWriter
+}
+```
