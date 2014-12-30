@@ -89,9 +89,10 @@ Jekyll官方文档：<http://jekyllrb.com/>
 **注意事项** Ruby和DevKit的平台必须匹配，要么都是64位平台，或者要么都是32位平台。
 
 在windows资源管理器中双击执行 `D:\Ruby21-x64\DevKit-mingw64\msys.bat`，进入命令行界面，然后输入下列命令：
+
 	$ cd /d/Ruby21-x64/DevKit-mingw64/
 	
-	weizili@weizili-D3 /d/Ruby21-x64/DevKit-mingw64
+	codeg@codeg.cn /d/Ruby21-x64/DevKit-mingw64
 	$ ruby dk.rb init
 	[INFO] found RubyInstaller v2.1.5 at d:/Ruby21-x64
 	
@@ -99,14 +100,14 @@ Jekyll官方文档：<http://jekyllrb.com/>
 	'config.yml' file to ensure it contains the root directories to all
 	of the installed Rubies you want enhanced by the DevKit.
 	
-	weizili@weizili-D3 /d/Ruby21-x64/DevKit-mingw64
+	codeg@codeg.cn /d/Ruby21-x64/DevKit-mingw64
 	$ vim config.yml
 	/d/Program Files (x86)/Git/bin/vim: line 3: /share/vim/vim73/vim: No such file o
 	r directory
 	/d/Program Files (x86)/Git/bin/vim: line 3: exec: /share/vim/vim73/vim: cannot e
 	xecute: No such file or directory
 	
-	weizili@weizili-D3 /d/Ruby21-x64/DevKit-mingw64
+	codeg@codeg.cn /d/Ruby21-x64/DevKit-mingw64
 	$ ruby dk.rb review
 	Based upon the settings in the 'config.yml' file generated
 	from running 'ruby dk.rb init' and any of your customizations,
@@ -115,18 +116,18 @@ Jekyll官方文档：<http://jekyllrb.com/>
 	
 	d:/Ruby21-x64
 	
-	weizili@weizili-D3 /d/Ruby21-x64/DevKit-mingw64
+	codeg@codeg.cn /d/Ruby21-x64/DevKit-mingw64
 	$ ruby dk.rb install
 	[INFO] Installing 'd:/Ruby21-x64/lib/ruby/site_ruby/2.1.0/rubygems/defaults/oper
 	ating_system.rb'
 	[INFO] Installing 'd:/Ruby21-x64/lib/ruby/site_ruby/devkit.rb'
 	
-	weizili@weizili-D3 /d/Ruby21-x64/DevKit-mingw64
+	codeg@codeg.cn /d/Ruby21-x64/DevKit-mingw64
 	$ install json --platform=ruby
 	install: unrecognized option `--platform=ruby'
 	Try `install --help' for more information.
 	
-	weizili@weizili-D3 /d/Ruby21-x64/DevKit-mingw64
+	codeg@codeg.cn /d/Ruby21-x64/DevKit-mingw64
 	$ gem install json --platform=ruby
 	Fetching: json-1.8.1.gem (100%)
 	Temporarily enhancing PATH to include DevKit...
@@ -137,11 +138,11 @@ Jekyll官方文档：<http://jekyllrb.com/>
 	Done installing documentation for json after 0 seconds
 	1 gem installed
 	
-	weizili@weizili-D3 /d/Ruby21-x64/DevKit-mingw64
+	codeg@codeg.cn /d/Ruby21-x64/DevKit-mingw64
 	$ ruby -rubygems -e "require 'json'; puts JSON.load('[42]').inspect"
 	[42]
 	
-	weizili@weizili-D3 /d/Ruby21-x64/DevKit-mingw64
+	codeg@codeg.cn /d/Ruby21-x64/DevKit-mingw64
 	$
 
 
@@ -293,7 +294,7 @@ Jekyll官方文档：<http://jekyllrb.com/>
 
 查看jekyll命令行帮助
 	
-	weizili@weizili-D3 /d/Ruby21-x64/DevKit-mingw64
+	codeg@codeg.cn /d/Ruby21-x64/DevKit-mingw64
 	$ jekyll
 	jekyll 2.5.3 -- Jekyll is a blog-aware, static site generator in Ruby
 	
