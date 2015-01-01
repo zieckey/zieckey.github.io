@@ -19,6 +19,8 @@ layout: default
         <p class="entry-date"> By <a href="http://blog.codeg.cn">CodeG</a> | {{ page.date|date:"%Y-%m-%d" }} | Tags : {% for tag in page.tags %}                
                 	<a href="/tag#{{tag}}" title="View all posts filed under {{tag}}">{{tag}}</a>
                 {% endfor %} 
+                </br>
+                原文链接  <a href="http://blog.codeg.cn{{ page.url }}">http://blog.codeg.cn{{ page.url }}</a>
         </p>
         {{ content }}
 
