@@ -1,7 +1,7 @@
 ---
 layout: post
-title: Nginx源码研究
-description: 
+title: Nginx源码研究（1）——项目介绍
+description: 本项目是为了研究Nginx源码而建立的。该项目有以下几点比较不错的优点。（1）VS2013源码编译和调试  (2) 将Nginx看做一个优秀的C库使用，已经将其编译为库了，并且有很多例子参考
 category: blog
 tags : [Nginx]
 ---
@@ -22,7 +22,7 @@ nginx-research
 
 打开`nginx-win32-src\nginx.sln`文件，可以看到两个工程：
 
-- nginx ： Nginx的Windows版本，可以直接编译运行
+- nginx ： Nginx的Windows版本，可以直接编译运行。
 - nginxresearch : 将Nginx做为lib库使用的工程
 
 ##### Nginx二进制
@@ -34,6 +34,10 @@ nginx-research
 - ngx_http memcached module
 - ngx_http upstream sample code
 
+windows下运行起来后，监听80端口，在浏览器打开[http://localhost/helloworld.html](http://localhost/helloworld.html) 会返回当前的时间和程序启动的时间，如下：
+
+	startup: 2015-01-01 19:26:16
+	current: 2015-01-01 19:26:57
 
 ##### 将Nginx做为C库使用
 

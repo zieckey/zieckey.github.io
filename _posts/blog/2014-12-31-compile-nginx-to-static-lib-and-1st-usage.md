@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Nginx源码研究（1）——编译Nginx为静(动)态库以及验证
+title: Nginx源码研究（2）——编译Nginx为静(动)态库以及验证
 description: 
 category: blog
 tags : [Nginx]
