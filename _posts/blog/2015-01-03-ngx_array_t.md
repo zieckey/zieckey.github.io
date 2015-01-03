@@ -1,14 +1,14 @@
 ---
 layout: post
-title: Nginx源码研究（3）——Nginx数组和示例
+title: Nginx源码研究（3）——Nginx数组ngx_array_t和示例
 description: 本文主要介绍Nginx数组ngx_array_t这一重要的数据结构的使用方法和具体实现。
 category: blog
 tags : [Nginx]
 ---
 
-本文主要介绍Nginx数组ngx_array_t这一重要的数据结构的使用方法和具体实现。
+本文主要介绍Nginx数组`ngx_array_t`这一重要的数据结构的使用方法和具体实现。
 
-ngx_array_t是nginx内部使用的数组结构。nginx的数组结构在存储上与大家认知的C语言内置的数组有相似性，比如实际上存储数据的区域也是一大块连续的内存。但是数组除了存储数据的内存以外还包含一些元信息来描述相关的一些信息。ngx_array_t的定义位于src/core/ngx_array.{c,h}里面。
+`ngx_array_t`是nginx内部使用的数组结构。nginx的数组结构在存储上与大家认知的C语言内置的数组有相似性，比如实际上存储数据的区域也是一大块连续的内存。但是数组除了存储数据的内存以外还包含一些元信息来描述相关的一些信息。ngx_array_t的定义位于`src/core/ngx_array.{c,h}`里面。
 
 ngx_array.h实现和注释如下：
 
