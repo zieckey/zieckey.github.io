@@ -145,4 +145,6 @@ TEST_UNIT(ngx_array_t) {
 
 ### 参考：
 
-[淘宝：Nginx开发从入门到精通](http://tengine.taobao.org/book/chapter_02.html#ngx-array-t-100)
+- [淘宝：Nginx开发从入门到精通 http://tengine.taobao.org/book/chapter_02.html#ngx-array-t-100](http://tengine.taobao.org/book/chapter_02.html#ngx-array-t-100)
+- [nginx源码注释 https://github.com/zieckey/nginx-1.0.14_comment/blob/master/src/core/ngx_array.h](https://github.com/zieckey/nginx-1.0.14_comment/blob/master/src/core/ngx_array.h)
+- [nginx源码注释 https://github.com/zieckey/nginx-1.0.14_comment/blob/master/src/core/ngx_array.c](https://github.com/zieckey/nginx-1.0.14_comment/blob/master/src/core/ngx_array.c)

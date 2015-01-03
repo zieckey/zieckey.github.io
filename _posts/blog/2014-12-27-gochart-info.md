@@ -3,7 +3,7 @@ layout: post
 title: 发布一个使用简单的绘图工具
 description: gochart是golang和highcharts开源库制作的一个使用起来非常简单的绘制图表的工具，图表风格有曲线图、折线图、面积图、柱状图、饼图等。编译好的gochart只有一个二进制文件，不依赖任何库/网络。
 category: blog
-tags : [Golang, Javascript]
+tags : [Golang, Tools]
 ---
 
 [gochart](https://github.com/zieckey/gochart)是仿照[goplot](https://github.com/skoo87/goplot)使用[golang](https://golang.org)和[highcharts](http://www.highcharts.com)开源库制作的一个使用起来非常简单的绘制图表的工具，图表风格有曲线图、折线图、面积图、柱状图、饼图等。编译好的gochart只有一个二进制文件，不依赖任何库/网络。
