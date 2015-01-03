@@ -55,3 +55,8 @@ windows下运行起来后，监听80端口，在浏览器打开[http://localhost
 ##### 将Nginx做为C库使用
 
 进入`libnginx`目录，直接make即可
+
+
+## 3. 比较不错的资源
+
+1. [淘宝：Nginx开发从入门到精通](http://tengine.taobao.org/book/)

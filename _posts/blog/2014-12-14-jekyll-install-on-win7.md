@@ -340,3 +340,8 @@ Jekyll官方文档：<http://jekyllrb.com/>
 - [Jekyll教程——精心收藏 - paxster](http://www.tuicool.com/articles/Q3QJrq)
 - [Jekyll quick start](http://jekyllbootstrap.com/usage/jekyll-quick-start.html)
 - [Ruby和DevKit下载](http://rubyinstaller.org/downloads/)
+
+
+### 不错github-pages博客样例
+
+- [博客主页http://xuanwo.org/about/](http://xuanwo.org/about/) [github地址](https://github.com/Xuanwo/xuanwo.github.io)
