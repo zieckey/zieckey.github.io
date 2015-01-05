@@ -44,7 +44,12 @@ windows下运行起来后，监听80端口，在浏览器打开[http://localhost
 直接编译运行nginxresearch工程即可。自带gtest，方便写样例代码。目前包含下列几个示例程序：
 
 - ngx_encode_base64的使用
-
+- ngx_str_t
+- ngx_pool_t
+- ngx_hash_t
+- ngx_list_t
+- ngx_array_t
+- ngx_queue_t
 
 ## 2. Linux 使用
 

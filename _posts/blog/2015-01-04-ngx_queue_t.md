@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Nginx源码研究（6）——双向链表结构ngx_queue_t
-description: 本文主要介绍Nginx双向链表结构`ngx_queue_t`这一重要的数据结构的使用方法和具体实现。
+description: 本文主要介绍Nginx双向链表结构`ngx_queue_t`这一重要的数据结构的使用方法和具体实现。`ngx_queue_t` 是Nginx提供的一个轻量级双向链表容器，它不负责分配内存来存放链表元素。
 category: blog
 tags : [Nginx]
 ---
