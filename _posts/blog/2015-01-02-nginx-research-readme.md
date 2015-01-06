@@ -50,6 +50,9 @@ windows下运行起来后，监听80端口，在浏览器打开[http://localhost
 - ngx_list_t
 - ngx_array_t
 - ngx_queue_t
+- ngx_pool_t
+
+另外，还从`ngx_pool_t`抽取了一个完全独立的`cg_pool_t`结构，不依赖Nginx，也不依赖任何第三方类库，可以直接将源码拿走集成进现有系统中。典型的应用场景是这样的，假如你有一个nginx扩展，用到了ngx_pool_t这个数据结构，但是现在有一个需求是需要将这份扩展代码独立出来，不依赖nginx运行，那么这个`cg_pool_t`是你的好帮手，你几乎只需要将头文件从`ngx_palloc.h`换为`cg_pool.h`即可，代码完全不用修改即可完成移植。
 
 ## 2. Linux 使用
 
