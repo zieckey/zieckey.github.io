@@ -3,7 +3,7 @@ layout: post
 title: Nginx源码研究（2）——编译Nginx为静(动)态库以及验证
 description: 
 category: blog
-tags : [Nginx]
+tags : [Nginx, 网络编程]
 ---
 
 最近编码哥又开始阅读和研究Nginx源码，这一过程中做了一些笔记，从而形成本系列文章。

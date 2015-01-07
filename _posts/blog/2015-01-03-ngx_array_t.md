@@ -3,7 +3,7 @@ layout: post
 title: Nginx源码研究（3）——Nginx数组ngx_array_t和示例
 description: 本文主要介绍Nginx数组ngx_array_t这一重要的数据结构的使用方法和具体实现。
 category: blog
-tags : [Nginx]
+tags : [Nginx, 网络编程]
 ---
 
 本文主要介绍Nginx数组`ngx_array_t`这一重要的数据结构的使用方法和具体实现。
