@@ -3,7 +3,7 @@ layout: post
 title: Golang写的HTTP服务与Nginx对比
 description: 想对Golang的网络性能做一个了解，因此用Golang写了一个HTTP Echo服务，与Nginx的Echo模块做基准测试。
 category: blog
-tags : [Golang, Nginx]
+tags : [Golang, Nginx, 网络编程]
 ---
 
 Golang写网络程序的确很简单，一个HTTP Echo服务，几行源码就可以搞定。[Golang源码](https://github.com/zieckey/golangbenchmark/blob/master/httpecho/main.go "")如下：
