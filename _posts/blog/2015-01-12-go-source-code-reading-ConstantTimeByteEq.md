@@ -8,7 +8,7 @@ tags : [Golang]
 
 根据文档说明，`ConstantTimeByteEq`返回1，如果 x == y；相反则返回0。为什么一个简单整数比较操作要搞一个单独的函数出来实现？并且其实现代码看起来要不`x == y`复杂多了？
 
-### 源码及分析
+## 源码及分析
 
 先看源码实现，如下：
 
@@ -67,7 +67,7 @@ func ConstantTimeByteEq(x, y uint8) int {
 
 因此，该函数真的就如其文档所述，当`x == y`时返回1，否则返回0。
 
-### 背后的含义
+## 背后的含义
 
 一般而言，关于两个数，`x`与`y`之间的比较操作，如果`x`与`y`都为0的话，其消耗的CPU时间会比较小，其他情况下会消耗更多的CPU时间。换句话说，`x`与`y`之间的比较操作所耗费的CPU时间与其具体值有关。Golang源码中如此做是为了得到一致的CPU时间消耗，而与`x`、`y`的值具体是什么无关。通过这种方法，一个攻击者（黑客）就不可能利用基于时间相关的旁道攻击了。
 
@@ -131,11 +131,11 @@ func ConstantTimeByteEq(x, y uint8) int {
 
 可以看出，虽然第二种汇编指令更长更多，但其是线性执行的，没有任何分支。
 
-### 旁道攻击（SCA：side-channel attack）
+## 旁道攻击（SCA：side-channel attack）
 
-旁道攻击是避开复杂的密码算法，利用密码算法在软硬件实现的系统中泄露出的各种信息进行攻击，一般分为时间攻击、电磁攻击、能量攻击等三种旁道攻击方法。 
+旁道攻击是避开复杂的密码算法，利用密码算法在软硬件实现的系统中泄露出的各种信息进行攻击，一般分为时间攻击(timing side-channel attack)、电磁攻击、能量攻击等三种旁道攻击方法。 
 
-### 参考资料：
+## 参考资料：
 
 1. [http://stackoverflow.com/questions/17603487/how-does-constanttimebyteeq-work](http://stackoverflow.com/questions/17603487/how-does-constanttimebyteeq-work)
 1. [http://stackoverflow.com/questions/18366158/why-do-we-need-a-constant-time-single-byte-comparison-function](http://stackoverflow.com/questions/18366158/why-do-we-need-a-constant-time-single-byte-comparison-function)
