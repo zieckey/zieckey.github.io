@@ -18,17 +18,24 @@ tags : [Golang]
 使用`net/textproto.Reader`来解析。示例代码如下：
 
 ```go
+// 从textproto.Reader读取数据
 func (m *MHtml) GetBoundary(r *textproto.Reader) string {
+	// 先调用ReadMIMEHeader来解析MIME的头信息
 	mimeHeader, err := r.ReadMIMEHeader()
 	if err != nil {
 		return ""
 	}
+
+	// 然后得到 "Content-Type"
 	fmt.Printf("%v %v\n", mimeHeader, err)
 	contentType := mimeHeader.Get("Content-Type")
 	fmt.Printf("Content-Type = %v %v\n", contentType)
 
+	// 再然后，调用 mime.ParseMediaType 来解析 "Content-Type"
 	mediatype, params, err := mime.ParseMediaType(contentType)
 	fmt.Printf("mediatype=%v,  params=%v %v, err=%v\n", mediatype, len(params), params, err)
+
+	// 最最后，得到 boundary
 	boundary := params["boundary"]
 	fmt.Printf("boundary=%v\n", boundary)
 	return boundary
