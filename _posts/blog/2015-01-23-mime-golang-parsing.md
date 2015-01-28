@@ -1,7 +1,7 @@
 ---
 layout: post
 title: golang解析MIME数据格式的代码示例
-description: 
+description: 本文介绍了如何使用golang来解析MIME以及multipart格式的数据。并给出了详细的示例代码。
 category: blog
 tags : [Golang]
 ---
@@ -10,8 +10,11 @@ tags : [Golang]
 
 `MIME`是multipurpose Internet mail extensions 的缩写。它是一种协议，可使电子邮件除包含一般纯文本以外，还可加上彩色图片、视频、声音或二进位格式的文件。它要求邮件的发送端和接收端必须有解读MIME协议的电子邮件程序。
 
-### MIME示例
+本文介绍了如何使用golang来解析MIME以及multipart格式的数据。并给出了详细的示例代码。
 
+### MIME格式示例数据
+
+请点击 [resources/example.mime.txt](/resources/example.mime.txt)
 
 ### 解析boundary
 
@@ -74,4 +77,5 @@ func (m *MHtml) GetBoundary(r *textproto.Reader) string {
 ```
 ### 参考
 
-To be continue ...
+[http://godoc.org/mime](http://godoc.org/mime)
+[http://godoc.org/net/textproto](http://godoc.org/net/textproto)
