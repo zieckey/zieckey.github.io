@@ -16,6 +16,8 @@ tags : [Golang]
 
 请点击 [resources/example.mime.txt](/resources/example.mime.txt)
 
+完整解析代码请参考：[https://github.com/zieckey/gohello/tree/master/mime](https://github.com/zieckey/gohello/tree/master/mime)
+
 ### 解析boundary
 
 使用`net/textproto.Reader`来解析。示例代码如下：
