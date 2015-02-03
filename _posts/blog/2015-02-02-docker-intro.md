@@ -144,8 +144,50 @@ lo        Link encap:Local Loopback
 
 ### 从C源码构建自己的镜像
 
-上面是直接通过apt-get下载一个已经编译好的nginx二进制包来构建我们的镜像，下面我们看看如何通过源代码方式构建我们的自定义的镜像。
+上面是直接通过apt-get从网络下载一个已经编译好的nginx二进制包来构建我们的镜像，下面我们看看如何通过源代码方式构建我们的自定义的镜像。
 
+源代码文件main.c:
 
+```c
+#include <stdio.h>
+int main() {
+    printf("hello world!\n");
+    return 0;
+}
+```
+
+Dockerfile内容如下：
+
+```
+FROM ubuntu
+MAINTAINER zieckey@codeg.cn
+ADD ./helloworld /usr/bin/helloworld
+```
+
+使用下列命令编译c源文件、build Docker镜像、执行：
+
+```
+~/workspace/condiment/docker/helloworld$ gcc -g -Wall main.c -o helloworld
+~/workspace/condiment/docker/helloworld$ sudo docker build -t="zieckey/helloworld" .
+Sending build context to Docker daemon 15.36 kB
+Sending build context to Docker daemon 
+Step 0 : FROM ubuntu
+ ---> 5ba9dab47459
+Step 1 : MAINTAINER zieckey@codeg.cn
+ ---> Using cache
+ ---> 841ff9c34fd3
+Step 2 : ADD ./helloworld /usr/bin/helloworld
+ ---> b3681250409a
+Removing intermediate container 208f4598e4e2
+Successfully built b3681250409a
+~/workspace/condiment/docker/helloworld$ sudo docker run -i -t zieckey/helloworld helloworld
+hello world!
+```
+
+上述过程的源码在这里[https://github.com/zieckey/condiment/tree/master/docker/helloworld](https://github.com/zieckey/condiment/tree/master/docker/helloworld)
 
 ## 参考
+
+
+1. 《第一本Docker书》
+2. [ubuntu安装指南](https://docs.docker.com/installation/ubuntulinux/#ubuntu-trusty-1404-lts-64-bit "https://docs.docker.com/installation/ubuntulinux/#ubuntu-trusty-1404-lts-64-bit")
