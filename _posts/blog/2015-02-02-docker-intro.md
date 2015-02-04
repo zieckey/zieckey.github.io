@@ -1,14 +1,17 @@
 ---
 layout: post
 title: Docker介绍及初次使用教程
-description: 
+description: 本文针对第一次接触Docker的同学而写的手把手式使用指南。涉及到安装、镜像下载、build镜像、使用等等细节。
 category: blog
 tags : [Docker]
 ---
 
 ## 介绍
 
-请参考[深入浅出Docker（一）：Docker核心技术预览](http://www.infoq.com/cn/articles/docker-core-technology-preview "http://www.infoq.com/cn/articles/docker-core-technology-preview")
+请参考下列文章：
+
+1. [深入浅出Docker（一）：Docker核心技术预览](http://www.infoq.com/cn/articles/docker-core-technology-preview "http://www.infoq.com/cn/articles/docker-core-technology-preview")
+2. [Docker镜像文件（images）的存储结构](http://zhumeng8337797.blog.163.com/blog/static/100768914201452401954833/ "http://zhumeng8337797.blog.163.com/blog/static/100768914201452401954833/") 
 
 ## 初次使用
 
@@ -188,6 +191,6 @@ hello world!
 
 ## 参考
 
-
 1. 《第一本Docker书》
 2. [ubuntu安装指南](https://docs.docker.com/installation/ubuntulinux/#ubuntu-trusty-1404-lts-64-bit "https://docs.docker.com/installation/ubuntulinux/#ubuntu-trusty-1404-lts-64-bit")
+3. [Docker使用系列二：CentOS 6.5 制作可以ssh登录的Docker](http://my.oschina.net/feedao/blog/223795 "http://my.oschina.net/feedao/blog/223795")
