@@ -41,9 +41,48 @@ tags : [quic, 网络编程]
 12. QuicAlarm：定时器的抽象类。
 13. DeleteSessionsAlarm：删除过期session的定时器。
 14. QuicFramer：用于对QUIC数据包的解析和组装。
-
+15. QuicPacketPublicHeader：Quic Public包头。包括 CID，CID长度, reset标记，version标记, 序列化长度，version等。
+16. QuicPacketHeader：Quic包头。包括 FEC标记、加密算法标记，加密Hash，序列号，是否是FEC_group，FEC_group等。
+17. UDPSocket：UDP socket协议相关类，ReadFrom/SendTo 等等。`ReadFrom`的最后一个回调函数是会在读取到数据的时候调用。具体调用点为：`UDPSocketLibevent::ReadWatcher::OnFileCanReadWithoutBlocking`。具体平台的实现类有两个：UDPSocketLibevent/UDPSocketWin
+18. UDPServerSocket：从`DatagramServerSocket`这个接口类继承，并对`UDPSocket`进行了封装
+18. QuicSimplePerConnectionPacketWriter：与每个连接相关的数据包writer。很多连接可能共享一个`QuicServerPacketWriter`，因此当需要向某个连接发送数据时，无法区分该连接。这个类实际上就是`QuicServerPacketWriter`和`QuicConnection`的一个组合包装。
+19. QuicSimpleServerPacketWriter：用来发送数据的。
 
 ### 相关源文件
 
 1. quic_flags.h ： 整个项目相关的全局配置信息，是全局变量。
 2. 
+
+### 源码阅读
+
+#### QuicPacketPublicHeader
+
+```C++
+struct QuicPacketPublicHeader {
+  // Universal header. All QuicPacket headers will have a connection_id and
+  // public flags.
+  QuicConnectionId connection_id;
+  QuicConnectionIdLength connection_id_length;
+  bool reset_flag;
+  bool version_flag;
+  QuicSequenceNumberLength sequence_number_length;
+  QuicVersionVector versions;
+};
+```
+
+#### QuicPacketHeader
+
+```C++
+struct QuicPacketHeader {
+  QuicPacketPublicHeader public_header;
+  bool fec_flag;
+  bool entropy_flag;
+  QuicPacketEntropyHash entropy_hash;
+  QuicPacketSequenceNumber packet_sequence_number;
+  InFecGroup is_in_fec_group;
+  QuicFecGroupNumber fec_group;
+};
+```
+
+#### void QuicDispatcher::OnUnauthenticatedHeader(const QuicPacketHeader& header)
+
