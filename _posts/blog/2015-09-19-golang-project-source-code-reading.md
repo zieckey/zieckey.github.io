@@ -8,7 +8,7 @@ tags : [Golang]
 
 ## 总览
 
-### httproute
+### github.com/julienschmidt/httproute
 
 [httprouter](https://github.com/julienschmidt/httprouter "httprouter") 是一个轻量级的高性能HTTP请求分发器，英文称之为multiplexer，简称mux。
 
@@ -135,4 +135,58 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+```
+
+### github.com/nbio/httpcontext
+
+[httpcontext](github.com/nbio/httpcontext)该库提供更灵活的http请求上下文机制。具体实现上，使用了一个小技巧，就是通过动态修改 `http.Request.Body` 接口来实现的。先看看代码：
+
+```go
+// 核心结构体
+type contextReadCloser struct {
+	io.ReadCloser
+	context map[interface{}]interface{}
+}
+```
+
+上述结构体实现由于直接继承了 ReadCloser 接口，因此可以直接替换掉 `http.Request.Body` 。
+
+```go
+func getContextReadCloser(req *http.Request) ContextReadCloser {
+	crc, ok := req.Body.(ContextReadCloser)
+	if !ok {
+		crc = &contextReadCloser{
+			ReadCloser: req.Body,
+			context:    make(map[interface{}]interface{}),
+		}
+		req.Body = crc
+	}
+	return crc
+}
+```
+
+我们一起看看下面的示例代码来感受一下这个库的用法：
+
+```go
+package main
+
+import (
+    "fmt"
+    "github.com/nbio/httpcontext"
+    "net/http"
+    "log"
+)
+
+func Hello(w http.ResponseWriter, r *http.Request) {
+    httpcontext.Set(r, "key1", "value1") // Set a context with this request r
+    val := httpcontext.Get(r, "key1")    // Get the context
+    v, _ := val.(string)
+    fmt.Printf("Got a value associated with key1 : %v\n", v)
+    w.Write([]byte("OK"))
+}
+
+func main() {
+    http.HandleFunc("/hello", Hello)
+    log.Fatal(http.ListenAndServe(":8080", nil))
+}
 ```
