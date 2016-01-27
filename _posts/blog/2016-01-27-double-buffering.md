@@ -173,7 +173,7 @@ func main() {
 
 1. black_id.txt在内存中是一个map结构，有人说，等有更新时，直接将增量更新进map即可，这就需要对该map结构上锁，且所有用到的地方都加锁，锁粒度有点粗
 2. 最好的办法是对black_id.txt整体重新生成一个新的map结构，使用的时候直接拿到这个map的指针替换掉原来的指针即可
-3. 新老替换后，老的资源什么释放？在Golang中，一般情况下可以通过其自身的GC来释放即可。但有时候，有一些资源是需要我们自己主动释放的，GC这一点做不到。这里我们通过引用计数技术来解决。
+3. 新老替换后，老的资源什么释放？在Golang中，一般情况下可以通过其自身的GC来释放即可。但有时候，有一些资源是需要我们自己主动释放的，GC这一点做不到，例如通过CGO方式嵌入进来的C扩展对象的释放工作。这里我们通过引用计数技术来解决。
 
 ### 双缓冲技术Golang实现
 
@@ -460,7 +460,7 @@ func main() {
 ## 参考文献
 
 1. [双缓冲技术介绍](http://baike.haosou.com/doc/302938-320692.html)
-2. [Golang实现的示例源码在这里 https://github.com/zieckey/gohello/tree/master/double_buffering](https://github.com/zieckey/gohello/tree/master/double_buffering)
+2. [Golang实现的示例源码在这里 https://github.com/zieckey/go-doublebuffering](https://github.com/zieckey/go-doublebuffering)
 
 
 
