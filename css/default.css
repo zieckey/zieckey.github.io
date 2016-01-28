@@ -140,8 +140,8 @@ h3.about {color:#777;margin-top:20px;font-size:22px;margin-bottom:10px}
 .home-menu-icon:hover,
 .home-follow:hover { color:#fff; text-decoration:none; }
 .home-contact { color:#fff; margin-top:2px; background:#5B5B5B; padding:8px 0 7px; text-align:center; display:none;}
-.home-contact a { width:30px; display:inline-block; }
-.home-contact img { width:18px; }
+.home-contact a { width:36px; display:inline-block; }
+.home-contact img { width:30px; }
 
 @media screen and (max-width: 750px){
     body {font-size:14px;}
