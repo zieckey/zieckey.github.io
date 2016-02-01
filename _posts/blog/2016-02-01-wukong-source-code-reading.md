@@ -221,7 +221,7 @@ func (engine *Engine) internalIndexDocument(docId uint64, data types.DocumentInd
 这里需要注意的是，docId参数需要调用者从外部传入，而不是在内部自己创建，这给搜索引擎的实现者更大的自由。
 将文档交给分词器处理，然后根据murmur3计算的hash值模`PersistentStorageShards`，选择合适的`shard`写入持久化存储中。
 
-### 分词协程处理过程
+### 索引过程分析：分词协程处理过程
 
 分词器协程的逻辑代码在这里：`segmenter_worker.go:func (engine *Engine) segmenterWorker()`
 
@@ -244,7 +244,73 @@ func (engine *Engine) getShard(hash uint32) int {
 
 为什么不是直接取模呢？
 
-### 索引器协程处理过程
+### 索引过程分析：索引器协程处理过程
+
+首先介绍一下倒排索引表，这是搜索引擎的核心数据结构。
+
+```go
+// 索引器
+type Indexer struct {
+	// 从搜索键到文档列表的反向索引
+	// 加了读写锁以保证读写安全
+	tableLock struct {
+		sync.RWMutex
+		table map[string]*KeywordIndices
+		docs  map[uint64]bool
+	}
+
+	initOptions types.IndexerInitOptions
+	initialized bool
+
+	// 这实际上是总文档数的一个近似
+	numDocuments uint64
+
+	// 所有被索引文本的总关键词数
+	totalTokenLength float32
+
+	// 每个文档的关键词长度
+	docTokenLengths map[uint64]float32
+}
+
+// 反向索引表的一行，收集了一个搜索键出现的所有文档，按照DocId从小到大排序。
+type KeywordIndices struct {
+	// 下面的切片是否为空，取决于初始化时IndexType的值
+	docIds      []uint64  // 全部类型都有
+	frequencies []float32 // IndexType == FrequenciesIndex
+	locations   [][]int   // IndexType == LocationsIndex
+}
+```
+
+`table map[string]*KeywordIndices`这个是核心：一个关键词，对应一个`KeywordIndices`结构。该结构的`docIds`字段记录了所有包含这个关键词的文档id。
+如果 IndexType == FrequenciesIndex ，则同时记录这个关键词在该文档中出现次数。
+如果 IndexType == LocationsIndex ，则同时记录这个关键词在该文档中出现的所有位置的起始偏移。
+
+下面是索引的主函数代码：
+
+```go
+func (engine *Engine) indexerAddDocumentWorker(shard int) {
+	for {
+		request := <-engine.indexerAddDocumentChannels[shard]
+		engine.indexers[shard].AddDocument(request.document)
+		atomic.AddUint64(&engine.numTokenIndexAdded,
+			uint64(len(request.document.Keywords)))
+		atomic.AddUint64(&engine.numDocumentsIndexed, 1)
+	}
+}
+```
+
+其主要逻辑又封装在`func (indexer *Indexer) AddDocument(document *types.DocumentIndex)`函数中实现。其逻辑如下：
+
+1. 将倒排索引表加锁
+2. 更新文档关键词的长度加在一起的总和
+3. 查找关键词在倒排索引表中是否存在
+4. 如果不存在，则直接加入到`table map[string]*KeywordIndices`中
+5. 如果存在`KeywordIndices`，则使用二分查找该关键词对应的docId是否已经在`KeywordIndices.docIds`中存在。分两种情况：
+	1) docId存在，则更新原有的数据结构。
+	2) docId不存在，则插入到`KeywordIndices.docIds`数组中，同时保持升序排列。
+6. 更新索引过的文章总数
+
+### 索引过程分析：排序器协程处理过程
 
 
 
