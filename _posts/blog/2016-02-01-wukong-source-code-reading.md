@@ -312,6 +312,145 @@ func (engine *Engine) indexerAddDocumentWorker(shard int) {
 
 ### 索引过程分析：排序器协程处理过程
 
+在新索引文档的过程，排序器的主逻辑如下：
+
+```go
+func (engine *Engine) rankerAddDocWorker(shard int) {
+	for {
+		request := <-engine.rankerAddDocChannels[shard]
+		engine.rankers[shard].AddDoc(request.docId, request.fields)
+	}
+}
+```
+
+进而调用下面的函数
+
+```go
+// 给某个文档添加评分字段
+func (ranker *Ranker) AddDoc(docId uint64, fields interface{}) {
+	if ranker.initialized == false {
+		log.Fatal("排序器尚未初始化")
+	}
+
+	ranker.lock.Lock()
+	ranker.lock.fields[docId] = fields
+	ranker.lock.docs[docId] = true
+	ranker.lock.Unlock()
+}
+```
+
+上述函数非常简单，只是将应用层自定义的数据加入到ranker中。
+
+至此索引过程就完成了。简单来讲就是下面两个过程：
+
+1. 将文档分词，得到一堆关键词
+2. 将 关键词->docId 的对应关系加入到全局的map中(实际上是分了多个shard)
+
+## 搜索过程分析
+
+下面我们来分析一下搜索的过程。首先构造一个`SearchRequest`对象。一般情况下只需提供`SearchRequest.Text`即可。
+
+```go
+type SearchRequest struct {
+	// 搜索的短语（必须是UTF-8格式），会被分词
+	// 当值为空字符串时关键词会从下面的Tokens读入
+	Text string
+
+	// 关键词（必须是UTF-8格式），当Text不为空时优先使用Text
+	// 通常你不需要自己指定关键词，除非你运行自己的分词程序
+	Tokens []string
+
+	// 文档标签（必须是UTF-8格式），标签不存在文档文本中，但也属于搜索键的一种
+	Labels []string
+
+	// 当不为nil时，仅从这些DocIds包含的键中搜索（忽略值）
+	DocIds map[uint64]bool
+
+	// 排序选项
+	RankOptions *RankOptions
+
+	// 超时，单位毫秒（千分之一秒）。此值小于等于零时不设超时。
+	// 搜索超时的情况下仍有可能返回部分排序结果。
+	Timeout int
+
+	// 设为true时仅统计搜索到的文档个数，不返回具体的文档
+	CountDocsOnly bool
+
+	// 不排序，对于可在引擎外部（比如客户端）排序情况适用
+	// 对返回文档很多的情况打开此选项可以有效节省时间
+	Orderless bool
+}
+```
+
+从本文一开始那段示例代码的搜索语句读起：`searcher.Search(types.SearchRequest{Text:"百度中国"})`。进入到 Search 函数内部，其逻辑如下：
+
+### 设置一些搜索选项
+
+例如排序选项`RankOptions`, 分数计算条件`ScoringCriteria`等等
+
+### 将搜索词进行分词
+
+```go
+	// 收集关键词
+	tokens := []string{}
+	if request.Text != "" {
+		querySegments := engine.segmenter.Segment([]byte(request.Text))
+		for _, s := range querySegments {
+			token := s.Token().Text()
+			if !engine.stopTokens.IsStopToken(token) {
+				tokens = append(tokens, s.Token().Text())
+			}
+		}
+	} else {
+		for _, t := range request.Tokens {
+			tokens = append(tokens, t)
+		}
+	}
+
+```
+
+这里的"百度中国"会分词得到两个词：`百度` 和`中国`
+ 
+### 向索引器发送查找请求
+
+```go
+	// 建立排序器返回的通信通道
+	rankerReturnChannel := make(
+		chan rankerReturnRequest, engine.initOptions.NumShards)
+
+	// 生成查找请求
+	lookupRequest := indexerLookupRequest{
+		countDocsOnly:       request.CountDocsOnly,
+		tokens:              tokens,
+		labels:              request.Labels,
+		docIds:              request.DocIds,
+		options:             rankOptions,
+		rankerReturnChannel: rankerReturnChannel,
+		orderless:           request.Orderless,
+	}
+
+	// 向索引器发送查找请求
+	for shard := 0; shard < engine.initOptions.NumShards; shard++ {
+		engine.indexerLookupChannels[shard] <- lookupRequest
+	}
+```
+
+这里是否可以进行优化？ 1) 只向特定的shard分发请求，避免无谓的indexer查找过程。2) `rankerReturnChannel`是否不用每次都创建新的？
+
+### 读取索引器的返回结果然后排序
+
+上面已经建立了结果的返回通道`rankerReturnChannel`，直接从个`channel`中读取返回数据，并加入到数组`rankOutput`中。
+注意，如果设置了超时，就在超时之前能读取多少就读多少。
+然后调用排序算法进行排序。排序算法直接调用Golang自带的`sort`包的排序算法。
+
+下面我们深入到索引器，看看索引器是如何进行搜索的。其核心代码在这里`func (engine *Engine) indexerLookupWorker(shard int)`，它的主逻辑是一个死循环，不断的从`engine.indexerLookupChannels[shard]`读取搜索请求。
+
+针对每一个搜索请求，会将请求分发到索引器去，调用`func (indexer *Indexer) Lookup(tokens []string, labels []string, docIds map[uint64]bool, countDocsOnly bool) (docs []types.IndexedDocument, numDocs int)`方法。其主要逻辑如下：
+
+1. 将分词和标签合并在一起进行搜索
+2. 合并搜索到的docId，并进行初步排序，将docId大的排在前面(实际上是认为docId越大，时间越近，时效性越好)
+3. 然后进行排序，BM25算法
+4. 最后返回数据
 
 
 ## 参考文献
