@@ -23,10 +23,11 @@ func RemoveIf(s string, f func(rune) bool) string {
 }
 ```
 
-上述算法是参考C++标准库中的实现(`bits/stl_algo.h:remove_if`)，但比C++的效率低，因为多了两次转换（`string`与`[]rune`互相转换两次），
-这两次转换不知道是否可以通过其他方式节省掉？类似于C++的实现，就地删除（并没有新开辟内存空间）。
+上述算法是参考C++标准库中的实现(`bits/stl_algo.h:remove_if`)，但比C++的效率低，因为多了两次转换（`string`与`[]rune`互相转换两次）。
 
-上述源码放到这里了： [https://github.com/zieckey/gocom/tree/master/strings](https://github.com/zieckey/gocom/tree/master/strings)
+进一步思考：这两次转换不知道是否可以通过其他方式节省掉？类似于C++的实现，就地删除（并没有新开辟内存空间）。
+
+上述源码放到这里了： [https://github.com/zieckey/gocom/tree/master/tstrings](https://github.com/zieckey/gocom/tree/master/tstrings)
 
 必须要吐槽一下Go语言没有泛型，如果要针对`[]byte`就又得要重复实现一遍类似的代码。
 
