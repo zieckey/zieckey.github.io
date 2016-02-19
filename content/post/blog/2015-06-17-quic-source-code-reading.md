@@ -60,7 +60,7 @@ url: /2015/06/17/quic-source-code-reading/
 
 #### QuicPacketPublicHeader
 
-```C++
+```c
 struct QuicPacketPublicHeader {
   // Universal header. All QuicPacket headers will have a connection_id and
   // public flags.
@@ -75,7 +75,7 @@ struct QuicPacketPublicHeader {
 
 #### QuicPacketHeader
 
-```C++
+```c
 struct QuicPacketHeader {
   QuicPacketPublicHeader public_header;
   bool fec_flag;

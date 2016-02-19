@@ -16,7 +16,7 @@ url: /2015/01/03/ngx_array_t/
 
 ngx_array.h实现和注释如下：
 
-```C
+```c
 #include <ngx_config.h>
 #include <ngx_core.h>
 
@@ -85,7 +85,7 @@ ngx_array_init(ngx_array_t *array, ngx_pool_t *pool, ngx_uint_t n, size_t size)
 
 测试代码，完整的工程编译请参考 [https://github.com/zieckey/nginx-research项目](https://github.com/zieckey/nginx-research)
 
-```CPP
+```cPP
 #include "allinc.h"
 
 struct User {

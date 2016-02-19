@@ -58,7 +58,7 @@ Nginx项目本来是作为一个整体直接编译出一个二进制文件，要
 
 ### 写测试程序
 
-```C
+```c
 	#include <stdio.h>
 	#include "ngx_config.h"
 	#include "ngx_conf_file.h"

@@ -15,7 +15,7 @@ url: /2015/01/13/linux-system-programming/
 
 wait的函数原型是：
 
-```C
+```c
 #include <sys/types.h>
 #include <sys/wait.h>
 
@@ -39,7 +39,7 @@ pid_t waitpid(pid_t pid, int *status, int options);
 
 下面看一个示例代码：
 
-```C
+```c
 #include<stdio.h>
 #include<sys/types.h>
 #include<sys/wait.h>
@@ -92,7 +92,7 @@ father end
 
 `sigprocmask`功能描述：设定对信号屏蔽集内的信号的处理方式(阻塞或不阻塞)。函数原型：
 
-```C
+```c
 #include <signal.h>
 int sigprocmask(int how, const sigset_t *set, sigset_t *oldset);
 ```

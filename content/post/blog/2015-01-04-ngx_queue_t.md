@@ -48,7 +48,7 @@ src/core/ngx_queue.{h,c}
 
 除了`ngx_queue_data`值得一说外，其他都是双向链表的基本操作，与教科书里的定义完全一致，不在累述。
 
-```C
+```c
 //获取队列中节点数据， q是队列中的节点，type队列类型，field是队列类型中ngx_queue_t的元素名
 #define ngx_queue_data(q, type, field)                                         \
     (type *) ((u_char *) q - offsetof(type, field))
@@ -61,7 +61,7 @@ src/core/ngx_queue.{h,c}
 
 该测试代码的完整工程的编译和运行方式请参考 [https://github.com/zieckey/nginx-research项目](https://github.com/zieckey/nginx-research)。Linux&Windows都测试通过。
 
-```C++
+```c
 #include "allinc.h"
 
 
