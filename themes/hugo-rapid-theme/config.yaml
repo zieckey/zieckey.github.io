@@ -1,6 +1,6 @@
-title: "CoderZh Blog"
+title: "编程哥Blog|CodeG"
 languageCode: "zh-CN"
-baseurl: "http://blog.coderzh.com"
+baseurl: "http://blog.codeg.com"
 theme: "hugo-rapid-theme"
 copyright: "Copyright (c) 2015. All rights reserved."
 MetaDataFormat: "yaml"

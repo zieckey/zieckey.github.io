@@ -1,6 +1,6 @@
-title: "CoderZh Blog"
+title: "编程哥Blog|CodeG"
 languageCode: "zh-CN"
-baseurl: "http://blog.coderzh.com"
+baseurl: "http://blog.codeg.cn"
 theme: "hugo-rapid-theme"
 copyright: "Copyright (c) 2015. All rights reserved."
 MetaDataFormat: "yaml"
@@ -19,12 +19,12 @@ Taxonomies:
   category: "categories"
 params:
   CopyrightHTML: "Copyright &#xA9; 2015. All Rights Reserved."
-  GitHubUser: "coderzh"
+  GitHubUser: "zieckey"
   SidebarRecentLimit: 5
   DateForm : "2006年01月02日"
-  Tagline: "一个程序员的思考与总结"
-  Description: "如果你没有感觉到时间不够用时，你多半正在虚度光阴。"
-  Keywords: "独立博客,程序员,思考,读书笔记,技术分享"
+  Tagline: "聪明的解释器"
+  Description: "思路决定出路，态度决定高度。"
+  Keywords: "独立博客,程序员,读书笔记,技术分享"
   Categories:
     - "读书笔记"
     - "技术文章"
