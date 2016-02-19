@@ -18,17 +18,15 @@ Taxonomies:
   tag: "tags"
   category: "categories"
 params:
-  CopyrightHTML: "Copyright &#xA9; 2015. All Rights Reserved."
+  CopyrightHTML: "Copyright &#xA9; 2016. All Rights Reserved."
   GitHubUser: "zieckey"
-  SidebarRecentLimit: 5
+  SidebarRecentLimit: 10
   DateForm : "2006年01月02日"
   Tagline: "聪明的解释器"
   Description: "思路决定出路，态度决定高度。"
   Keywords: "独立博客,程序员,读书笔记,技术分享"
   Categories:
-    - "读书笔记"
-    - "技术文章"
-    - "思考感悟"
+    - 技术文章
 menu:
   main:
       - Name: "归档"
