@@ -172,7 +172,7 @@
                   <p class="post-byline">
                     by  · 2015年01月03日 · 297 Words ·
                     ~1min reading time |
-                    <a href="https://github.com/zieckey/zieckey.github.io/blob/master/content/post/blog/2015-01-03-gbk2utf8-by-golang.md"
+                    <a href="https://github.com/zieckey/zieckey.github.io/blob/hugo/content/post/blog/2015-01-03-gbk2utf8-by-golang.md"
                        target="_blank">Improve on <i class="fa fa-github"></i></a>
                   </p>
 
@@ -199,7 +199,6 @@
                     </div>
 
                     <div class="entry-inner">
-                      
                       <p>Linux下的iconv是针对单个文件处理，但是转码后的数据直接输出到STDOUT，不方便批量处理。gbk2utf8工具可以针对一个目录以及递归遍历所有子目录下的所有文件进行批量处理，并且直接修改原始文件为UTF-8编码。为了避免错误，会将原始文件备份为<code>*.bak</code>文件。</p>
 
 <p>当前其实现是直接调用<code>iconv</code>命令实现，后期可以考虑纯粹使用golang实现。另外，如果将来有需要，可以直接将iconv的几个参数如<code>-f</code> <code>-t</code>等也一并实现了，从而形成<code>goiconv</code>，一个通用的批量原地转码工具。</p>
@@ -219,20 +218,25 @@
 处理somedir目录以及递归遍历所有子目录下的所有文件</p></li>
 </ul>
 
-                      
                     </div>
 
                     
-                    <div class="bdsharebuttonbox"><a href="#" class="bds_more" data-cmd="more"></a><a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a><a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a><a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a><a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网"></a><a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博"></a></div>
-                    <script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{},"image":{"viewList":["weixin","tsina","qzone","renren","tqq"],"viewText":"分享到：","viewSize":"24"},"selectShare":{"bdContainerClass":null,"bdSelectMiniList":["weixin","tsina","qzone","renren","tqq"]}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+<div class="bdsharebuttonbox">
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网"></a>
+    <a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博"></a>
+</div>
+<script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{},"image":{"viewList":["weixin","tsina","qzone","renren","tqq"],"viewText":"分享到：","viewSize":"24"},"selectShare":{"bdContainerClass":null,"bdSelectMiniList":["weixin","tsina","qzone","renren","tqq"]}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+
                     
 
+<div class="ds-thread" data-thread-key="/2015/01/03/gbk2utf8-by-golang/" data-title="发布一个批量转码工具:gbk2utf8" data-url="http://blog.codeg.cn/2015/01/03/gbk2utf8-by-golang/"></div>
 
-                    
-                    <div class="ds-thread" data-thread-key="/2015/01/03/gbk2utf8-by-golang/" data-title="发布一个批量转码工具:gbk2utf8" data-url="http://blog.codeg.cn/2015/01/03/gbk2utf8-by-golang/"></div>
-                    
-                    
-                    <script type="text/javascript">
+
+<script type="text/javascript">
                     var duoshuoQuery = {short_name:"codeg"};
                         (function() {
                             var ds = document.createElement('script');
@@ -243,7 +247,6 @@
                              || document.getElementsByTagName('body')[0]).appendChild(ds);
                         })();
                     </script>
-                    
 
                     
                     <div class="clear"></div>
