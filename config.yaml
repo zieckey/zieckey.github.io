@@ -13,7 +13,7 @@ RSSUri: "feed.xml"
 disablePathToLower: true 
 hasCJKLanguage: true
 permalinks:
-  posts: /:year/:month/:day/:slug/
+  posts: /:year/:month/:day/:slug
 Taxonomies:
   tag: "tags"
   category: "categories"
@@ -40,7 +40,7 @@ menu:
         Weight: -100
         URL: "/about/"
 author:
-  name: "CoderZh"
+  name: "CodeG"
 
 images:
   - 480x
