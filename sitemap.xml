@@ -3,8 +3,13 @@
   
   <url>
     <loc>http://blog.codeg.cn/</loc>
-    <lastmod>2016-02-19T00:00:00+00:00</lastmod>
+    <lastmod>2016-02-20T22:43:00+00:00</lastmod>
     <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://blog.codeg.cn/post/opinion/2016-02-20-migrate-to-hugo-from-jekyll/</loc>
+    <lastmod>2016-02-20T22:43:00+00:00</lastmod>
   </url>
   
   <url>

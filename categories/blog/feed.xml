@@ -7,8 +7,36 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
     <copyright>Copyright (c) 2015. All rights reserved.</copyright>
-    <lastBuildDate>Fri, 19 Feb 2016 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sat, 20 Feb 2016 22:43:00 +0000</lastBuildDate>
     <atom:link href="http://blog.codeg.cn/categories/blog/feed/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>将博客从jekyll迁移到hugo</title>
+      <link>http://blog.codeg.cn/post/opinion/2016-02-20-migrate-to-hugo-from-jekyll/</link>
+      <pubDate>Sat, 20 Feb 2016 22:43:00 +0000</pubDate>
+      
+      <guid>http://blog.codeg.cn/post/opinion/2016-02-20-migrate-to-hugo-from-jekyll/</guid>
+      <description>
+
+&lt;p&gt;之前的博客内容都是用&lt;code&gt;jekyll&lt;/code&gt;来渲染的，这是用ruby写，部署起来比较麻烦。最近看到Golang开发的&lt;code&gt;hugo&lt;/code&gt;工具，真是眼前一亮啊。&lt;/p&gt;
+
+&lt;p&gt;促使我做这种迁移的动机有一下几点：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;我不会ruby，&amp;rsquo;臣妾&amp;rsquo;真的做不到&lt;/li&gt;
+&lt;li&gt;我会Golang，用Golang写过一些小程序&lt;/li&gt;
+&lt;li&gt;CoderZh提供的模板比较对我的眼缘&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;从昨晚到今天折腾了一天，终于迁移成功。谢谢&lt;a href=&#34;http://blog.coderzh.com&#34;&gt;CoderZh&lt;/a&gt;的奉献。&lt;/p&gt;
+
+&lt;h2 id=&#34;参考:5c4da8f98a58690dc13b3af20af3f523&#34;&gt;参考&lt;/h2&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.gohugo.org/post/coderzh-hugo/&#34;&gt;使用hugo搭建个人博客站点&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+    </item>
     
     <item>
       <title>编译Golang包为C语言库文件</title>
@@ -2137,99 +2165,6 @@ A document with all the Go programming language secrets
 &lt;h2 id=&#34;参考:84d30e0faef44887780b73fe0888f4a7&#34;&gt;参考&lt;/h2&gt;
 
 &lt;p&gt;&lt;a href=&#34;http://matt.aimonetti.net/posts/2013/07/01/golang-multipart-file-upload-example/&#34;&gt;http://matt.aimonetti.net/posts/2013/07/01/golang-multipart-file-upload-example/&lt;/a&gt;&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>golang学习之继承和重载</title>
-      <link>http://blog.codeg.cn/2015/02/12/golang-derive-override/</link>
-      <pubDate>Thu, 12 Feb 2015 00:00:00 +0000</pubDate>
-      
-      <guid>http://blog.codeg.cn/2015/02/12/golang-derive-override/</guid>
-      <description>
-
-&lt;p&gt;其实golang里是不提倡继承的，也不提倡重载的。但是有些场景下，我们还是想试验一下传统C++或Java语言里的继承和重载能否用在golang里。&lt;/p&gt;
-
-&lt;h2 id=&#34;实现:7df8eccedef375025511e0a13dbe751d&#34;&gt;实现&lt;/h2&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;package main
-
-import (
-	&amp;quot;fmt&amp;quot;
-)
-
-
-type Person struct {
-	Id   int
-	Name string
-}
-
-type Tester interface {
-	Test()
-	Eat()
-}
-
-func (this *Person) Test() {
-	fmt.Println(&amp;quot;\tthis =&amp;quot;, &amp;amp;this, &amp;quot;Person.Test&amp;quot;)
-}
-
-func (this *Person) Eat() {
-	fmt.Println(&amp;quot;\tthis =&amp;quot;, &amp;amp;this, &amp;quot;Person.Eat&amp;quot;)
-}
-
-// Employee 从Person继承, 直接继承了 Eat 方法，并且将 Test 方法覆盖了。
-type Employee struct {
-	Person
-}
-
-func (this *Employee) Test() {
-	fmt.Println(&amp;quot;\tthis =&amp;quot;, &amp;amp;this, &amp;quot;Employee.Test&amp;quot;)
-	this.Person.Test() // 调用父类的方法，且该方法被子类覆盖了
-}
-
-func main() {
-	fmt.Println(&amp;quot;An Employee instance :&amp;quot;)
-	var nu Employee
-	nu.Id = 2
-	nu.Name = &amp;quot;NTom&amp;quot;
-	nu.Test()
-	nu.Eat()
-	fmt.Println()
-	
-	fmt.Println(&amp;quot;A Tester interface to Employee instance :&amp;quot;)
-	var t Tester
-	t = &amp;amp;nu
-	t.Test()
-	t.Eat()
-	fmt.Println()
-	
-	fmt.Println(&amp;quot;A Tester interface to Person instance :&amp;quot;)
-	t = &amp;amp;nu.Person
-	t.Test()
-	t.Eat()
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;输出如下：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;An Employee instance :
-	this = 0xc082024020 Employee.Test
-	this = 0xc082024028 Person.Test
-	this = 0xc082024030 Person.Eat
-
-A Tester interface to Employee instance :
-	this = 0xc082024038 Employee.Test
-	this = 0xc082024040 Person.Test
-	this = 0xc082024048 Person.Eat
-
-A Tester interface to Person instance :
-	this = 0xc082024050 Person.Test
-	this = 0xc082024058 Person.Eat
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2 id=&#34;参考:7df8eccedef375025511e0a13dbe751d&#34;&gt;参考&lt;/h2&gt;
-
-&lt;p&gt;&lt;a href=&#34;http://www.cnblogs.com/yjf512/archive/2012/09/13/2684133.html&#34;&gt;http://www.cnblogs.com/yjf512/archive/2012/09/13/2684133.html&lt;/a&gt;&lt;/p&gt;
 </description>
     </item>
     

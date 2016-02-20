@@ -12,36 +12,36 @@
         }
     }
   </script>
-  <title>编译Golang包为C语言库文件 - 编程哥Blog|CodeG</title>
+  <title>将博客从jekyll迁移到hugo - 编程哥Blog|CodeG</title>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-<meta name="description" content="Go 1.5发布后，其包含一个特性：可以编译生成C语言动态链接库或静态库。本文给出了示例代码和用法。">
+<meta name="description" content="之前的博客内容都是用jekyll来渲染的，这是用ruby写，部署起来比较麻烦。最近看到Golang开发的hugo工具，真是眼前一亮啊。 促使我">
 <meta name="author" content="zieckey">
 <meta name="publisher" content="zieckey">
 <meta name="generator" content="http://gohugo.io/"/>
 
-<meta itemprop="name" content="编译Golang包为C语言库文件 - 编程哥Blog|CodeG">
-<meta itemprop="description" content="Go 1.5发布后，其包含一个特性：可以编译生成C语言动态链接库或静态库。本文给出了示例代码和用法。">
+<meta itemprop="name" content="将博客从jekyll迁移到hugo - 编程哥Blog|CodeG">
+<meta itemprop="description" content="之前的博客内容都是用jekyll来渲染的，这是用ruby写，部署起来比较麻烦。最近看到Golang开发的hugo工具，真是眼前一亮啊。 促使我">
 <meta itemprop="image" content="http://blog.codeg.cn/public/codeg.jpg">
 
-<meta property="og:title" content="编译Golang包为C语言库文件 - 编程哥Blog|CodeG" />
+<meta property="og:title" content="将博客从jekyll迁移到hugo - 编程哥Blog|CodeG" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="http://blog.codeg.cn/2016/02/19/sharing-golang-package-to-C/" />
+<meta property="og:url" content="http://blog.codeg.cn/post/opinion/2016-02-20-migrate-to-hugo-from-jekyll/" />
 <meta property="og:image" content="http://blog.codeg.cn/public/codeg.jpg" />
-<meta property="og:description" content="Go 1.5发布后，其包含一个特性：可以编译生成C语言动态链接库或静态库。本文给出了示例代码和用法。">
+<meta property="og:description" content="之前的博客内容都是用jekyll来渲染的，这是用ruby写，部署起来比较麻烦。最近看到Golang开发的hugo工具，真是眼前一亮啊。 促使我">
 
 <meta name="twitter:card" content="summary">
 <meta name="twitter:site" content="@zieckey">
-<meta name="twitter:title" content="编译Golang包为C语言库文件 - 编程哥Blog|CodeG">
-<meta name="twitter:description" content="Go 1.5发布后，其包含一个特性：可以编译生成C语言动态链接库或静态库。本文给出了示例代码和用法。">
+<meta name="twitter:title" content="将博客从jekyll迁移到hugo - 编程哥Blog|CodeG">
+<meta name="twitter:description" content="之前的博客内容都是用jekyll来渲染的，这是用ruby写，部署起来比较麻烦。最近看到Golang开发的hugo工具，真是眼前一亮啊。 促使我">
 <meta name="twitter:creator" content="@zieckey">
 <meta name="twitter:image" content="http://blog.codeg.cn/public/codeg.jpg">
 
   <script>document.documentElement.className = document.documentElement.className.replace("no-js", "js");</script>
-  <link rel="canonical" href="http://blog.codeg.cn/2016/02/19/sharing-golang-package-to-C/">
-  <link rel='shortlink' href="http://blog.codeg.cn/2016/02/19/sharing-golang-package-to-C/"/>
+  <link rel="canonical" href="http://blog.codeg.cn/post/opinion/2016-02-20-migrate-to-hugo-from-jekyll/">
+  <link rel='shortlink' href="http://blog.codeg.cn/post/opinion/2016-02-20-migrate-to-hugo-from-jekyll/"/>
   <link rel="shortcut icon" href="http://blog.codeg.cn/public/favicon.ico"/>
   
 <link rel="stylesheet" id="human-style-css" href="http://blog.codeg.cn/wp-content/themes/hueman/style.css" type="text/css" media="all"/>
@@ -167,12 +167,12 @@
                   class="post type-post status-publish format-standard has-post-thumbnail hentry category-australien tag-bondi-beach tag-city2surf tag-sydney">
                 <div class="post-inner group">
 
-                  <h1 class="post-title">编译Golang包为C语言库文件</h1>
+                  <h1 class="post-title">将博客从jekyll迁移到hugo</h1>
 
                   <p class="post-byline">
-                    by  · 2016年02月19日 · 472 Words ·
+                    by  · 2016年02月20日 · 189 Words ·
                     ~1min reading time |
-                    <a href="https://github.com/zieckey/zieckey.github.io/blob/hugo/content/post/blog/2016-02-19-sharing-golang-package-to-C.md"
+                    <a href="https://github.com/zieckey/zieckey.github.io/blob/hugo/content/post/opinion/2016-02-20-migrate-to-hugo-from-jekyll.md"
                        target="_blank">Improve on <i class="fa fa-github"></i></a>
                   </p>
 
@@ -193,7 +193,7 @@
                         
                         
                         
-                        本文是 <a target="_blank" href="http://blog.codeg.cn/2016/02/19/sharing-golang-package-to-C/">http://blog.codeg.cn/2016/02/19/sharing-golang-package-to-C/</a> 作者（<a target="_blank" href="http://blog.codeg.cn/">CodeG</a>）在研究和学习相关内容时所做的笔记，欢迎广大朋友指正和交流！
+                        本文是 <a target="_blank" href="http://blog.codeg.cn/post/opinion/2016-02-20-migrate-to-hugo-from-jekyll/">http://blog.codeg.cn/post/opinion/2016-02-20-migrate-to-hugo-from-jekyll/</a> 作者（<a target="_blank" href="http://blog.codeg.cn/">CodeG</a>）在研究和学习相关内容时所做的笔记，欢迎广大朋友指正和交流！
                         文章版权归本人所有，欢迎转载，但未经作者同意必须保留此段声明，且在文章页面明显位置给出原文连接，否则保留追究法律责任的权利。 </p>
                       </div>
                     </div>
@@ -201,77 +201,22 @@
                     <div class="entry-inner">
                       
 
-<p>Go 1.5发布后，其包含一个特性：可以编译生成C语言动态链接库或静态库。本文给出了示例代码和用法。</p>
+<p>之前的博客内容都是用<code>jekyll</code>来渲染的，这是用ruby写，部署起来比较麻烦。最近看到Golang开发的<code>hugo</code>工具，真是眼前一亮啊。</p>
 
-<p><code>go build</code>和<code>go install</code>命令，可以使用参数 <code>-buildmode</code> 来指定生成哪种类型的二进制目标文件。请见<a href="https://golang.org/cmd/go/">https://golang.org/cmd/go/#Description of build modes</a> 详细说明。</p>
+<p>促使我做这种迁移的动机有一下几点：</p>
 
-<p>当前我们使用 <code>-buildmode=c-archive</code> 来示例和测试。</p>
+<ul>
+<li>我不会ruby，&rsquo;臣妾&rsquo;真的做不到</li>
+<li>我会Golang，用Golang写过一些小程序</li>
+<li>CoderZh提供的模板比较对我的眼缘</li>
+</ul>
 
-<p>Golang源文件：</p>
+<p>从昨晚到今天折腾了一天，终于迁移成功。谢谢<a href="http://blog.coderzh.com">CoderZh</a>的奉献。</p>
 
-<pre><code class="language-go">
-// file hello.go
-package main
-
-  port &quot;C&quot;
-import &quot;fmt&quot;
-
-//export SayHello
-func SayHello(name string) {
-    fmt.Printf(&quot;func in Golang SayHello says: Hello, %s!\n&quot;, name)
-}
-
-//export SayHelloByte
-func SayHelloByte(name []byte) {
-    fmt.Printf(&quot;func in Golang SayHelloByte says: Hello, %s!\n&quot;, string(name))
-}
-
-//export SayBye
-func SayBye() {
-    fmt.Println(&quot;func in Golang SayBye says: Bye!&quot;)
-}
-
-func main() {
-    // We need the main function to make possible
-    // CGO compiler to compile the package as C shared library
-}
-</code></pre>
-
-<p>使用命令<code>go build -buildmode=c-archive -o libhello.a hello.go</code>可以生成一个C语言静态库<code>libhello.a</code>和头文件<code>libhello.h</code>。
-然后我们再写个C语言程序来调用这个库，如下：</p>
-
-<pre><code class="language-c">// file hello.c
-#include &lt;stdio.h&gt;
-#include &quot;libhello.h&quot;
-
-int main() {
-  printf(&quot;This is a C Application.\n&quot;);
-  GoString name = {(char*)&quot;Jane&quot;, 4};
-  SayHello(name);
-  GoSlice buf = {(void*)&quot;Jane&quot;, 4, 4};
-  SayHelloByte(buf);
-  SayBye();
-  return 0;
-}
-</code></pre>
-
-<p>使用命令<code>gcc -o hello hello.c libhello.a -pthread</code>来编译生成一个可执行文件<code>hello</code>。执行命令如下：</p>
-
-<pre><code class="language-shell">$ go build -buildmode=c-archive -o libhello.a hello.go
-$ gcc -o hello hello.c libhello.a -pthread
-$ ./hello 
-This is a C Application.
-func in Golang SayHello says: Hello, Jane!
-func in Golang SayHelloByte says: Hello, Jane!
-func in Golang SayBye says: Bye!
-</code></pre>
-
-<p>备注：目前Golang还不支持将一个struct结构导出到C库中。</p>
-
-<h2 id="参考:d07f2a12ab89ca994adea10c36662f05">参考</h2>
+<h2 id="参考:5c4da8f98a58690dc13b3af20af3f523">参考</h2>
 
 <ol>
-<li><a href="http://blog.ralch.com/tutorial/golang-sharing-libraries/">Sharing Golang packages to C and Go</a></li>
+<li><a href="http://www.gohugo.org/post/coderzh-hugo/">使用hugo搭建个人博客站点</a></li>
 </ol>
 
                     </div>
@@ -289,7 +234,7 @@ func in Golang SayBye says: Bye!
 
                     
 
-<div class="ds-thread" data-thread-key="/2016/02/19/sharing-golang-package-to-C/" data-title="编译Golang包为C语言库文件" data-url="http://blog.codeg.cn/2016/02/19/sharing-golang-package-to-C/"></div>
+<div class="ds-thread" data-thread-key="/post/opinion/2016-02-20-migrate-to-hugo-from-jekyll/" data-title="将博客从jekyll迁移到hugo" data-url="http://blog.codeg.cn/post/opinion/2016-02-20-migrate-to-hugo-from-jekyll/"></div>
 
 
 <script type="text/javascript">
@@ -360,20 +305,14 @@ func in Golang SayBye says: Bye!
     <ul class="post-nav group">
       <li class="next">
         
-        <a href="http://blog.codeg.cn/2016/02/14/send-email-for-golang/" rel="next">
+        <a href="http://blog.codeg.cn/2016/02/19/sharing-golang-package-to-C/" rel="next">
           <i class="fa fa-chevron-right"></i>
           <strong>Next post</strong>
-          <span>Golang发送邮件</span>
+          <span>编译Golang包为C语言库文件</span>
         </a>
         
       </li>
       <li class="previous">
-        
-        <a href="http://blog.codeg.cn/post/opinion/2016-02-20-migrate-to-hugo-from-jekyll/" rel="prev">
-          <i class="fa fa-chevron-left"></i>
-          <strong>Previous Post</strong>
-          <span>将博客从jekyll迁移到hugo</span>
-        </a>
         
       </li>
     </ul>
