@@ -12,30 +12,30 @@
         }
     }
   </script>
-  <title> - 编程哥Blog|CodeG</title>
+  <title>使用Golang利用ectd实现一个分布式锁 - 编程哥Blog|CodeG</title>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-<meta name="description" content="&ndash; categories: - blog date: 2016-02-24T20:00:00Z tags: - Golang - 分布式 - etcd title: 使用Golang利用ectd实现一个分布式锁 etcd是随着CoreOS项目一起成长起来的，随着Golang和CoreOS等项目在开源社区日益火热， etcd作为一个高可用、强一致性的分布式Key-Value存储系统被越来越多的开发人员关注和使用。 这篇文章全方位介绍了etcd的应用场景，这里简单摘要如下： 服务发现（Service Discovery） 消息发布与订阅 负载均衡 分布式通知与协调 分布式锁 分布式队列 集群监控与Leader竞选 为什么用etcd而不用ZooKeeper 本文重点介绍如何利用ectd实现一个分布式锁。 锁的概念大家都熟悉，当我们希望某一事件在同一时间点只有一个线程(goroutine)在做，或者某一个资源在同一时间点只有一个服务能访问，这个时候我们就需要用到锁。 例如我们要实现一个分布式的id生成器，多台服务器之间的协调就非常麻烦。分布式锁就正好派上用场。 其基本实现原理为： 在ectd系统里创建一个key 如果创建失败，key存在，则监听该key的变化事件，直到该key被删除，回到1 如果创建成功，则认为我获得了锁 具体代码如下： package etcdsync import ( &quot;log&quot; &quot;sync&quot; &quot;time&quot; &quot;github.com/coreos/etcd/client&quot; &quot;github.com/coreos/etcd/Godeps/_workspace/src/golang.org/x/net/context&quot; &quot;fmt&quot; ) const ( defaultTTL = 60 defaultTry = 3 ) // A Mutex is a mutual exclusion lock which is distributed across a cluster. type Mutex struct { key string id string client client.Client kapi client.KeysAPI state int32 mutex *sync.Mutex } // New creates a Mutex with the given key which must be the same // across the cluster nodes.">
+<meta name="description" content="etcd是随着CoreOS项目一起成长起来的，随着Golang和CoreOS等项目在开源社区日益火热， etcd作为一个高可用、强一致性的分布">
 <meta name="author" content="zieckey">
 <meta name="publisher" content="zieckey">
 <meta name="generator" content="http://gohugo.io/"/>
 
-<meta itemprop="name" content=" - 编程哥Blog|CodeG">
-<meta itemprop="description" content="&ndash; categories: - blog date: 2016-02-24T20:00:00Z tags: - Golang - 分布式 - etcd title: 使用Golang利用ectd实现一个分布式锁 etcd是随着CoreOS项目一起成长起来的，随着Golang和CoreOS等项目在开源社区日益火热， etcd作为一个高可用、强一致性的分布式Key-Value存储系统被越来越多的开发人员关注和使用。 这篇文章全方位介绍了etcd的应用场景，这里简单摘要如下： 服务发现（Service Discovery） 消息发布与订阅 负载均衡 分布式通知与协调 分布式锁 分布式队列 集群监控与Leader竞选 为什么用etcd而不用ZooKeeper 本文重点介绍如何利用ectd实现一个分布式锁。 锁的概念大家都熟悉，当我们希望某一事件在同一时间点只有一个线程(goroutine)在做，或者某一个资源在同一时间点只有一个服务能访问，这个时候我们就需要用到锁。 例如我们要实现一个分布式的id生成器，多台服务器之间的协调就非常麻烦。分布式锁就正好派上用场。 其基本实现原理为： 在ectd系统里创建一个key 如果创建失败，key存在，则监听该key的变化事件，直到该key被删除，回到1 如果创建成功，则认为我获得了锁 具体代码如下： package etcdsync import ( &quot;log&quot; &quot;sync&quot; &quot;time&quot; &quot;github.com/coreos/etcd/client&quot; &quot;github.com/coreos/etcd/Godeps/_workspace/src/golang.org/x/net/context&quot; &quot;fmt&quot; ) const ( defaultTTL = 60 defaultTry = 3 ) // A Mutex is a mutual exclusion lock which is distributed across a cluster. type Mutex struct { key string id string client client.Client kapi client.KeysAPI state int32 mutex *sync.Mutex } // New creates a Mutex with the given key which must be the same // across the cluster nodes.">
+<meta itemprop="name" content="使用Golang利用ectd实现一个分布式锁 - 编程哥Blog|CodeG">
+<meta itemprop="description" content="etcd是随着CoreOS项目一起成长起来的，随着Golang和CoreOS等项目在开源社区日益火热， etcd作为一个高可用、强一致性的分布">
 <meta itemprop="image" content="http://blog.codeg.cn/public/codeg.jpg">
 
-<meta property="og:title" content=" - 编程哥Blog|CodeG" />
+<meta property="og:title" content="使用Golang利用ectd实现一个分布式锁 - 编程哥Blog|CodeG" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="http://blog.codeg.cn/post/blog/2016-02-24-distrubute-lock-over-etcd/" />
 <meta property="og:image" content="http://blog.codeg.cn/public/codeg.jpg" />
-<meta property="og:description" content="&ndash; categories: - blog date: 2016-02-24T20:00:00Z tags: - Golang - 分布式 - etcd title: 使用Golang利用ectd实现一个分布式锁 etcd是随着CoreOS项目一起成长起来的，随着Golang和CoreOS等项目在开源社区日益火热， etcd作为一个高可用、强一致性的分布式Key-Value存储系统被越来越多的开发人员关注和使用。 这篇文章全方位介绍了etcd的应用场景，这里简单摘要如下： 服务发现（Service Discovery） 消息发布与订阅 负载均衡 分布式通知与协调 分布式锁 分布式队列 集群监控与Leader竞选 为什么用etcd而不用ZooKeeper 本文重点介绍如何利用ectd实现一个分布式锁。 锁的概念大家都熟悉，当我们希望某一事件在同一时间点只有一个线程(goroutine)在做，或者某一个资源在同一时间点只有一个服务能访问，这个时候我们就需要用到锁。 例如我们要实现一个分布式的id生成器，多台服务器之间的协调就非常麻烦。分布式锁就正好派上用场。 其基本实现原理为： 在ectd系统里创建一个key 如果创建失败，key存在，则监听该key的变化事件，直到该key被删除，回到1 如果创建成功，则认为我获得了锁 具体代码如下： package etcdsync import ( &quot;log&quot; &quot;sync&quot; &quot;time&quot; &quot;github.com/coreos/etcd/client&quot; &quot;github.com/coreos/etcd/Godeps/_workspace/src/golang.org/x/net/context&quot; &quot;fmt&quot; ) const ( defaultTTL = 60 defaultTry = 3 ) // A Mutex is a mutual exclusion lock which is distributed across a cluster. type Mutex struct { key string id string client client.Client kapi client.KeysAPI state int32 mutex *sync.Mutex } // New creates a Mutex with the given key which must be the same // across the cluster nodes.">
+<meta property="og:description" content="etcd是随着CoreOS项目一起成长起来的，随着Golang和CoreOS等项目在开源社区日益火热， etcd作为一个高可用、强一致性的分布">
 
 <meta name="twitter:card" content="summary">
 <meta name="twitter:site" content="@zieckey">
-<meta name="twitter:title" content=" - 编程哥Blog|CodeG">
-<meta name="twitter:description" content="&ndash; categories: - blog date: 2016-02-24T20:00:00Z tags: - Golang - 分布式 - etcd title: 使用Golang利用ectd实现一个分布式锁 etcd是随着CoreOS项目一起成长起来的，随着Golang和CoreOS等项目在开源社区日益火热， etcd作为一个高可用、强一致性的分布式Key-Value存储系统被越来越多的开发人员关注和使用。 这篇文章全方位介绍了etcd的应用场景，这里简单摘要如下： 服务发现（Service Discovery） 消息发布与订阅 负载均衡 分布式通知与协调 分布式锁 分布式队列 集群监控与Leader竞选 为什么用etcd而不用ZooKeeper 本文重点介绍如何利用ectd实现一个分布式锁。 锁的概念大家都熟悉，当我们希望某一事件在同一时间点只有一个线程(goroutine)在做，或者某一个资源在同一时间点只有一个服务能访问，这个时候我们就需要用到锁。 例如我们要实现一个分布式的id生成器，多台服务器之间的协调就非常麻烦。分布式锁就正好派上用场。 其基本实现原理为： 在ectd系统里创建一个key 如果创建失败，key存在，则监听该key的变化事件，直到该key被删除，回到1 如果创建成功，则认为我获得了锁 具体代码如下： package etcdsync import ( &quot;log&quot; &quot;sync&quot; &quot;time&quot; &quot;github.com/coreos/etcd/client&quot; &quot;github.com/coreos/etcd/Godeps/_workspace/src/golang.org/x/net/context&quot; &quot;fmt&quot; ) const ( defaultTTL = 60 defaultTry = 3 ) // A Mutex is a mutual exclusion lock which is distributed across a cluster. type Mutex struct { key string id string client client.Client kapi client.KeysAPI state int32 mutex *sync.Mutex } // New creates a Mutex with the given key which must be the same // across the cluster nodes.">
+<meta name="twitter:title" content="使用Golang利用ectd实现一个分布式锁 - 编程哥Blog|CodeG">
+<meta name="twitter:description" content="etcd是随着CoreOS项目一起成长起来的，随着Golang和CoreOS等项目在开源社区日益火热， etcd作为一个高可用、强一致性的分布">
 <meta name="twitter:creator" content="@zieckey">
 <meta name="twitter:image" content="http://blog.codeg.cn/public/codeg.jpg">
 
@@ -171,6 +171,10 @@
             <div class="page-title pad group">
               <ul class="meta-single group">
                 
+                <li class="category">
+                  <a href="http://blog.codeg.cn/categories/blog/" rel="category tag">blog</a>
+                </li>
+                
               </ul>
             </div>
 
@@ -180,10 +184,10 @@
                   class="post type-post status-publish format-standard has-post-thumbnail hentry category-australien tag-bondi-beach tag-city2surf tag-sydney">
                 <div class="post-inner group">
 
-                  <h1 class="post-title"></h1>
+                  <h1 class="post-title">使用Golang利用ectd实现一个分布式锁</h1>
 
                   <p class="post-byline">
-                    by  · 0001年01月01日 · 542 Words ·
+                    by  · 2016年02月24日 · 1093 Words ·
                     ~3min reading time |
                     <a href="https://github.com/zieckey/blog/blob/master/content/post/blog/2016-02-24-distrubute-lock-over-etcd.md"
                        target="_blank">Improve on <i class="fa fa-github"></i></a>
@@ -213,18 +217,6 @@
 
                     <div class="entry-inner">
                       
-
-<p>&ndash;
-categories:
-- blog
-date: 2016-02-24T20:00:00Z
-tags:
-- Golang
-- 分布式
-- etcd
-title: 使用Golang利用ectd实现一个分布式锁</p>
-
-<hr />
 
 <p><code>etcd</code>是随着<code>CoreOS</code>项目一起成长起来的，随着Golang和CoreOS等项目在开源社区日益火热，
 <code>etcd</code>作为一个高可用、强一致性的分布式Key-Value存储系统被越来越多的开发人员关注和使用。</p>
@@ -450,7 +442,7 @@ func main() {
 
                     
 
-<div class="ds-thread" data-thread-key="/post/blog/2016-02-24-distrubute-lock-over-etcd/" data-title="" data-url="http://blog.codeg.cn/post/blog/2016-02-24-distrubute-lock-over-etcd/"></div>
+<div class="ds-thread" data-thread-key="/post/blog/2016-02-24-distrubute-lock-over-etcd/" data-title="使用Golang利用ectd实现一个分布式锁" data-url="http://blog.codeg.cn/post/blog/2016-02-24-distrubute-lock-over-etcd/"></div>
 
 
 <script type="text/javascript">
@@ -521,14 +513,14 @@ func main() {
     <ul class="post-nav group">
       <li class="next">
         
+        <a href="http://blog.codeg.cn/post/opinion/2016-02-20-migrate-to-hugo-from-jekyll/" rel="next">
+          <i class="fa fa-chevron-right"></i>
+          <strong>Next post</strong>
+          <span>将博客从jekyll迁移到hugo</span>
+        </a>
+        
       </li>
       <li class="previous">
-        
-        <a href="http://blog.codeg.cn/2013/04/12/nothing/" rel="prev">
-          <i class="fa fa-chevron-left"></i>
-          <strong>Previous Post</strong>
-          <span>Nothing</span>
-        </a>
         
       </li>
     </ul>
