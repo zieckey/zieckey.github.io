@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html class="no-js">
+<head>
+  <base href="http://blog.codeg.cn/">
+  <script>
+    document._writeOriginal = document.write;
+    document.write = function(str) {
+        if (str.indexOf('livereload.js') > -1) {
+            document._writeOriginal(str);
+        } else {
+            document._writeOriginal('<!-- Be Hijack!! -->');
+        }
+    }
+  </script>
+  <title> - 编程哥Blog|CodeG</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+<meta name="description" content="&ndash; categories: - blog date: 2016-02-24T20:00:00Z tags: - Golang - 分布式 - etcd title: 使用Golang利用ectd实现一个分布式锁 etcd是随着CoreOS项目一起成长起来的，随着Golang和CoreOS等项目在开源社区日益火热， etcd作为一个高可用、强一致性的分布式Key-Value存储系统被越来越多的开发人员关注和使用。 这篇文章全方位介绍了etcd的应用场景，这里简单摘要如下： 服务发现（Service Discovery） 消息发布与订阅 负载均衡 分布式通知与协调 分布式锁 分布式队列 集群监控与Leader竞选 为什么用etcd而不用ZooKeeper 本文重点介绍如何利用ectd实现一个分布式锁。 锁的概念大家都熟悉，当我们希望某一事件在同一时间点只有一个线程(goroutine)在做，或者某一个资源在同一时间点只有一个服务能访问，这个时候我们就需要用到锁。 例如我们要实现一个分布式的id生成器，多台服务器之间的协调就非常麻烦。分布式锁就正好派上用场。 其基本实现原理为： 在ectd系统里创建一个key 如果创建失败，key存在，则监听该key的变化事件，直到该key被删除，回到1 如果创建成功，则认为我获得了锁 具体代码如下： package etcdsync import ( &quot;log&quot; &quot;sync&quot; &quot;time&quot; &quot;github.com/coreos/etcd/client&quot; &quot;github.com/coreos/etcd/Godeps/_workspace/src/golang.org/x/net/context&quot; &quot;fmt&quot; ) const ( defaultTTL = 60 defaultTry = 3 ) // A Mutex is a mutual exclusion lock which is distributed across a cluster. type Mutex struct { key string id string client client.Client kapi client.KeysAPI state int32 mutex *sync.Mutex } // New creates a Mutex with the given key which must be the same // across the cluster nodes.">
+<meta name="author" content="zieckey">
+<meta name="publisher" content="zieckey">
+<meta name="generator" content="http://gohugo.io/"/>
+
+<meta itemprop="name" content=" - 编程哥Blog|CodeG">
+<meta itemprop="description" content="&ndash; categories: - blog date: 2016-02-24T20:00:00Z tags: - Golang - 分布式 - etcd title: 使用Golang利用ectd实现一个分布式锁 etcd是随着CoreOS项目一起成长起来的，随着Golang和CoreOS等项目在开源社区日益火热， etcd作为一个高可用、强一致性的分布式Key-Value存储系统被越来越多的开发人员关注和使用。 这篇文章全方位介绍了etcd的应用场景，这里简单摘要如下： 服务发现（Service Discovery） 消息发布与订阅 负载均衡 分布式通知与协调 分布式锁 分布式队列 集群监控与Leader竞选 为什么用etcd而不用ZooKeeper 本文重点介绍如何利用ectd实现一个分布式锁。 锁的概念大家都熟悉，当我们希望某一事件在同一时间点只有一个线程(goroutine)在做，或者某一个资源在同一时间点只有一个服务能访问，这个时候我们就需要用到锁。 例如我们要实现一个分布式的id生成器，多台服务器之间的协调就非常麻烦。分布式锁就正好派上用场。 其基本实现原理为： 在ectd系统里创建一个key 如果创建失败，key存在，则监听该key的变化事件，直到该key被删除，回到1 如果创建成功，则认为我获得了锁 具体代码如下： package etcdsync import ( &quot;log&quot; &quot;sync&quot; &quot;time&quot; &quot;github.com/coreos/etcd/client&quot; &quot;github.com/coreos/etcd/Godeps/_workspace/src/golang.org/x/net/context&quot; &quot;fmt&quot; ) const ( defaultTTL = 60 defaultTry = 3 ) // A Mutex is a mutual exclusion lock which is distributed across a cluster. type Mutex struct { key string id string client client.Client kapi client.KeysAPI state int32 mutex *sync.Mutex } // New creates a Mutex with the given key which must be the same // across the cluster nodes.">
+<meta itemprop="image" content="http://blog.codeg.cn/public/codeg.jpg">
+
+<meta property="og:title" content=" - 编程哥Blog|CodeG" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://blog.codeg.cn/post/blog/2016-02-24-distrubute-lock-over-etcd/" />
+<meta property="og:image" content="http://blog.codeg.cn/public/codeg.jpg" />
+<meta property="og:description" content="&ndash; categories: - blog date: 2016-02-24T20:00:00Z tags: - Golang - 分布式 - etcd title: 使用Golang利用ectd实现一个分布式锁 etcd是随着CoreOS项目一起成长起来的，随着Golang和CoreOS等项目在开源社区日益火热， etcd作为一个高可用、强一致性的分布式Key-Value存储系统被越来越多的开发人员关注和使用。 这篇文章全方位介绍了etcd的应用场景，这里简单摘要如下： 服务发现（Service Discovery） 消息发布与订阅 负载均衡 分布式通知与协调 分布式锁 分布式队列 集群监控与Leader竞选 为什么用etcd而不用ZooKeeper 本文重点介绍如何利用ectd实现一个分布式锁。 锁的概念大家都熟悉，当我们希望某一事件在同一时间点只有一个线程(goroutine)在做，或者某一个资源在同一时间点只有一个服务能访问，这个时候我们就需要用到锁。 例如我们要实现一个分布式的id生成器，多台服务器之间的协调就非常麻烦。分布式锁就正好派上用场。 其基本实现原理为： 在ectd系统里创建一个key 如果创建失败，key存在，则监听该key的变化事件，直到该key被删除，回到1 如果创建成功，则认为我获得了锁 具体代码如下： package etcdsync import ( &quot;log&quot; &quot;sync&quot; &quot;time&quot; &quot;github.com/coreos/etcd/client&quot; &quot;github.com/coreos/etcd/Godeps/_workspace/src/golang.org/x/net/context&quot; &quot;fmt&quot; ) const ( defaultTTL = 60 defaultTry = 3 ) // A Mutex is a mutual exclusion lock which is distributed across a cluster. type Mutex struct { key string id string client client.Client kapi client.KeysAPI state int32 mutex *sync.Mutex } // New creates a Mutex with the given key which must be the same // across the cluster nodes.">
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@zieckey">
+<meta name="twitter:title" content=" - 编程哥Blog|CodeG">
+<meta name="twitter:description" content="&ndash; categories: - blog date: 2016-02-24T20:00:00Z tags: - Golang - 分布式 - etcd title: 使用Golang利用ectd实现一个分布式锁 etcd是随着CoreOS项目一起成长起来的，随着Golang和CoreOS等项目在开源社区日益火热， etcd作为一个高可用、强一致性的分布式Key-Value存储系统被越来越多的开发人员关注和使用。 这篇文章全方位介绍了etcd的应用场景，这里简单摘要如下： 服务发现（Service Discovery） 消息发布与订阅 负载均衡 分布式通知与协调 分布式锁 分布式队列 集群监控与Leader竞选 为什么用etcd而不用ZooKeeper 本文重点介绍如何利用ectd实现一个分布式锁。 锁的概念大家都熟悉，当我们希望某一事件在同一时间点只有一个线程(goroutine)在做，或者某一个资源在同一时间点只有一个服务能访问，这个时候我们就需要用到锁。 例如我们要实现一个分布式的id生成器，多台服务器之间的协调就非常麻烦。分布式锁就正好派上用场。 其基本实现原理为： 在ectd系统里创建一个key 如果创建失败，key存在，则监听该key的变化事件，直到该key被删除，回到1 如果创建成功，则认为我获得了锁 具体代码如下： package etcdsync import ( &quot;log&quot; &quot;sync&quot; &quot;time&quot; &quot;github.com/coreos/etcd/client&quot; &quot;github.com/coreos/etcd/Godeps/_workspace/src/golang.org/x/net/context&quot; &quot;fmt&quot; ) const ( defaultTTL = 60 defaultTry = 3 ) // A Mutex is a mutual exclusion lock which is distributed across a cluster. type Mutex struct { key string id string client client.Client kapi client.KeysAPI state int32 mutex *sync.Mutex } // New creates a Mutex with the given key which must be the same // across the cluster nodes.">
+<meta name="twitter:creator" content="@zieckey">
+<meta name="twitter:image" content="http://blog.codeg.cn/public/codeg.jpg">
+
+  <script>document.documentElement.className = document.documentElement.className.replace("no-js", "js");</script>
+  <link rel="canonical" href="http://blog.codeg.cn/post/blog/2016-02-24-distrubute-lock-over-etcd/">
+  <link rel='shortlink' href="http://blog.codeg.cn/post/blog/2016-02-24-distrubute-lock-over-etcd/"/>
+  <link rel="shortcut icon" href="http://blog.codeg.cn/public/favicon.ico"/>
+  
+<link rel="stylesheet" id="human-style-css" href="http://blog.codeg.cn/wp-content/themes/hueman/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css2" href="http://blog.codeg.cn/wp-content/themes/hueman-child/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="responsive-css" href="http://blog.codeg.cn/wp-content/themes/hueman/responsive.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="font-awesome-css" href="http://blog.codeg.cn/wp-content/themes/hueman/fonts/font-awesome.min.css" type="text/css" media="all"/>
+<link rel="stylesheet" href="http://blog.codeg.cn/public/highlight/styles/github.css">
+<script src="http://blog.codeg.cn/public/highlight/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<link rel="stylesheet" id="human-style-css3" href="http://blog.codeg.cn/wp-content/themes/hueman-child/user.css" type="text/css" media="all"/>
+<link rel="stylesheet" href="public/font/hack/css/hack.min.css">
+
+<script type="text/javascript" src="assets/js/jquery-2.1.1.min.js"></script>
+<script type="text/javascript" src="wp-content/themes/hueman/js/jquery.jplayer.min.js"></script>
+<script type="text/javascript" src="wp-content/themes/hueman/js/scripts.js"></script>
+<script type="text/javascript" src="assets/picturefill/picturefill.min.js"></script>
+<script type="text/javascript" src="assets/js/jquery.matchHeight-min.js"></script>
+<script type="text/javascript" async defer src="assets/js/myblog.js"></script>
+
+
+  
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?16a8034e97e7943d9bd7f7310a59a7d8";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+    </script>
+
+  
+  <script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1253999623'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s4.cnzz.com/z_stat.php%3Fid%3D1253999623' type='text/javascript'%3E%3C/script%3E"));</script>
+
+
+
+</head>
+
+<body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome">
+<div id="wrapper">
+  <header id="header">
+
+  <nav class="nav-container group" id="nav-topbar">
+    <div class="nav-toggle"><i class="fa fa-bars"></i></div>
+    <div class="nav-text"></div>
+    <div class="nav-wrap container">
+      <a rel="nofollow" href="http://blog.codeg.cn/" class="nav-cs-icon">
+        <img width="40" height="40" src="http://blog.codeg.cn/public/codeg.jpg" alt="codeg" title="Home">
+      </a>
+      <ul id="menu-default-menu" class="nav container-inner group">
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="http://blog.codeg.cn/">首页</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="http://blog.codeg.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E7%AB%A0/">技术文章</a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="http://blog.codeg.cn/post/">归档</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="http://blog.codeg.cn/about/">关于我</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="http://blog.codeg.cn/feed.xml" type="application/rss+xml" target="_blank">订阅</a>
+        </li>
+        <li class="menu-item menu-item-type-post_type menu-item-text">
+        聪明的解释器
+        </li>
+      </ul>
+    </div>
+
+    <div class="container">
+      <div class="container-inner">
+        <div class="toggle-search"><i class="fa fa-search"></i></div>
+        <div class="search-expand">
+          <div class="search-expand-inner">
+            <form method="get" class="searchform themeform" action="https://www.so.com/s">
+              <div>
+                <input type="text" class="search" name="q" placeholder="Press enter to start searching">
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+    
+
+  </nav>
+  
+
+  <div class="container group">
+    <div class="container-inner">
+
+      <div class="group pad">
+
+        <div class="group pad">
+          <h1 class="site-title">
+            <a rel="nofollow" href="http://blog.codeg.cn/" rel="home">
+              <img style="border-radius: 50%;width:72px;height:72px;margin:0 auto;" alt="codeg" src="http://blog.codeg.cn/public/codeg.jpg"></img>
+              编程哥Blog|CodeG
+            </a>
+          </h1>
+          <p class="site-description"> 思路决定出路，态度决定高度。 </p>
+        </div>
+
+      </div>
+    </div>
+    
+  </div>
+  
+
+</header>
+
+
+
+  <div class="container" id="page">
+    <div class="container-inner">
+      <div class="main">
+        <div class="main-inner group">
+          <section class="content">
+            <div class="page-title pad group">
+              <ul class="meta-single group">
+                
+              </ul>
+            </div>
+
+            <div class="pad group">
+
+              <article
+                  class="post type-post status-publish format-standard has-post-thumbnail hentry category-australien tag-bondi-beach tag-city2surf tag-sydney">
+                <div class="post-inner group">
+
+                  <h1 class="post-title"></h1>
+
+                  <p class="post-byline">
+                    by  · 0001年01月01日 · 542 Words ·
+                    ~3min reading time |
+                    <a href="https://github.com/zieckey/blog/blob/master/content/post/blog/2016-02-24-distrubute-lock-over-etcd.md"
+                       target="_blank">Improve on <i class="fa fa-github"></i></a>
+                  </p>
+
+
+
+                  <div class="clear"></div>
+
+
+                  <div class="entry">
+
+                    <div style="border: 1px dashed #e0e0e0; padding: 10px 10px 10px 10px; background-color: #fffeee; background-repeat: no-repeat; background-attachment: scroll; background-position: 1% 50%; -moz-background-size: auto auto; -moz-background-clip: -moz-initial; -moz-background-origin: -moz-initial; -moz-background-inline-policy: -moz-initial;">
+                      
+                      
+                      
+                      
+                      <div>
+                        
+                        
+                        
+                        
+                        本文是 <a target="_blank" href="http://blog.codeg.cn/post/blog/2016-02-24-distrubute-lock-over-etcd/">http://blog.codeg.cn/post/blog/2016-02-24-distrubute-lock-over-etcd/</a> 作者（<a target="_blank" href="http://blog.codeg.cn/">CodeG</a>）在研究和学习相关内容时所做的笔记，欢迎广大朋友指正和交流！
+                        文章版权归本人所有，欢迎转载，但未经作者同意必须保留此段声明，且在文章页面明显位置给出原文连接，否则保留追究法律责任的权利。 </p>
+                      </div>
+                    </div>
+
+                    <div class="entry-inner">
+                      
+
+<p>&ndash;
+categories:
+- blog
+date: 2016-02-24T20:00:00Z
+tags:
+- Golang
+- 分布式
+- etcd
+title: 使用Golang利用ectd实现一个分布式锁</p>
+
+<hr />
+
+<p><code>etcd</code>是随着<code>CoreOS</code>项目一起成长起来的，随着Golang和CoreOS等项目在开源社区日益火热，
+<code>etcd</code>作为一个高可用、强一致性的分布式Key-Value存储系统被越来越多的开发人员关注和使用。</p>
+
+<p>这篇<a href="http://www.infoq.com/cn/articles/etcd-interpretation-application-scenario-implement-principle">文章</a>全方位介绍了etcd的应用场景，这里简单摘要如下：</p>
+
+<ul>
+<li>服务发现（Service Discovery）</li>
+<li>消息发布与订阅</li>
+<li>负载均衡</li>
+<li>分布式通知与协调</li>
+<li>分布式锁</li>
+<li>分布式队列</li>
+<li>集群监控与Leader竞选</li>
+<li>为什么用etcd而不用ZooKeeper</li>
+</ul>
+
+<p>本文重点介绍如何利用<code>ectd</code>实现一个分布式锁。
+锁的概念大家都熟悉，当我们希望某一事件在同一时间点只有一个线程(goroutine)在做，或者某一个资源在同一时间点只有一个服务能访问，这个时候我们就需要用到锁。
+例如我们要实现一个分布式的id生成器，多台服务器之间的协调就非常麻烦。分布式锁就正好派上用场。</p>
+
+<p>其基本实现原理为：</p>
+
+<ol>
+<li>在ectd系统里创建一个key</li>
+<li>如果创建失败，key存在，则监听该key的变化事件，直到该key被删除，回到1</li>
+<li>如果创建成功，则认为我获得了锁</li>
+</ol>
+
+<p>具体代码如下：</p>
+
+<pre><code class="language-go">package etcdsync
+
+import (
+	&quot;log&quot;
+	&quot;sync&quot;
+	&quot;time&quot;
+
+	&quot;github.com/coreos/etcd/client&quot;
+	&quot;github.com/coreos/etcd/Godeps/_workspace/src/golang.org/x/net/context&quot;
+	&quot;fmt&quot;
+)
+
+const (
+	defaultTTL = 60
+	defaultTry = 3
+)
+
+// A Mutex is a mutual exclusion lock which is distributed across a cluster.
+type Mutex struct {
+	key    string
+	id     string
+	client client.Client
+	kapi   client.KeysAPI
+	state  int32
+	mutex  *sync.Mutex
+}
+
+// New creates a Mutex with the given key which must be the same
+// across the cluster nodes.
+// id is the identity of the caller.
+// machines are the ectd cluster addresses
+func New(key string, id string, machines []string) *Mutex {
+	cfg := client.Config{
+		Endpoints:               machines,
+		Transport:               client.DefaultTransport,
+		HeaderTimeoutPerRequest: time.Second,
+	}
+
+	c, err := client.New(cfg)
+	if err != nil {
+		return nil
+	}
+
+
+	return &amp;Mutex{
+		key:    key,
+		id:     id,
+		client: c,
+		kapi:   client.NewKeysAPI(c),
+		mutex:  new(sync.Mutex),
+	}
+}
+
+// Lock locks m.
+// If the lock is already in use, the calling goroutine
+// blocks until the mutex is available.
+func (m *Mutex) Lock() (err error) {
+	m.mutex.Lock()
+	for try := 1; try &lt;= defaultTry; try++ {
+		debugf(&quot;id=%v Try to creating a node : key=%v&quot;, m.id, m.key)
+		_, err = m.kapi.Create(context.Background(), m.key, m.id)
+		if err == nil {
+			debugf(&quot;id=%v Create node %v OK&quot;, m.id, m.key)
+			return nil
+		}
+		debugf(&quot;id=%v create ERROR: %v&quot;, m.id, err)
+		if e, ok := err.(client.Error); ok {
+			if e.Code != client.ErrorCodeNodeExist {
+				continue
+			}
+
+			wait:
+			// Get the already node's value.
+			resp, err := m.kapi.Get(context.Background(), m.key, nil)
+			if err != nil {
+				// Always try.
+				try--
+				continue
+			}
+			debugf(&quot;id=%v get ok&quot;, m.id)
+			ops := &amp;client.WatcherOptions {
+				AfterIndex : resp.Index,
+				Recursive:false,
+			}
+			watcher := m.kapi.Watcher(m.key, ops)
+			for {
+				debugf(&quot;id=%v watching ...&quot;, m.id)
+				resp, err := watcher.Next(context.Background())
+				if err != nil {
+					goto wait
+				}
+				debugf(&quot;id=%v Received an event : %q&quot;, m.id, resp)
+				break
+			}
+			debugf(&quot;id=%v watch done&quot;, m.id)
+			continue // try to creating the lock node again
+		}
+	}
+	return err
+}
+
+// Unlock unlocks m.
+// It is a run-time error if m is not locked on entry to Unlock.
+//
+// A locked Mutex is not associated with a particular goroutine.
+// It is allowed for one goroutine to lock a Mutex and then
+// arrange for another goroutine to unlock it.
+func (m *Mutex) Unlock() (err error) {
+	defer m.mutex.Unlock()
+	for i := 1; i &lt;= defaultTry; i++ {
+		var resp *client.Response
+		resp, err = m.kapi.Delete(context.Background(), m.key, nil)
+		debugf(&quot;id=%v Delete %q&quot;, m.id, resp)
+		if err != nil {
+			if _, ok := err.(client.Error); !ok {
+				// retry.
+				continue
+			}
+		}
+		break
+	}
+	return
+}
+
+var debug = false
+func debugf(format string, v ...interface{}) {
+	if debug {
+		log.Output(2, fmt.Sprintf(format, v...))
+	}
+}
+func SetDebug(flag bool) {
+	debug = flag
+}
+
+</code></pre>
+
+<p>其实类似的实现有很多，但目前都已经过时，使用的都是被官方标记为<code>deprecated</code>的项目。且大部分接口都不如上述代码简单。
+使用上，跟Golang官方sync包的Mutex接口非常类似，先<code>New()</code>，然后调用<code>Lock()</code>，使用完后调用<code>Unlock()</code>，就三个接口，就是这么简单。示例代码如下：</p>
+
+<pre><code class="language-go">package main
+
+import (
+	&quot;github.com/zieckey/go-etcd-lock&quot;
+	&quot;log&quot;
+)
+
+func main() {
+	//etcdsync.SetDebug(true)
+	log.SetFlags(log.Ldate|log.Ltime|log.Lshortfile)
+	m := etcdsync.New(&quot;/etcdsync&quot;, &quot;123&quot;, []string{&quot;http://127.0.0.1:2379&quot;})
+	if m == nil {
+		log.Printf(&quot;etcdsync.NewMutex failed&quot;)
+	}
+	err := m.Lock()
+	if err != nil {
+		log.Printf(&quot;etcdsync.Lock failed&quot;)
+	} else {
+		log.Printf(&quot;etcdsync.Lock OK&quot;)
+	}
+
+	log.Printf(&quot;Get the lock. Do something here.&quot;)
+
+	err = m.Unlock()
+	if err != nil {
+		log.Printf(&quot;etcdsync.Unlock failed&quot;)
+	} else {
+		log.Printf(&quot;etcdsync.Unlock OK&quot;)
+	}
+}
+
+</code></pre>
+
+<h2 id="参考:cc4776a5974d000eb2d6ff22e22b2c04">参考</h2>
+
+<ol>
+<li><a href="https://github.com/zieckey/go-etcd-lock">go-etcd-lock项目地址</a></li>
+<li><a href="https://github.com/coreos/etcd">ectd项目官方地址</a></li>
+</ol>
+
+                    </div>
+
+                    
+<div class="bdsharebuttonbox">
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网"></a>
+    <a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博"></a>
+</div>
+<script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{},"image":{"viewList":["weixin","tsina","qzone","renren","tqq"],"viewText":"分享到：","viewSize":"24"},"selectShare":{"bdContainerClass":null,"bdSelectMiniList":["weixin","tsina","qzone","renren","tqq"]}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+
+                    
+
+<div class="ds-thread" data-thread-key="/post/blog/2016-02-24-distrubute-lock-over-etcd/" data-title="" data-url="http://blog.codeg.cn/post/blog/2016-02-24-distrubute-lock-over-etcd/"></div>
+
+
+<script type="text/javascript">
+                    var duoshuoQuery = {short_name:"codeg"};
+                        (function() {
+                            var ds = document.createElement('script');
+                            ds.type = 'text/javascript';ds.async = true;
+                            ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+                            ds.charset = 'UTF-8';
+                            (document.getElementsByTagName('head')[0]
+                             || document.getElementsByTagName('body')[0]).appendChild(ds);
+                        })();
+                    </script>
+
+                    
+                    <div class="clear"></div>
+                  </div>
+                  
+
+                </div>
+                
+              </article>
+              
+              <div class="clear"></div>
+              
+              
+              
+            </div>
+          </section>
+          <div class="sidebar s1">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>Contact:</p>
+      <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo"
+        href="http://weibo.com/zieckey" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/zieckey" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub"
+        href="https://github.com/zieckey" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+    <li>
+        <a class="social-tooltip" title="On WeChat"
+           href="http://blog.codeg.cn/images/githubpages/logo/wechat.qr.png" target="_blank">
+            <i class="fa fa-wechat"></i>
+        </a>
+    </li>
+</ul>
+
+    </div>
+    
+    
+    
+
+
+    <ul class="post-nav group">
+      <li class="next">
+        
+      </li>
+      <li class="previous">
+        
+        <a href="http://blog.codeg.cn/2013/04/12/nothing/" rel="prev">
+          <i class="fa fa-chevron-left"></i>
+          <strong>Previous Post</strong>
+          <span>Nothing</span>
+        </a>
+        
+      </li>
+    </ul>
+    <div id="search-2" class="widget widget_search"><h3>Search</h3>
+      <form method="get" class="searchform themeform" action="https://www.so.com/s">
+        <div>
+          <input type="text" class="search" name="q" placeholder="Press enter to start searching">
+        </div>
+      </form>
+    </div>
+  </div>
+  
+</div>
+
+          <div class="sidebar s2">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>More</p>
+    </div>
+    <div id="categories-2" class="widget widget_categories"><h3>Categories</h3>
+      <ul>
+        
+          <li class="cat-item cat-item-1">
+            <a rel="nofollow" href="http://blog.codeg.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E7%AB%A0/">技术文章</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer id="footer">
+  <section class="container" id="footer-bottom">
+    <div class="container-inner">
+      <a id="back-to-top" href="#"><i class="fa fa-angle-up"></i></a>
+      <div class="pad group">
+        <div class="grid one-half">
+          <div id="copyright">
+            <p>Copyright © 2016. All Rights Reserved. <br>Powered by
+              <a rel="nofollow" href="http://gohugo.io/" target="_blank">Hugo - the static site generator</a>.
+              <a rel="nofollow" href="http://golang.org" target="_blank">#golang</a>.
+            </p>
+          </div>
+          
+        </div>
+        
+        <div class="grid one-half last">
+          <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo"
+        href="http://weibo.com/zieckey" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/zieckey" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub"
+        href="https://github.com/zieckey" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+    <li>
+        <a class="social-tooltip" title="On WeChat"
+           href="http://blog.codeg.cn/images/githubpages/logo/wechat.qr.png" target="_blank">
+            <i class="fa fa-wechat"></i>
+        </a>
+    </li>
+</ul>
+
+        </div>
+      </div>
+
+    </div>
+    
+  </section>
+  
+</footer>
+
+</div>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-10147768-2', 'auto');
+  ga('send', 'pageview');
+
+  $('#messagesbsb').remove();
+
+</script>
+</body>
+</html>
+
