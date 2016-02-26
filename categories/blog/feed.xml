@@ -51,35 +51,39 @@
 &lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;package etcdsync
 
 import (
-	&amp;quot;log&amp;quot;
+	&amp;quot;fmt&amp;quot;
+	&amp;quot;io&amp;quot;
+	&amp;quot;os&amp;quot;
 	&amp;quot;sync&amp;quot;
 	&amp;quot;time&amp;quot;
 
 	&amp;quot;github.com/coreos/etcd/client&amp;quot;
 	&amp;quot;github.com/coreos/etcd/Godeps/_workspace/src/golang.org/x/net/context&amp;quot;
-	&amp;quot;fmt&amp;quot;
 )
 
 const (
 	defaultTTL = 60
 	defaultTry = 3
+	deleteAction = &amp;quot;delete&amp;quot;
+	expireAction = &amp;quot;expire&amp;quot;
 )
 
 // A Mutex is a mutual exclusion lock which is distributed across a cluster.
 type Mutex struct {
 	key    string
-	id     string
+	id     string // The identity of the caller
 	client client.Client
 	kapi   client.KeysAPI
-	state  int32
+	ctx    context.Context
+	ttl    time.Duration
 	mutex  *sync.Mutex
+	logger io.Writer
 }
 
 // New creates a Mutex with the given key which must be the same
 // across the cluster nodes.
-// id is the identity of the caller.
 // machines are the ectd cluster addresses
-func New(key string, id string, machines []string) *Mutex {
+func New(key string, ttl int, machines []string) *Mutex {
 	cfg := client.Config{
 		Endpoints:               machines,
 		Transport:               client.DefaultTransport,
@@ -91,12 +95,30 @@ func New(key string, id string, machines []string) *Mutex {
 		return nil
 	}
 
+	hostname, err := os.Hostname()
+	if err != nil {
+		return nil
+	}
+
+	if len(key) == 0 || len(machines) == 0 {
+		return nil
+	}
+
+	if key[0] != &#39;/&#39; {
+		key = &amp;quot;/&amp;quot; + key
+	}
+
+	if ttl &amp;lt; 1 {
+		ttl = defaultTTL
+	}
 
 	return &amp;amp;Mutex{
 		key:    key,
-		id:     id,
+		id:     fmt.Sprintf(&amp;quot;%v-%v-%v&amp;quot;, hostname, os.Getpid(), time.Now().Format(&amp;quot;20060102-15:04:05.999999999&amp;quot;)),
 		client: c,
 		kapi:   client.NewKeysAPI(c),
+		ctx: context.TODO(),
+		ttl: time.Second * time.Duration(ttl),
 		mutex:  new(sync.Mutex),
 	}
 }
@@ -107,46 +129,63 @@ func New(key string, id string, machines []string) *Mutex {
 func (m *Mutex) Lock() (err error) {
 	m.mutex.Lock()
 	for try := 1; try &amp;lt;= defaultTry; try++ {
-		debugf(&amp;quot;id=%v Try to creating a node : key=%v&amp;quot;, m.id, m.key)
-		_, err = m.kapi.Create(context.Background(), m.key, m.id)
-		if err == nil {
-			debugf(&amp;quot;id=%v Create node %v OK&amp;quot;, m.id, m.key)
+		if m.lock() == nil {
 			return nil
 		}
-		debugf(&amp;quot;id=%v create ERROR: %v&amp;quot;, m.id, err)
-		if e, ok := err.(client.Error); ok {
-			if e.Code != client.ErrorCodeNodeExist {
-				continue
-			}
-
-			wait:
-			// Get the already node&#39;s value.
-			resp, err := m.kapi.Get(context.Background(), m.key, nil)
-			if err != nil {
-				// Always try.
-				try--
-				continue
-			}
-			debugf(&amp;quot;id=%v get ok&amp;quot;, m.id)
-			ops := &amp;amp;client.WatcherOptions {
-				AfterIndex : resp.Index,
-				Recursive:false,
-			}
-			watcher := m.kapi.Watcher(m.key, ops)
-			for {
-				debugf(&amp;quot;id=%v watching ...&amp;quot;, m.id)
-				resp, err := watcher.Next(context.Background())
-				if err != nil {
-					goto wait
-				}
-				debugf(&amp;quot;id=%v Received an event : %q&amp;quot;, m.id, resp)
-				break
-			}
-			debugf(&amp;quot;id=%v watch done&amp;quot;, m.id)
-			continue // try to creating the lock node again
+		
+		m.debug(&amp;quot;Lock node %v ERROR %v&amp;quot;, m.key, err)
+		if try &amp;lt; defaultTry {
+			m.debug(&amp;quot;Try to lock node %v again&amp;quot;, m.key, err)
 		}
 	}
 	return err
+}
+
+func (m *Mutex) lock() (err error) {
+	m.debug(&amp;quot;Trying to create a node : key=%v&amp;quot;, m.key)
+	setOptions := &amp;amp;client.SetOptions{
+		PrevExist:client.PrevNoExist,
+		TTL:      m.ttl,
+	}
+	resp, err := m.kapi.Set(m.ctx, m.key, m.id, setOptions)
+	if err == nil {
+		m.debug(&amp;quot;Create node %v OK [%q]&amp;quot;, m.key, resp)
+		return nil
+	}
+	m.debug(&amp;quot;Create node %v failed [%v]&amp;quot;, m.key, err)
+	e, ok := err.(client.Error)
+	if !ok {
+		return err
+	}
+
+	if e.Code != client.ErrorCodeNodeExist {
+		return err
+	}
+
+	// Get the already node&#39;s value.
+	resp, err = m.kapi.Get(m.ctx, m.key, nil)
+	if err != nil {
+		return err
+	}
+	m.debug(&amp;quot;Get node %v OK&amp;quot;, m.key)
+	watcherOptions := &amp;amp;client.WatcherOptions{
+		AfterIndex : resp.Index,
+		Recursive:false,
+	}
+	watcher := m.kapi.Watcher(m.key, watcherOptions)
+	for {
+		m.debug(&amp;quot;Watching %v ...&amp;quot;, m.key)
+		resp, err = watcher.Next(m.ctx)
+		if err != nil {
+			return err
+		}
+
+		m.debug(&amp;quot;Received an event : %q&amp;quot;, resp)
+		if resp.Action == deleteAction || resp.Action == expireAction {
+			return nil
+		}
+	}
+
 }
 
 // Unlock unlocks m.
@@ -159,29 +198,32 @@ func (m *Mutex) Unlock() (err error) {
 	defer m.mutex.Unlock()
 	for i := 1; i &amp;lt;= defaultTry; i++ {
 		var resp *client.Response
-		resp, err = m.kapi.Delete(context.Background(), m.key, nil)
-		debugf(&amp;quot;id=%v Delete %q&amp;quot;, m.id, resp)
-		if err != nil {
-			if _, ok := err.(client.Error); !ok {
-				// retry.
-				continue
-			}
+		resp, err = m.kapi.Delete(m.ctx, m.key, nil)
+		if err == nil {
+			m.debug(&amp;quot;Delete %v OK&amp;quot;, m.key)
+			return nil
 		}
-		break
+		m.debug(&amp;quot;Delete %v falied: %q&amp;quot;, m.key, resp)
+		e, ok := err.(client.Error)
+		if ok &amp;amp;&amp;amp; e.Code == client.ErrorCodeKeyNotFound {
+			return nil
+		}
 	}
-	return
+	return err
 }
 
-var debug = false
-func debugf(format string, v ...interface{}) {
-	if debug {
-		log.Output(2, fmt.Sprintf(format, v...))
+func (m *Mutex) debug(format string, v ...interface{}) {
+	if m.logger != nil {
+		m.logger.Write([]byte(m.id))
+		m.logger.Write([]byte(&amp;quot; &amp;quot;))
+		m.logger.Write([]byte(fmt.Sprintf(format, v...)))
+		m.logger.Write([]byte(&amp;quot;\n&amp;quot;))
 	}
 }
-func SetDebug(flag bool) {
-	debug = flag
-}
 
+func (m *Mutex) SetDebugLogger(w io.Writer) {
+	m.logger = w
+}
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;其实类似的实现有很多，但目前都已经过时，使用的都是被官方标记为&lt;code&gt;deprecated&lt;/code&gt;的项目。且大部分接口都不如上述代码简单。
@@ -190,7 +232,7 @@ func SetDebug(flag bool) {
 &lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;package main
 
 import (
-	&amp;quot;github.com/zieckey/go-etcd-lock&amp;quot;
+	&amp;quot;github.com/zieckey/etcdsync&amp;quot;
 	&amp;quot;log&amp;quot;
 )
 
@@ -223,7 +265,7 @@ func main() {
 &lt;h2 id=&#34;参考:cc4776a5974d000eb2d6ff22e22b2c04&#34;&gt;参考&lt;/h2&gt;
 
 &lt;ol&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/zieckey/go-etcd-lock&#34;&gt;go-etcd-lock项目地址&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/zieckey/etcdsync&#34;&gt;etcdsync项目地址&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/coreos/etcd&#34;&gt;ectd项目官方地址&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;
 </description>
@@ -653,14 +695,13 @@ func main() {
 			chan rankerRemoveDocRequest,
 			options.RankerBufferLength)
 	}
-```go
+&lt;/code&gt;&lt;/pre&gt;
 
-与上面类似，从这里可以看出排序器(Rander)有三个功能：将一个文档添加到排序器中、在排序器中进行排序、将一个文档从排序器中移除。每一个`shard`都有独立的`channel`，互不冲突。
+&lt;p&gt;与上面类似，从这里可以看出排序器(Rander)有三个功能：将一个文档添加到排序器中、在排序器中进行排序、将一个文档从排序器中移除。每一个&lt;code&gt;shard&lt;/code&gt;都有独立的&lt;code&gt;channel&lt;/code&gt;，互不冲突。&lt;/p&gt;
 
-#### 初始化持久化存储通道
+&lt;h4 id=&#34;初始化持久化存储通道:89e0d5dad305327940f268393030b521&#34;&gt;初始化持久化存储通道&lt;/h4&gt;
 
-```go
-	if engine.initOptions.UsePersistentStorage {
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;	if engine.initOptions.UsePersistentStorage {
 		engine.persistentStorageIndexDocumentChannels =
 			make([]chan persistentStorageIndexDocumentRequest,
 				engine.initOptions.PersistentStorageShards)
