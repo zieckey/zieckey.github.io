@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>持续集成 on 编程哥Blog|CodeG</title>
+    <title>持续集成 on CodeG Blog</title>
     <link>http://blog.codeg.cn/tags/%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90/</link>
-    <description>Recent content in 持续集成 on 编程哥Blog|CodeG</description>
+    <description>Recent content in 持续集成 on CodeG Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
     <copyright>Copyright (c) 2015. All rights reserved.</copyright>
