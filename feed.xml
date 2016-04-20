@@ -279,7 +279,7 @@ func main() {
       <guid>http://blog.codeg.cn/post/opinion/2016-02-20-migrate-to-hugo-from-jekyll/</guid>
       <description>
 
-&lt;p&gt;之前的博客内容都是用&lt;code&gt;jekyll&lt;/code&gt;来渲染的，这是用ruby写，部署起来比较麻烦。最近看到Golang开发的&lt;code&gt;hugo&lt;/code&gt;工具，真是眼前一亮啊。&lt;/p&gt;
+&lt;p&gt;之前的博客内容都是用&lt;code&gt;jekyll&lt;/code&gt;来渲染的，这是用ruby写，部署起来比较麻烦。最近看到Golang开发的 &lt;a href=&#34;https://gohugo.io/&#34;&gt;hugo&lt;/a&gt; 工具，真是眼前一亮啊。&lt;/p&gt;
 
 &lt;p&gt;促使我做这种迁移的动机有一下几点：&lt;/p&gt;
 
