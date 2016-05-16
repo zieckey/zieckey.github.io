@@ -7,8 +7,137 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
     <copyright>Copyright (c) 2015. All rights reserved.</copyright>
-    <lastBuildDate>Wed, 24 Feb 2016 20:43:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 20 Apr 2016 21:43:00 +0000</lastBuildDate>
     <atom:link href="http://blog.codeg.cn/post/feed/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Golang CGO编程之调用返回char*指针及长度的C函数库</title>
+      <link>http://blog.codeg.cn/post/blog/2016-04-20-golang-cgo/</link>
+      <pubDate>Wed, 20 Apr 2016 21:43:00 +0000</pubDate>
+      
+      <guid>http://blog.codeg.cn/post/blog/2016-04-20-golang-cgo/</guid>
+      <description>
+
+&lt;p&gt;现代所有主流操作系统几乎都是用C语音实现的，几乎所有高级语言都能调用C语言，例如PHP可以调用C语言写的PHP扩展，Python也可以调用C语言实现的Python扩展。
+Golang语言也不例外。&lt;/p&gt;
+
+&lt;p&gt;Golang通过CGO机制能很方便的调用C语言。本文介绍一下如何在Go中调用稍稍复杂一点C函数，例如： &lt;code&gt;char* f(int, int*)&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;首先看一个最简单的例子，将Golang中的一个字符串传入C函数中：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;package main
+
+/*
+#include &amp;lt;stdio.h&amp;gt;
+#include &amp;lt;stdlib.h&amp;gt;
+void print(char *str) {
+    printf(&amp;quot;%s\n&amp;quot;, str);
+}
+*/
+import &amp;quot;C&amp;quot;
+
+import &amp;quot;unsafe&amp;quot;
+
+func main() {
+    s := &amp;quot;Hello Cgo&amp;quot;
+    cs := C.CString(s)
+    C.print(cs)
+    C.free(unsafe.Pointer(cs))
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;注意上述程序中的关键语句&lt;code&gt;cs := C.CString(s)&lt;/code&gt;是将一个Golang的字符串转换为C语言字符串，该C语言字符串是由C函数malloc从堆中分配的，因此后续需要调用 &lt;code&gt;C.free&lt;/code&gt; 释放内存。&lt;/p&gt;
+
+&lt;p&gt;然后，我们看看如何调用一个复杂一点的C函数？例如： &lt;code&gt;char* f(int, int*)&lt;/code&gt; ，返回一个&lt;code&gt;char*&lt;/code&gt;指针，并且有一个参数也是返回值&lt;code&gt;int*&lt;/code&gt;。请直接看下面的例子：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;package main
+
+/*
+#include &amp;lt;stdlib.h&amp;gt;
+#include &amp;lt;string.h&amp;gt;
+char* xmalloc(int len, int *rlen)
+{
+    static const char* s = &amp;quot;0123456789&amp;quot;;
+    char* p = malloc(len);
+    if (len &amp;lt;= strlen(s)) {
+        memcpy(p, s, len);
+    } else {
+        memset(p, &#39;a&#39;, len);
+    }
+    *rlen = len;
+    return p;
+}
+*/
+import &amp;quot;C&amp;quot;
+import &amp;quot;unsafe&amp;quot;
+import &amp;quot;fmt&amp;quot;
+
+func main() {
+	rlen := C.int(0)
+	len := 10
+	cstr := C.xmalloc(C.int(len), &amp;amp;rlen)
+	defer C.free(unsafe.Pointer(cstr))
+	gostr := C.GoStringN(cstr, rlen)
+	fmt.Printf(&amp;quot;retlen=%v\n&amp;quot;, rlen)
+	println(gostr)
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;code&gt;xmalloc&lt;/code&gt;函数的第二个参数是&lt;code&gt;int*&lt;/code&gt;，这里设计为一个输入、输出参数。我们在Golang中使用C.int类型的指针就可以；
+其返回值是一个&lt;code&gt;char*&lt;/code&gt;，在Golang中就是 &lt;code&gt;*C.char&lt;/code&gt;，由于返回值是指针，其内存由malloc分配，因此需要在Golang中对其内存进行释放。&lt;/p&gt;
+
+&lt;p&gt;再然后，我们看看如何调用一个返回结构体的C函数？例如：&lt;code&gt;struct MyString xmalloc(int len)&lt;/code&gt;。请看示例代码：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;package main
+
+/*
+#include &amp;lt;stdlib.h&amp;gt;
+#include &amp;lt;string.h&amp;gt;
+
+struct MyString
+{
+    char* s;
+    int len;
+};
+
+struct MyString xmalloc(int len)
+{
+    static const char* s = &amp;quot;0123456789&amp;quot;;
+    char* p = malloc(len);
+    if (len &amp;lt;= strlen(s)) {
+        memcpy(p, s, len);
+    } else {
+        memset(p, &#39;a&#39;, len);
+    }
+    struct MyString str;
+    str.s = p;
+    str.len = len;
+    return str;
+}
+*/
+import &amp;quot;C&amp;quot;
+import &amp;quot;unsafe&amp;quot;
+import &amp;quot;fmt&amp;quot;
+
+func main() {
+	len := 10
+	str := C.xmalloc(C.int(len))
+	defer C.free(unsafe.Pointer(str.s))
+	gostr := C.GoStringN(str.s, str.len)
+	fmt.Printf(&amp;quot;retlen=%v\n&amp;quot;, str.len)
+	println(gostr)
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;参考:1d9c7bc1f63996ea5a05ef9bf93a075a&#34;&gt;参考&lt;/h2&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;http://blog.golang.org/c-go-cgo&#34;&gt;http://blog.golang.org/c-go-cgo&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://golang.org/cmd/cgo/&#34;&gt;https://golang.org/cmd/cgo/&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+    </item>
     
     <item>
       <title>使用Golang利用ectd实现一个分布式锁</title>
@@ -2202,140 +2331,6 @@ func main() {
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;h4 id=&#34;void-quicdispatcher-onunauthenticatedheader-const-quicpacketheader-header:9242b2796e30fa166be9fac336b73b4a&#34;&gt;void QuicDispatcher::OnUnauthenticatedHeader(const QuicPacketHeader&amp;amp; header)&lt;/h4&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>QUIC（Quick UDP Internet Connections）协议简要笔记(翻译)</title>
-      <link>http://blog.codeg.cn/2015/05/08/quic-protocol/</link>
-      <pubDate>Fri, 08 May 2015 00:00:00 +0000</pubDate>
-      
-      <guid>http://blog.codeg.cn/2015/05/08/quic-protocol/</guid>
-      <description>
-
-&lt;h2 id=&#34;概述:2c8f065756daebe8aea7e2aad97fdeee&#34;&gt;概述&lt;/h2&gt;
-
-&lt;h2 id=&#34;动机:2c8f065756daebe8aea7e2aad97fdeee&#34;&gt;动机&lt;/h2&gt;
-
-&lt;h3 id=&#34;支持spdy协议的动机:2c8f065756daebe8aea7e2aad97fdeee&#34;&gt;支持SPDY协议的动机&lt;/h3&gt;
-
-&lt;h2 id=&#34;目标:2c8f065756daebe8aea7e2aad97fdeee&#34;&gt;目标&lt;/h2&gt;
-
-&lt;p&gt;我们希望开发出一套传输协议以支持下列目标：&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;在今天的因特网上的广泛的部署能力（例如，能够顺利通过中间路由、可以在不修改内核或提升权限的情况下运行在普通用户客户端机器上）&lt;/li&gt;
-&lt;li&gt;减少因丢包引起的 head-of-line 阻塞 （丢失一个数据包不会对其他的数据流产生影响）&lt;/li&gt;
-&lt;li&gt;低时延
-a. 极大的减少连接启动时延 (通常情况零RTT连接、加密算法协商、初始请求）
-b. 尝试时延前向纠错编码来减少丢包后重传造成的时延&lt;/li&gt;
-&lt;li&gt;在时延和效率方面提供对移动端的支持&lt;/li&gt;
-&lt;li&gt;避免拥塞的支持，跟TCP相比更友好&lt;/li&gt;
-&lt;li&gt;可媲美TLS的隐私数据保证（不需要按顺序的传输或按顺序的解密）&lt;/li&gt;
-&lt;li&gt;在服务器端和客户端双方面都能对可靠及安全的资源要求自动伸缩（包括合理的缓冲区管理和帮助，以避免促进放大的 DoS 攻击）&lt;/li&gt;
-&lt;li&gt;减少带宽消耗和增加通道状态的响应能力（在多路复用的流直接，使用统一的信号信道状态)&lt;/li&gt;
-&lt;li&gt;在不与其他目标相冲突的情况下减少数据包个数&lt;/li&gt;
-&lt;li&gt;为多路复用的流支持可靠的传输（可以模拟 TCP 多路复用的流）&lt;/li&gt;
-&lt;li&gt;在不与其他目标相冲突的情况下，能有效的支持带有demux-mux属性的代理&lt;/li&gt;
-&lt;li&gt;在不会牺牲我们既定的目标情况下，在任何可能的情况下尽量重用或者进化现有协议&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h3 id=&#34;理由和一些启示:2c8f065756daebe8aea7e2aad97fdeee&#34;&gt;理由和一些启示&lt;/h3&gt;
-
-&lt;p&gt;摘要：从SPDY得到的经验看，为了不让中间路由设备误解数据包，最好的做法是尽可能的使用加密数据传输。&lt;/p&gt;
-
-&lt;h3 id=&#34;为什么不使用基于-dtls-之上的-sctp:2c8f065756daebe8aea7e2aad97fdeee&#34;&gt;为什么不使用基于 DTLS 之上的 SCTP&lt;/h3&gt;
-
-&lt;p&gt;摘要：这个达不到上述3a描述的目标。同时，没有前向纠错功能。&lt;/p&gt;
-
-&lt;h2 id=&#34;期望的-api-接口元素:2c8f065756daebe8aea7e2aad97fdeee&#34;&gt;期望的 API 接口元素&lt;/h2&gt;
-
-&lt;h3 id=&#34;api-概念:2c8f065756daebe8aea7e2aad97fdeee&#34;&gt;API 概念&lt;/h3&gt;
-
-&lt;p&gt;从最高层来看，我们希望有一种机制能将新来的stream接入到现有的连接中，而不是独立读写不同的连接。&lt;/p&gt;
-
-&lt;h3 id=&#34;流特性:2c8f065756daebe8aea7e2aad97fdeee&#34;&gt;流特性&lt;/h3&gt;
-
-&lt;p&gt;我们期望不同流将具有不同的传输特性，可以设置或修改应用程序。这些包括等鲜明特征设置：
-• 可调节冗余级别 （延迟储蓄的贸易带宽）
-• 可调节优先级别 （仿照 SPDY 不断变化的优先次序计划）&lt;/p&gt;
-
-&lt;p&gt;我们期望一些控制通道，可以被看作一个带外流，将始终可用和可用于信号流的其余部分的状态更改。控制信道将可能包括专用帧 （控制帧），作为好保留的流，为加密的谈判。&lt;/p&gt;
-
-&lt;h3 id=&#34;按顺序的数据传输:2c8f065756daebe8aea7e2aad97fdeee&#34;&gt;按顺序的数据传输&lt;/h3&gt;
-
-&lt;p&gt;必须提供类似 TCP 按顺序的流式传输模型。&lt;/p&gt;
-
-&lt;p&gt;###　连接状态&lt;/p&gt;
-
-&lt;p&gt;应用程序和实际连接之间分离，使得对连接使用很困难。举个例子，当发送应用程序完成发送功能，它可能试图关闭连接，但数据仍然可能会在本地发送缓冲区中，这样的例子在关闭连接时，可能会导致未定义的行为或终止应用程序。&lt;/p&gt;
-
-&lt;p&gt;为了更好地支持应用程序，必须支持下面的特性：&lt;/p&gt;
-
-&lt;p&gt;1.RTT (当前平滑估计)
-2.数据包大小 （包括所有开销 ； 也不包括开销，只包括有效负载）
-3.带宽 （平滑的当前估计值跨整个连接）
-4.峰值持续带宽 (横跨整个连接）
-5.拥塞窗口大小 （表示数据包中）
-6.队列大小 （已形成，但尚未通过电线发出的数据包）
-7.在队列中的字节数
-8.每个流队列大小 （或字节流或未发送的数据包，每两个概览)&lt;/p&gt;
-
-&lt;h2 id=&#34;quic协议哲学:2c8f065756daebe8aea7e2aad97fdeee&#34;&gt;QUIC协议哲学&lt;/h2&gt;
-
-&lt;p&gt;我们需要考虑性能效率，将协议分为四个阶段：  Startup; Steady State; Idle Entry; Idle Departure&lt;/p&gt;
-
-&lt;h3 id=&#34;通过无连接的udp建立连接-克服-nat:2c8f065756daebe8aea7e2aad97fdeee&#34;&gt;通过无连接的UDP建立连接：克服 NAT&lt;/h3&gt;
-
-&lt;p&gt;最根本的问题是如何将 UDP 数据报，转变成一种基础的面向连接的协议。由中间设备和防火墙 NAT 服务的不但有可能不协助并更可能是阻碍这一进程，而加剧了这一问题。&lt;/p&gt;
-
-&lt;p&gt;一般而言，NAT 设备会将空闲时间超过30~120秒的udp端口映射解绑定。&lt;/p&gt;
-
-&lt;h4 id=&#34;cid-连接的id-用于唯一识别一个连接:2c8f065756daebe8aea7e2aad97fdeee&#34;&gt;CID：连接的ID，用于唯一识别一个连接&lt;/h4&gt;
-
-&lt;p&gt;CID是一个随机串，目前为64比特长。一般而言，CID的确定是通过客户端发给服务器的第一个数据包而提议的。&lt;/p&gt;
-
-&lt;h4 id=&#34;nat-绑定保持连接:2c8f065756daebe8aea7e2aad97fdeee&#34;&gt;NAT 绑定保持连接&lt;/h4&gt;
-
-&lt;h5 id=&#34;保持连接-什么时候我们需要这个:2c8f065756daebe8aea7e2aad97fdeee&#34;&gt;保持连接：什么时候我们需要这个？&lt;/h5&gt;
-
-&lt;p&gt;当服务端需要向客户端发送消息时，我们需要保持连接。&lt;/p&gt;
-
-&lt;h5 id=&#34;保持连接-需要多久:2c8f065756daebe8aea7e2aad97fdeee&#34;&gt;保持连接：需要多久？&lt;/h5&gt;
-
-&lt;p&gt;准确的算法是待定(TBD)。保持连接的超时时间是可以通过协商来确定的。&lt;/p&gt;
-
-&lt;h4 id=&#34;udp报文的分片:2c8f065756daebe8aea7e2aad97fdeee&#34;&gt;UDP报文的分片&lt;/h4&gt;
-
-&lt;h3 id=&#34;连接的建立和重连:2c8f065756daebe8aea7e2aad97fdeee&#34;&gt;连接的建立和重连&lt;/h3&gt;
-
-&lt;h4 id=&#34;启动阶段的-ddos-攻击:2c8f065756daebe8aea7e2aad97fdeee&#34;&gt;启动阶段的 DDOS 攻击&lt;/h4&gt;
-
-&lt;h4 id=&#34;安全证书:2c8f065756daebe8aea7e2aad97fdeee&#34;&gt;安全证书&lt;/h4&gt;
-
-&lt;h4 id=&#34;从高层次看连接的场景:2c8f065756daebe8aea7e2aad97fdeee&#34;&gt;从高层次看连接的场景&lt;/h4&gt;
-
-&lt;h5 id=&#34;第一次建立连接-通常需要1个rtt-有时需要2个rtts:2c8f065756daebe8aea7e2aad97fdeee&#34;&gt;第一次建立连接：通常需要1个RTT，有时需要2个RTTs&lt;/h5&gt;
-
-&lt;p&gt;在此场景中，客户端与服务器建立连接时，其初始化的hello消息表明客户端以前从未连过该服务器，因此它不能指定一个公钥。来自客户端的初始化消息可能包括一些随机值以便加快该会话的协商过程。&lt;/p&gt;
-
-&lt;h5 id=&#34;重复连接-通常需要0个rtt-有时需要1个rtt-极少的情况下需要2个rtts:2c8f065756daebe8aea7e2aad97fdeee&#34;&gt;重复连接：通常需要0个RTT，有时需要1个RTT，极少的情况下需要2个RTTs&lt;/h5&gt;
-
-&lt;h3 id=&#34;稳定状态:2c8f065756daebe8aea7e2aad97fdeee&#34;&gt;稳定状态&lt;/h3&gt;
-
-&lt;h4 id=&#34;连接结构体:2c8f065756daebe8aea7e2aad97fdeee&#34;&gt;连接结构体&lt;/h4&gt;
-
-&lt;h4 id=&#34;安全性-防篡改-隐私-真实性:2c8f065756daebe8aea7e2aad97fdeee&#34;&gt;安全性：防篡改、隐私、真实性&lt;/h4&gt;
-
-&lt;h4 id=&#34;数据丢失:2c8f065756daebe8aea7e2aad97fdeee&#34;&gt;数据丢失&lt;/h4&gt;
-
-&lt;p&gt;在整个互联网中，从chrome浏览器的测试数据看，UDP包的丢失率为1~2%。&lt;/p&gt;
-
-&lt;p&gt;Initial experiments with UDP connectivity from browsers around the world
-suggest that roughly 90-95% of users will have adequate UDP connectivity for
-successful QUIC connections. We conjecture that the 5%+ user connectivity
-block is predominantly caused by LAN firewalls, probably in enterprise
-settings.&lt;/p&gt;
 </description>
     </item>
     

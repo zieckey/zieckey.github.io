@@ -13,36 +13,36 @@
     }
 
     </script>
-    <title>你好，编码哥 - CodeG Blog</title>
+    <title>Golang CGO编程之调用返回char*指针及长度的C函数库 - CodeG Blog</title>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-<meta name="description" content="哥都不记得上次写博客的具体时间了，中间一直说写点什么，就是没有动手。原因有几： 哥的文笔不太好 总觉得技术水平不够高，文章写起来总没深度，不好意">
+<meta name="description" content="现代所有主流操作系统几乎都是用C语音实现的，几乎所有高级语言都能调用C语言，例如PHP可以调用C语言写的PHP扩展，Python也可以调用C">
 <meta name="author" content="zieckey">
 <meta name="publisher" content="zieckey">
 <meta name="generator" content="http://gohugo.io/"/>
 
-<meta itemprop="name" content="你好，编码哥 - CodeG Blog">
-<meta itemprop="description" content="哥都不记得上次写博客的具体时间了，中间一直说写点什么，就是没有动手。原因有几： 哥的文笔不太好 总觉得技术水平不够高，文章写起来总没深度，不好意">
+<meta itemprop="name" content="Golang CGO编程之调用返回char*指针及长度的C函数库 - CodeG Blog">
+<meta itemprop="description" content="现代所有主流操作系统几乎都是用C语音实现的，几乎所有高级语言都能调用C语言，例如PHP可以调用C语言写的PHP扩展，Python也可以调用C">
 <meta itemprop="image" content="http://blog.codeg.cn/public/codeg.jpg">
 
-<meta property="og:title" content="你好，编码哥 - CodeG Blog" />
+<meta property="og:title" content="Golang CGO编程之调用返回char*指针及长度的C函数库 - CodeG Blog" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="http://blog.codeg.cn/2014/12/13/Hello-CodeG/" />
+<meta property="og:url" content="http://blog.codeg.cn/post/blog/2016-04-20-golang-cgo/" />
 <meta property="og:image" content="http://blog.codeg.cn/public/codeg.jpg" />
-<meta property="og:description" content="哥都不记得上次写博客的具体时间了，中间一直说写点什么，就是没有动手。原因有几： 哥的文笔不太好 总觉得技术水平不够高，文章写起来总没深度，不好意">
+<meta property="og:description" content="现代所有主流操作系统几乎都是用C语音实现的，几乎所有高级语言都能调用C语言，例如PHP可以调用C语言写的PHP扩展，Python也可以调用C">
 
 <meta name="twitter:card" content="summary">
 <meta name="twitter:site" content="@zieckey">
-<meta name="twitter:title" content="你好，编码哥 - CodeG Blog">
-<meta name="twitter:description" content="哥都不记得上次写博客的具体时间了，中间一直说写点什么，就是没有动手。原因有几： 哥的文笔不太好 总觉得技术水平不够高，文章写起来总没深度，不好意">
+<meta name="twitter:title" content="Golang CGO编程之调用返回char*指针及长度的C函数库 - CodeG Blog">
+<meta name="twitter:description" content="现代所有主流操作系统几乎都是用C语音实现的，几乎所有高级语言都能调用C语言，例如PHP可以调用C语言写的PHP扩展，Python也可以调用C">
 <meta name="twitter:creator" content="@zieckey">
 <meta name="twitter:image" content="http://blog.codeg.cn/public/codeg.jpg">
 
     <script>document.documentElement.className = document.documentElement.className.replace("no-js", "js");</script>
-    <link rel="canonical" href="http://blog.codeg.cn/2014/12/13/Hello-CodeG/">
-    <link rel='shortlink' href="http://blog.codeg.cn/2014/12/13/Hello-CodeG/"/>
+    <link rel="canonical" href="http://blog.codeg.cn/post/blog/2016-04-20-golang-cgo/">
+    <link rel='shortlink' href="http://blog.codeg.cn/post/blog/2016-04-20-golang-cgo/"/>
     <link rel="shortcut icon" href="http://blog.codeg.cn/public/favicon.ico"/>
     
 <link rel="stylesheet" id="human-style-css" href="http://blog.codeg.cn/wp-content/themes/hueman/style.css" type="text/css" media="all"/>
@@ -179,18 +179,18 @@
                   class="post type-post status-publish format-standard has-post-thumbnail hentry category-australien tag-bondi-beach tag-city2surf tag-sydney">
                 <div class="post-inner group">
 
-                  <h1 class="post-title">你好，编码哥</h1>
+                  <h1 class="post-title">Golang CGO编程之调用返回char*指针及长度的C函数库</h1>
 
                   <p class="post-byline">
-                    By <a target="_blank" href="http://blog.codeg.cn/">CodeG</a> · 2014年12月13日 · 188 Words ·
-                    ~1min reading time |
-                    <a href="https://github.com/zieckey/blog/edit/master/content/post/blog/2014-12-13-Hello-CodeG.md"
+                    By <a target="_blank" href="http://blog.codeg.cn/">CodeG</a> · 2016年04月20日 · 704 Words ·
+                    ~2min reading time |
+                    <a href="https://github.com/zieckey/blog/edit/master/content/post/blog/2016-04-20-golang-cgo.md"
                        target="_blank">编辑这个页面</a>
                     | Tags:
                     
-                    <a rel="tag" href="http://blog.codeg.cn/tags/about">About</a>
+                    <a rel="tag" href="http://blog.codeg.cn/tags/golang">Golang</a>
                     
-                    <a rel="tag" href="http://blog.codeg.cn/tags/hello">Hello</a>
+                    <a rel="tag" href="http://blog.codeg.cn/tags/cgo">cgo</a>
                     
                   </p>
 
@@ -208,24 +208,133 @@
                         
                         
                         
-                        本文 <a target="_blank" href="http://blog.codeg.cn/2014/12/13/Hello-CodeG/">http://blog.codeg.cn/2014/12/13/Hello-CodeG/</a> 是作者<a target="_blank" href="http://blog.codeg.cn/">zieckey</a>在研究和学习相关内容时所做的笔记，欢迎广大朋友指正和交流！
+                        本文 <a target="_blank" href="http://blog.codeg.cn/post/blog/2016-04-20-golang-cgo/">http://blog.codeg.cn/post/blog/2016-04-20-golang-cgo/</a> 是作者<a target="_blank" href="http://blog.codeg.cn/">zieckey</a>在研究和学习相关内容时所做的笔记，欢迎广大朋友指正和交流！
                         版权所有，欢迎转载和分享，但请保留此段声明。 </p>
                       </div>
 
                     </div>
 
                     <div class="entry-inner">
-                      <p>哥都不记得上次写博客的具体时间了，中间一直说写点什么，就是没有动手。原因有几：</p>
+                      
+
+<p>现代所有主流操作系统几乎都是用C语音实现的，几乎所有高级语言都能调用C语言，例如PHP可以调用C语言写的PHP扩展，Python也可以调用C语言实现的Python扩展。
+Golang语言也不例外。</p>
+
+<p>Golang通过CGO机制能很方便的调用C语言。本文介绍一下如何在Go中调用稍稍复杂一点C函数，例如： <code>char* f(int, int*)</code></p>
+
+<p>首先看一个最简单的例子，将Golang中的一个字符串传入C函数中：</p>
+
+<pre><code class="language-go">package main
+
+/*
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+void print(char *str) {
+    printf(&quot;%s\n&quot;, str);
+}
+*/
+import &quot;C&quot;
+
+import &quot;unsafe&quot;
+
+func main() {
+    s := &quot;Hello Cgo&quot;
+    cs := C.CString(s)
+    C.print(cs)
+    C.free(unsafe.Pointer(cs))
+}
+</code></pre>
+
+<p>注意上述程序中的关键语句<code>cs := C.CString(s)</code>是将一个Golang的字符串转换为C语言字符串，该C语言字符串是由C函数malloc从堆中分配的，因此后续需要调用 <code>C.free</code> 释放内存。</p>
+
+<p>然后，我们看看如何调用一个复杂一点的C函数？例如： <code>char* f(int, int*)</code> ，返回一个<code>char*</code>指针，并且有一个参数也是返回值<code>int*</code>。请直接看下面的例子：</p>
+
+<pre><code class="language-go">package main
+
+/*
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+char* xmalloc(int len, int *rlen)
+{
+    static const char* s = &quot;0123456789&quot;;
+    char* p = malloc(len);
+    if (len &lt;= strlen(s)) {
+        memcpy(p, s, len);
+    } else {
+        memset(p, 'a', len);
+    }
+    *rlen = len;
+    return p;
+}
+*/
+import &quot;C&quot;
+import &quot;unsafe&quot;
+import &quot;fmt&quot;
+
+func main() {
+	rlen := C.int(0)
+	len := 10
+	cstr := C.xmalloc(C.int(len), &amp;rlen)
+	defer C.free(unsafe.Pointer(cstr))
+	gostr := C.GoStringN(cstr, rlen)
+	fmt.Printf(&quot;retlen=%v\n&quot;, rlen)
+	println(gostr)
+}
+
+</code></pre>
+
+<p><code>xmalloc</code>函数的第二个参数是<code>int*</code>，这里设计为一个输入、输出参数。我们在Golang中使用C.int类型的指针就可以；
+其返回值是一个<code>char*</code>，在Golang中就是 <code>*C.char</code>，由于返回值是指针，其内存由malloc分配，因此需要在Golang中对其内存进行释放。</p>
+
+<p>再然后，我们看看如何调用一个返回结构体的C函数？例如：<code>struct MyString xmalloc(int len)</code>。请看示例代码：</p>
+
+<pre><code class="language-go">package main
+
+/*
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+struct MyString
+{
+    char* s;
+    int len;
+};
+
+struct MyString xmalloc(int len)
+{
+    static const char* s = &quot;0123456789&quot;;
+    char* p = malloc(len);
+    if (len &lt;= strlen(s)) {
+        memcpy(p, s, len);
+    } else {
+        memset(p, 'a', len);
+    }
+    struct MyString str;
+    str.s = p;
+    str.len = len;
+    return str;
+}
+*/
+import &quot;C&quot;
+import &quot;unsafe&quot;
+import &quot;fmt&quot;
+
+func main() {
+	len := 10
+	str := C.xmalloc(C.int(len))
+	defer C.free(unsafe.Pointer(str.s))
+	gostr := C.GoStringN(str.s, str.len)
+	fmt.Printf(&quot;retlen=%v\n&quot;, str.len)
+	println(gostr)
+}
+</code></pre>
+
+<h2 id="参考:1d9c7bc1f63996ea5a05ef9bf93a075a">参考</h2>
 
 <ol>
-<li>哥的文笔不太好</li>
-<li>总觉得技术水平不够高，文章写起来总没深度，不好意思写</li>
-<li>哥比较懒</li>
+<li><a href="http://blog.golang.org/c-go-cgo">http://blog.golang.org/c-go-cgo</a></li>
+<li><a href="https://golang.org/cmd/cgo/">https://golang.org/cmd/cgo/</a></li>
 </ol>
-
-<p>现在来看，前面两点都是扯淡的，懒惰才是重点。好吧，哥承认了。哥决定从今个起，找一个好的博客托管服务器，好好写点文章，尤其是多写点技术文章，用来记录哥的学习、工作中值得记录的点滴，而不论高深或浅薄与否。</p>
-
-<p>插，从此以后，请叫我编码哥。</p>
 
                     </div>
 
@@ -242,7 +351,7 @@
 
                     
 
-<div class="ds-thread" data-thread-key="/2014/12/13/Hello-CodeG/" data-title="你好，编码哥" data-url="http://blog.codeg.cn/2014/12/13/Hello-CodeG/"></div>
+<div class="ds-thread" data-thread-key="/post/blog/2016-04-20-golang-cgo/" data-title="Golang CGO编程之调用返回char*指针及长度的C函数库" data-url="http://blog.codeg.cn/post/blog/2016-04-20-golang-cgo/"></div>
 
 
 <script type="text/javascript">
@@ -313,20 +422,14 @@
     <ul class="post-nav group">
       <li class="next">
         
-        <a href="http://blog.codeg.cn/2014/12/13/github-pages/" rel="next">
+        <a href="http://blog.codeg.cn/post/blog/2016-02-24-distrubute-lock-over-etcd/" rel="next">
           <i class="fa fa-chevron-right"></i>
           <strong>Next post</strong>
-          <span>使用Github Pages建独立博客</span>
+          <span>使用Golang利用ectd实现一个分布式锁</span>
         </a>
         
       </li>
       <li class="previous">
-        
-        <a href="http://blog.codeg.cn/2014/12/13/golang-vs-nginx-at-httpecho/" rel="prev">
-          <i class="fa fa-chevron-left"></i>
-          <strong>Previous Post</strong>
-          <span>Golang写的HTTP服务与Nginx对比</span>
-        </a>
         
       </li>
     </ul>
