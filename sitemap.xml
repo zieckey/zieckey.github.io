@@ -3,8 +3,18 @@
   
   <url>
     <loc>http://blog.codeg.cn/</loc>
-    <lastmod>2016-04-20T21:43:00+00:00</lastmod>
+    <lastmod>2016-05-25T20:12:01+00:00</lastmod>
     <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://blog.codeg.cn/post/blog/2016-05-26-howto-build-gopcap-on-windows-x64/</loc>
+    <lastmod>2016-05-25T20:12:01+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://blog.codeg.cn/post/blog/2016-05-16-How-to-design-an-100trillion-lines-log-search-engine/</loc>
+    <lastmod>2016-05-16T20:41:00+00:00</lastmod>
   </url>
   
   <url>

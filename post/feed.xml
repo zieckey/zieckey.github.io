@@ -7,8 +7,188 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
     <copyright>Copyright (c) 2015. All rights reserved.</copyright>
-    <lastBuildDate>Wed, 20 Apr 2016 21:43:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 25 May 2016 20:12:01 +0000</lastBuildDate>
     <atom:link href="http://blog.codeg.cn/post/feed/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>如何在win7 64位系统下安装gopcap包及使用</title>
+      <link>http://blog.codeg.cn/post/blog/2016-05-26-howto-build-gopcap-on-windows-x64/</link>
+      <pubDate>Wed, 25 May 2016 20:12:01 +0000</pubDate>
+      
+      <guid>http://blog.codeg.cn/post/blog/2016-05-26-howto-build-gopcap-on-windows-x64/</guid>
+      <description>
+
+&lt;p&gt;&lt;code&gt;gopcap&lt;/code&gt;是libpcap库的Golang封装，其项目地址在这里 &lt;a href=&#34;https://github.com/akrennmair/gopcap&#34;&gt;https://github.com/akrennmair/gopcap&lt;/a&gt; 。
+本文简要介绍一下如何在win7 64位系统平台上使用 &lt;code&gt;gopcap&lt;/code&gt; 库。&lt;/p&gt;
+
+&lt;p&gt;安装步骤如下：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;安装Golang 64位版本&lt;/li&gt;
+&lt;li&gt;安装mingw 64位版本，注意导入到windows环境变量中。让命令行能自动找到 gcc 命令&lt;/li&gt;
+&lt;li&gt;在 &lt;a href=&#34;http://www.tcpdump.org/&#34;&gt;http://www.tcpdump.org/&lt;/a&gt; 下载 libpcap-1.7.4.tar.gz，从这个包中得到libpcap的C语言头文件&lt;/li&gt;
+&lt;li&gt;在 &lt;a href=&#34;https://www.winpcap.org/install/&#34;&gt;https://www.winpcap.org/install/&lt;/a&gt; 下载winpcap并安装，从这里可以得到libpcap的windows DLL文件 wpcap.dll，用于运行&lt;/li&gt;
+&lt;li&gt;在 &lt;a href=&#34;http://www.winpcap.org/archive/&#34;&gt;http://www.winpcap.org/archive/&lt;/a&gt; 下载 4.1.1-WpdPack.zip，从其中的x64目录下找到 wpcap.lib 库，用于编译&lt;/li&gt;
+&lt;li&gt;执行下列命令：
+&lt;pre&gt;
+mkdir -p /c/wpdpcak/include
+mkdir -p /c/wpdpcak/lib/x64
+cp /c/Windows/System32/wpcap.dll /c/wpdpack/lib/x64/
+cp -rf libpcap-1.7.4/Win32/Include/* /c/wpdpack/include/
+cp -rf libpcap-1.7.4/pcap.h libpcap-1.7.4/pcap /c/wpdpack/include/
+cp -rf 4.1.1-WpdPack/WpdPack/Lib/x64/wpcap.lib /c/wpdpcak/lib/x64
+&lt;/pre&gt;
+这里，将相关头文库、库文件都放在 &lt;code&gt;C:\wpdpcak&lt;/code&gt; 目录下，是因为 gopcap 库的cgo编译选择是这么设置，当然你也可以修改源码的方式来重新设置目录。&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;编译过程中如果出现下列错误&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;$ go build
+# github.com/akrennmair/gopcap
+In file included from C:/WpdPack/Include/pcap.h:43:0,
+          from ..\..\..\akrennmair\gopcap\pcap.go:12:
+C:/WpdPack/Include/pcap/pcap.h:450:1: error: unknown type name &#39;Adapter&#39;
+Adapter *pcap_get_adapter(pcap_t *p);
+^
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;就将 pcap/pcap.h 中这一行注释掉。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;至此，应该再不会有问题了，编译成功。 gopcap 库的toots目录有很多使用用例，可以看看以了解如何使用。&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&#34;参考:74f61569ed0f5a8ab78927a7660545ad&#34;&gt;参考&lt;/h2&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;http://blog.golang.org/c-go-cgo&#34;&gt;http://blog.golang.org/c-go-cgo&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/akrennmair/gopcap&#34;&gt;https://github.com/akrennmair/gopcap&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>如何打造一个百万亿级的日志搜索引擎:Poseidon</title>
+      <link>http://blog.codeg.cn/post/blog/2016-05-16-How-to-design-an-100trillion-lines-log-search-engine/</link>
+      <pubDate>Mon, 16 May 2016 20:41:00 +0000</pubDate>
+      
+      <guid>http://blog.codeg.cn/post/blog/2016-05-16-How-to-design-an-100trillion-lines-log-search-engine/</guid>
+      <description>
+
+&lt;h2 id=&#34;项目背景:7d3784ee0c1fe01d7ae210ea5bce28cf&#34;&gt;项目背景&lt;/h2&gt;
+
+&lt;p&gt;安全分析人员经常需要知道一个样本在某个时间段内感染了哪些电脑？范围有多广？源头是从哪里来的？样本家族是什么？
+这些信息在海量的病毒查杀日志中都有蛛丝马迹可寻，如是，对海量日志进行快速的分析和检索就成为一种至关重要的能力。
+这里海量，不是百亿、万亿，而是百万亿级别(1后面14个零)，占用100PB大小(1后面17个零)。&lt;/p&gt;
+
+&lt;h3 id=&#34;项目需求:7d3784ee0c1fe01d7ae210ea5bce28cf&#34;&gt;项目需求&lt;/h3&gt;
+
+&lt;ol&gt;
+&lt;li&gt;总数据量：百万亿条、大小100PB&lt;/li&gt;
+&lt;li&gt;交互式的搜索响应(秒级)&lt;/li&gt;
+&lt;li&gt;故障转移、自动恢复、节点负载均衡&lt;/li&gt;
+&lt;li&gt;自定义分词策略，例如针对路径、URL、PEStringDump等信息能有分别独立自定义的分词策略。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&#34;现有方案调研:7d3784ee0c1fe01d7ae210ea5bce28cf&#34;&gt;现有方案调研&lt;/h2&gt;
+
+&lt;h3 id=&#34;elasticsearch:7d3784ee0c1fe01d7ae210ea5bce28cf&#34;&gt;ElasticSearch&lt;/h3&gt;
+
+&lt;p&gt;ElasticSearch是一个基于Lucene的搜索服务器。它提供了一个分布式多用户能力的全文搜索引擎，基于RESTful web接口。
+Elasticsearch是用Java开发的，并作为Apache许可条款下的开放源码发布，是当前非常流行的搜索引擎解决方案。&lt;/p&gt;
+
+&lt;p&gt;目前使用ES建设的规模比较大的案例是Github，Github使用Elasticsearch搜索20TB的数据，包括13亿的文件和1300亿行的代码，这是之前的数据了，现在应该更大一些。&lt;/p&gt;
+
+&lt;p&gt;这里介绍了一些使用ES的案例 &lt;a href=&#34;http://www.searchtech.pro/elasticsearch-users-case&#34;&gt;http://www.searchtech.pro/elasticsearch-users-case&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;以下几点原因决定了ES不适用于当前项目：
+1. 是否能够支持百万亿级别的数据规模存在太多不确定因素
+2. 数据需要全部倒入到ES系统中，而原始数据由于有Map/Reduce任务也需要存储在Hadoop中，这样导致数据存储上的冗余
+3. 自定义分词不灵活，需要定制开发&lt;/p&gt;
+
+&lt;h3 id=&#34;hbase:7d3784ee0c1fe01d7ae210ea5bce28cf&#34;&gt;HBase&lt;/h3&gt;
+
+&lt;p&gt;HBase – Hadoop Database，是一个高可靠性、高性能、面向列、可伸缩的分布式存储系统，利用HBase技术可在廉价PC Server上搭建起大规模结构化存储集群。&lt;/p&gt;
+
+&lt;p&gt;实现上，HBase是在HDFS之上的KV存储，由于我们的原始日志每一条日志的字段多达100多个，
+在测试时发现数据膨胀了7倍多，这根本就是不能接受的。另外，HBase对自定的分词策略支持有限，也需要很多的定制开发。&lt;/p&gt;
+
+&lt;h3 id=&#34;腾讯hermes:7d3784ee0c1fe01d7ae210ea5bce28cf&#34;&gt;腾讯Hermes&lt;/h3&gt;
+
+&lt;ol&gt;
+&lt;li&gt;一个基于大索引技术的海量数据实时检索分析平台&lt;/li&gt;
+&lt;li&gt;侧重数据分析&lt;/li&gt;
+&lt;li&gt;数据规模从几亿到万亿不等&lt;/li&gt;
+&lt;li&gt;没有开源&lt;/li&gt;
+&lt;li&gt;只知道其索引数据也放在HDFS中，没有太多实现细节&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&#34;poseidon详细设计:7d3784ee0c1fe01d7ae210ea5bce28cf&#34;&gt;Poseidon详细设计&lt;/h2&gt;
+
+&lt;p&gt;Poseidon(波塞冬)，是希腊神话中的海神，在这里寓意海量数据的主宰者。&lt;/p&gt;
+
+&lt;h3 id=&#34;设计目标:7d3784ee0c1fe01d7ae210ea5bce28cf&#34;&gt;设计目标&lt;/h3&gt;
+
+&lt;p&gt;上述分析了现有的各种方案的一些基本情况，鉴于我们的数据规模实在太大，我们有理由相信全世界能需要如此规模数据集的公司也是屈指可数的，部分需求又很特殊(分词策略)，因此只能自己开发。&lt;/p&gt;
+
+&lt;p&gt;，其设计目标如下：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;数据总量：百万亿条、大小100PB(17个0)&lt;/li&gt;
+&lt;li&gt;原始数据不用额外存储&lt;/li&gt;
+&lt;li&gt;当前的Map/Reduce作业不用变更&lt;/li&gt;
+&lt;li&gt;自定义分词&lt;/li&gt;
+&lt;li&gt;秒级响应&lt;/li&gt;
+&lt;li&gt;模糊匹配&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&#34;搜索引擎核心技术介绍-倒排索引:7d3784ee0c1fe01d7ae210ea5bce28cf&#34;&gt;搜索引擎核心技术介绍——倒排索引&lt;/h3&gt;
+
+&lt;p&gt;倒排索引(英语:Inverted index)，也常被称为反向索引、置入档案或反向档案，是一种索引方法，
+被用来存储在全文搜索下某个单词在一个文档或者一组文档中的存储位置的映射。
+它是文档检索系统中最常用的数据结构。通过倒排索引，可以根据单词快速获取包含这个单词的文档列表。&lt;/p&gt;
+
+&lt;h3 id=&#34;在设计之前进行相关数据准备和调研:7d3784ee0c1fe01d7ae210ea5bce28cf&#34;&gt;在设计之前进行相关数据准备和调研&lt;/h3&gt;
+
+&lt;p&gt;我们有一个业务的日志数据，每天的新增数据量在700亿条(行)左右，每条大小平均850字节，明文数据量在60TB左右，GZ压缩后占用10TB。&lt;/p&gt;
+
+&lt;p&gt;使用一个通用的分词器，对这份日志一天的数据进行分词，得到的数据如下：
+1. 总共得到100亿个分词，占用400GB空间
+2. 每个分词平均关联277行日志
+3. 按倒排索引建库的话，总计需要27700亿个DocId，假如每天DocId占用4字节，需要11TB的空间
+4. 上述倒排索引需要进行一定压缩编码，实际应用时争取压缩到2TB&lt;/p&gt;
+
+&lt;h3 id=&#34;基本设计原则:7d3784ee0c1fe01d7ae210ea5bce28cf&#34;&gt;基本设计原则&lt;/h3&gt;
+
+&lt;p&gt;根据上述数据调研，我们每天的增量数据目前是放在Hadoop里的，每天的倒排索引也很大，应该也要放在Hadoop中。&lt;/p&gt;
+
+&lt;p&gt;如果把日志数据中每一行都当作一个文档的话，总计需要700亿个ID，超出int32的范围，占用空间太大。如果每128行日志组合为一个文档的话，有如下几个优点：
+1. 5.5亿，int32 够用
+2. 大大减少索引数据所占存储空间
+3. 类似于块存储概念
+4. 128可以最大限度利用varint压缩编码的优势&lt;/p&gt;
+
+&lt;h3 id=&#34;详细设计:7d3784ee0c1fe01d7ae210ea5bce28cf&#34;&gt;详细设计&lt;/h3&gt;
+
+&lt;h4 id=&#34;原始日志数据的存储格式设计:7d3784ee0c1fe01d7ae210ea5bce28cf&#34;&gt;原始日志数据的存储格式设计&lt;/h4&gt;
+
+&lt;p&gt;我们知道，原始日志数据是放在hadoop中的，考虑到都是文本数据，所以进行了GZ压缩存储。
+这就带来一个问题，如果想读取一个GZ文件中的一行日志，就需要将整个GZ文件读出来、解压，然后读取我们需要的那一行数据。
+这显然与我们需要的秒级搜索能力是不匹配的，因为一个日志文件，压缩后存储在hadoop中也是几百MB以上，甚至达到数GB大小。&lt;/p&gt;
+
+&lt;p&gt;我们了解到gzip压缩格式有一个比较好的特点：多个gzip格式的数据之间拼接到一起，gzip解压程序仍然能正常解压开。
+我们利用这一特性来设计原始日志数据的存储格式，即：将原始的一个数百MB大小的gz文件，
+按一定的大小(例如10KB)分隔为很多个这种小的gz文件，然后拼接在一起，组成一个大的gz文件存入hadoop。
+这样不破坏现有的hadoop文件格式，也就不破坏基于该日志上处理的一下Map/Reduce作业程序。&lt;/p&gt;
+
+&lt;p&gt;详细格式请见下图：&lt;/p&gt;
+
+&lt;h2 id=&#34;参考:7d3784ee0c1fe01d7ae210ea5bce28cf&#34;&gt;参考&lt;/h2&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.infoq.com/cn/minibooks/this-is-search-engine&#34;&gt;《这就是搜素引擎-核心技术详解》&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.elastic.co/&#34;&gt;Elasticsearch&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+    </item>
     
     <item>
       <title>Golang CGO编程之调用返回char*指针及长度的C函数库</title>
@@ -2042,295 +2222,6 @@ SSH password:
 &lt;li&gt;&lt;a href=&#34;http://docs.ansible.com/&#34;&gt;官方文档&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;http://os.51cto.com/art/201409/451927_all.htm&#34; title=&#34;自动化运维工具之ansible&#34;&gt;自动化运维工具之ansible&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>Golang开源项目源码阅读</title>
-      <link>http://blog.codeg.cn/2015/09/19/golang-project-source-code-reading/</link>
-      <pubDate>Sat, 19 Sep 2015 00:00:00 +0000</pubDate>
-      
-      <guid>http://blog.codeg.cn/2015/09/19/golang-project-source-code-reading/</guid>
-      <description>
-
-&lt;h2 id=&#34;总览:95ce2e9a2ebc2effbd6ffc159f6de67a&#34;&gt;总览&lt;/h2&gt;
-
-&lt;h3 id=&#34;github-com-julienschmidt-httproute:95ce2e9a2ebc2effbd6ffc159f6de67a&#34;&gt;github.com/julienschmidt/httproute&lt;/h3&gt;
-
-&lt;p&gt;&lt;a href=&#34;https://github.com/julienschmidt/httprouter&#34; title=&#34;httprouter&#34;&gt;httprouter&lt;/a&gt; 是一个轻量级的高性能HTTP请求分发器，英文称之为multiplexer，简称mux。&lt;/p&gt;
-
-&lt;h4 id=&#34;httproute特性:95ce2e9a2ebc2effbd6ffc159f6de67a&#34;&gt;httproute特性&lt;/h4&gt;
-
-&lt;ol&gt;
-&lt;li&gt;仅支持精确匹配，及只匹配一个模式或不会匹配到任何模式。相对于其他一些mux，例如go原生的 &lt;a href=&#34;http://golang.org/pkg/net/http/#ServeMux&#34;&gt;http.ServerMux&lt;/a&gt;, 会使得一个请求URL匹配多个模式，从而需要有优先级顺序，例如最长匹配、最先匹配等等。&lt;/li&gt;
-&lt;li&gt;不需要关心URL结尾的斜杠&lt;/li&gt;
-&lt;li&gt;路径自动归一化和矫正&lt;/li&gt;
-&lt;li&gt;零内存分配&lt;/li&gt;
-&lt;li&gt;高性能。这一点可以参考&lt;a href=&#34;https://github.com/julienschmidt/go-http-routing-benchmark&#34;&gt;Benchmarks&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;再也不会崩溃&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h4 id=&#34;示例代码:95ce2e9a2ebc2effbd6ffc159f6de67a&#34;&gt;示例代码&lt;/h4&gt;
-
-&lt;p&gt;使用起来非常简单，与 &lt;code&gt;net/http&lt;/code&gt; 包提供的接口非常类似，甚至还提供了完全的一致的接口。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;package main
-
-import (
-    &amp;quot;fmt&amp;quot;
-    &amp;quot;github.com/julienschmidt/httprouter&amp;quot;
-    &amp;quot;net/http&amp;quot;
-    &amp;quot;log&amp;quot;
-)
-
-func Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-    fmt.Fprint(w, &amp;quot;Welcome!\n&amp;quot;)
-}
-
-func Hello(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-    fmt.Fprintf(w, &amp;quot;hello, %s!\n&amp;quot;, ps.ByName(&amp;quot;name&amp;quot;))
-}
-
-func main() {
-    router := httprouter.New()
-    router.GET(&amp;quot;/&amp;quot;, Index)
-    router.GET(&amp;quot;/hello/:name&amp;quot;, Hello)
-
-    log.Fatal(http.ListenAndServe(&amp;quot;:8080&amp;quot;, router))
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h4 id=&#34;源码阅读:95ce2e9a2ebc2effbd6ffc159f6de67a&#34;&gt;源码阅读&lt;/h4&gt;
-
-&lt;p&gt;httproute内部通过实现一个trie树来提高性能。核心代码就是golang标准库中 http.Handler 接口，在该函数中实现自己的请求路由分发策略。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;
-// ServeHTTP 实现
-func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	if r.PanicHandler != nil {
-		defer r.recv(w, req)
-	}
-
-	if root := r.trees[req.Method]; root != nil {
-		path := req.URL.Path
-
-		if handle, ps, tsr := root.getValue(path); handle != nil {
-			handle(w, req, ps)
-			return
-		} else if req.Method != &amp;quot;CONNECT&amp;quot; &amp;amp;&amp;amp; path != &amp;quot;/&amp;quot; {
-			code := 301 // Permanent redirect, request with GET method
-			if req.Method != &amp;quot;GET&amp;quot; {
-				// Temporary redirect, request with same method
-				// As of Go 1.3, Go does not support status code 308.
-				code = 307
-			}
-
-			if tsr &amp;amp;&amp;amp; r.RedirectTrailingSlash {
-				if len(path) &amp;gt; 1 &amp;amp;&amp;amp; path[len(path)-1] == &#39;/&#39; {
-					req.URL.Path = path[:len(path)-1]
-				} else {
-					req.URL.Path = path + &amp;quot;/&amp;quot;
-				}
-				http.Redirect(w, req, req.URL.String(), code)
-				return
-			}
-
-			// Try to fix the request path
-			if r.RedirectFixedPath {
-				fixedPath, found := root.findCaseInsensitivePath(
-					CleanPath(path),
-					r.RedirectTrailingSlash,
-				)
-				if found {
-					req.URL.Path = string(fixedPath)
-					http.Redirect(w, req, req.URL.String(), code)
-					return
-				}
-			}
-		}
-	}
-
-	// Handle 405
-	if r.HandleMethodNotAllowed {
-		for method := range r.trees {
-			// Skip the requested method - we already tried this one
-			if method == req.Method {
-				continue
-			}
-
-			handle, _, _ := r.trees[method].getValue(req.URL.Path)
-			if handle != nil {
-				if r.MethodNotAllowed != nil {
-					r.MethodNotAllowed.ServeHTTP(w, req)
-				} else {
-					http.Error(w,
-						http.StatusText(http.StatusMethodNotAllowed),
-						http.StatusMethodNotAllowed,
-					)
-				}
-				return
-			}
-		}
-	}
-
-	// Handle 404
-	if r.NotFound != nil {
-		r.NotFound.ServeHTTP(w, req)
-	} else {
-		http.NotFound(w, req)
-	}
-}
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3 id=&#34;github-com-nbio-httpcontext:95ce2e9a2ebc2effbd6ffc159f6de67a&#34;&gt;github.com/nbio/httpcontext&lt;/h3&gt;
-
-&lt;p&gt;&lt;a href=&#34;github.com/nbio/httpcontext&#34;&gt;httpcontext&lt;/a&gt;该库提供更灵活的http请求上下文机制。具体实现上，使用了一个小技巧，就是通过动态修改 &lt;code&gt;http.Request.Body&lt;/code&gt; 接口来实现的。先看看代码：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;// 核心结构体
-type contextReadCloser struct {
-	io.ReadCloser
-	context map[interface{}]interface{}
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;上述结构体实现由于直接继承了 ReadCloser 接口，因此可以直接替换掉 &lt;code&gt;http.Request.Body&lt;/code&gt; 。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;func getContextReadCloser(req *http.Request) ContextReadCloser {
-	crc, ok := req.Body.(ContextReadCloser)
-	if !ok {
-		crc = &amp;amp;contextReadCloser{
-			ReadCloser: req.Body,
-			context:    make(map[interface{}]interface{}),
-		}
-		req.Body = crc
-	}
-	return crc
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;我们一起看看下面的示例代码来感受一下这个库的用法：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;package main
-
-import (
-    &amp;quot;fmt&amp;quot;
-    &amp;quot;github.com/nbio/httpcontext&amp;quot;
-    &amp;quot;net/http&amp;quot;
-    &amp;quot;log&amp;quot;
-)
-
-func Hello(w http.ResponseWriter, r *http.Request) {
-    httpcontext.Set(r, &amp;quot;key1&amp;quot;, &amp;quot;value1&amp;quot;) // Set a context with this request r
-    val := httpcontext.Get(r, &amp;quot;key1&amp;quot;)    // Get the context
-    v, _ := val.(string)
-    fmt.Printf(&amp;quot;Got a value associated with key1 : %v\n&amp;quot;, v)
-    w.Write([]byte(&amp;quot;OK&amp;quot;))
-}
-
-func main() {
-    http.HandleFunc(&amp;quot;/hello&amp;quot;, Hello)
-    log.Fatal(http.ListenAndServe(&amp;quot;:8080&amp;quot;, nil))
-}
-&lt;/code&gt;&lt;/pre&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>QUIC（Quick UDP Internet Connections）源代码阅读</title>
-      <link>http://blog.codeg.cn/2015/06/17/quic-source-code-reading/</link>
-      <pubDate>Wed, 17 Jun 2015 00:00:00 +0000</pubDate>
-      
-      <guid>http://blog.codeg.cn/2015/06/17/quic-source-code-reading/</guid>
-      <description>
-
-&lt;h2 id=&#34;类:9242b2796e30fa166be9fac336b73b4a&#34;&gt;类&lt;/h2&gt;
-
-&lt;h3 id=&#34;基础类:9242b2796e30fa166be9fac336b73b4a&#34;&gt;基础类&lt;/h3&gt;
-
-&lt;h4 id=&#34;base:9242b2796e30fa166be9fac336b73b4a&#34;&gt;base&lt;/h4&gt;
-
-&lt;ol&gt;
-&lt;li&gt;Pickle：针对二进制数据进行&lt;code&gt;pack&lt;/code&gt;和&lt;code&gt;unpack&lt;/code&gt;操作&lt;/li&gt;
-&lt;li&gt;MessagePump：消息泵基类，也就是做消息循环用的&lt;/li&gt;
-&lt;li&gt;TimeDelta：一个&lt;code&gt;int64&lt;/code&gt;整型的封装，单位：微妙&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h4 id=&#34;net:9242b2796e30fa166be9fac336b73b4a&#34;&gt;net&lt;/h4&gt;
-
-&lt;ol&gt;
-&lt;li&gt;IOVector : 对 &lt;code&gt;struct iovec&lt;/code&gt; 的封装。提供了 &lt;code&gt;struct iovec&lt;/code&gt; 相关的读写操作。&lt;/li&gt;
-&lt;li&gt;IPEndPoint：代表一个 &lt;code&gt;IP:Port&lt;/code&gt; 对&lt;/li&gt;
-&lt;li&gt;QuicConfig：Quic相关的配置信息类(与加解密不相关)&lt;/li&gt;
-&lt;li&gt;QuicDataReader：对一段内存数据的读取做了封装，比较方便的读取整数、浮点数、字符串等等。&lt;/li&gt;
-&lt;li&gt;QuicDataWriter：与&lt;code&gt;QuicDataReader&lt;/code&gt;相对，能够比较方便的将整数、浮点数、字符串、IOVector等数据写入到一段内存&lt;code&gt;buffer&lt;/code&gt;中。&lt;/li&gt;
-&lt;li&gt;QuicRandom：随机数产生器。&lt;/li&gt;
-&lt;li&gt;QuicFramerVisitorInterface：关于收到的数据包的处理的函数接口类。&lt;/li&gt;
-&lt;li&gt;QuicDispatcher::QuicFramerVisitor：从&lt;code&gt;QuicFramerVisitorInterface&lt;/code&gt;继承，用于处理QUIC数据包&lt;/li&gt;
-&lt;li&gt;QuicData：对 &lt;code&gt;&amp;lt;char*,size_t&amp;gt;&lt;/code&gt; 这中内存数据的封装。&lt;/li&gt;
-&lt;li&gt;QuicEncryptedPacket：继承自&lt;code&gt;QuicData&lt;/code&gt;，并没有新的接口，只是更明确的表明这是一个Quic加密的报文。&lt;/li&gt;
-&lt;li&gt;QuicDispatcher：数据包处理类
-
-&lt;ol&gt;
-&lt;li&gt;收到一个数据包会调用 &lt;code&gt;QuicDispatcher::ProcessPacket&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;进而会调用 &lt;code&gt;QuicFramer::ProcessPacket&lt;/code&gt;&lt;/li&gt;
-&lt;/ol&gt;&lt;/li&gt;
-&lt;li&gt;QuicTime::Delta：是对 &lt;code&gt;base::TimeDelta&lt;/code&gt; 的封装&lt;/li&gt;
-&lt;li&gt;QuicTime：一个相对的时间点&lt;/li&gt;
-&lt;li&gt;TimeTicks：滴答时间。
-
-&lt;ol&gt;
-&lt;li&gt;TimeTicks::Now()：返回系统启动到当前时间点的&lt;/li&gt;
-&lt;li&gt;TimeTicks::UnixEpoch()：返回Unix时间戳&lt;/li&gt;
-&lt;/ol&gt;&lt;/li&gt;
-&lt;li&gt;QuicAlarm：定时器的抽象类。&lt;/li&gt;
-&lt;li&gt;DeleteSessionsAlarm：删除过期session的定时器。&lt;/li&gt;
-&lt;li&gt;QuicFramer：用于对QUIC数据包的解析和组装。&lt;/li&gt;
-&lt;li&gt;QuicPacketPublicHeader：Quic Public包头。包括 CID，CID长度, reset标记，version标记, 序列化长度，version等。&lt;/li&gt;
-&lt;li&gt;QuicPacketHeader：Quic包头。包括 FEC标记、加密算法标记，加密Hash，序列号，是否是FEC_group，FEC_group等。&lt;/li&gt;
-&lt;li&gt;UDPSocket：UDP socket协议相关类，ReadFrom/SendTo 等等。&lt;code&gt;ReadFrom&lt;/code&gt;的最后一个回调函数是会在读取到数据的时候调用。具体调用点为：&lt;code&gt;UDPSocketLibevent::ReadWatcher::OnFileCanReadWithoutBlocking&lt;/code&gt;。具体平台的实现类有两个：UDPSocketLibevent/UDPSocketWin&lt;/li&gt;
-&lt;li&gt;UDPServerSocket：从&lt;code&gt;DatagramServerSocket&lt;/code&gt;这个接口类继承，并对&lt;code&gt;UDPSocket&lt;/code&gt;进行了封装&lt;/li&gt;
-&lt;li&gt;QuicSimplePerConnectionPacketWriter：与每个连接相关的数据包writer。很多连接可能共享一个&lt;code&gt;QuicServerPacketWriter&lt;/code&gt;，因此当需要向某个连接发送数据时，无法区分该连接。这个类实际上就是&lt;code&gt;QuicServerPacketWriter&lt;/code&gt;和&lt;code&gt;QuicConnection&lt;/code&gt;的一个组合包装。&lt;/li&gt;
-&lt;li&gt;QuicSimpleServerPacketWriter：用来发送数据的。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h3 id=&#34;相关源文件:9242b2796e30fa166be9fac336b73b4a&#34;&gt;相关源文件&lt;/h3&gt;
-
-&lt;ol&gt;
-&lt;li&gt;quic_flags.h ： 整个项目相关的全局配置信息，是全局变量。&lt;/li&gt;
-&lt;li&gt;&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h3 id=&#34;源码阅读:9242b2796e30fa166be9fac336b73b4a&#34;&gt;源码阅读&lt;/h3&gt;
-
-&lt;h4 id=&#34;quicpacketpublicheader:9242b2796e30fa166be9fac336b73b4a&#34;&gt;QuicPacketPublicHeader&lt;/h4&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-c&#34;&gt;struct QuicPacketPublicHeader {
-  // Universal header. All QuicPacket headers will have a connection_id and
-  // public flags.
-  QuicConnectionId connection_id;
-  QuicConnectionIdLength connection_id_length;
-  bool reset_flag;
-  bool version_flag;
-  QuicSequenceNumberLength sequence_number_length;
-  QuicVersionVector versions;
-};
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h4 id=&#34;quicpacketheader:9242b2796e30fa166be9fac336b73b4a&#34;&gt;QuicPacketHeader&lt;/h4&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-c&#34;&gt;struct QuicPacketHeader {
-  QuicPacketPublicHeader public_header;
-  bool fec_flag;
-  bool entropy_flag;
-  QuicPacketEntropyHash entropy_hash;
-  QuicPacketSequenceNumber packet_sequence_number;
-  InFecGroup is_in_fec_group;
-  QuicFecGroupNumber fec_group;
-};
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h4 id=&#34;void-quicdispatcher-onunauthenticatedheader-const-quicpacketheader-header:9242b2796e30fa166be9fac336b73b4a&#34;&gt;void QuicDispatcher::OnUnauthenticatedHeader(const QuicPacketHeader&amp;amp; header)&lt;/h4&gt;
 </description>
     </item>
     

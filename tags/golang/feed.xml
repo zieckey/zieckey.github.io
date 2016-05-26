@@ -7,8 +7,63 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
     <copyright>Copyright (c) 2015. All rights reserved.</copyright>
-    <lastBuildDate>Wed, 20 Apr 2016 21:43:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 25 May 2016 20:12:01 +0000</lastBuildDate>
     <atom:link href="http://blog.codeg.cn/tags/golang/feed/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>如何在win7 64位系统下安装gopcap包及使用</title>
+      <link>http://blog.codeg.cn/post/blog/2016-05-26-howto-build-gopcap-on-windows-x64/</link>
+      <pubDate>Wed, 25 May 2016 20:12:01 +0000</pubDate>
+      
+      <guid>http://blog.codeg.cn/post/blog/2016-05-26-howto-build-gopcap-on-windows-x64/</guid>
+      <description>
+
+&lt;p&gt;&lt;code&gt;gopcap&lt;/code&gt;是libpcap库的Golang封装，其项目地址在这里 &lt;a href=&#34;https://github.com/akrennmair/gopcap&#34;&gt;https://github.com/akrennmair/gopcap&lt;/a&gt; 。
+本文简要介绍一下如何在win7 64位系统平台上使用 &lt;code&gt;gopcap&lt;/code&gt; 库。&lt;/p&gt;
+
+&lt;p&gt;安装步骤如下：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;安装Golang 64位版本&lt;/li&gt;
+&lt;li&gt;安装mingw 64位版本，注意导入到windows环境变量中。让命令行能自动找到 gcc 命令&lt;/li&gt;
+&lt;li&gt;在 &lt;a href=&#34;http://www.tcpdump.org/&#34;&gt;http://www.tcpdump.org/&lt;/a&gt; 下载 libpcap-1.7.4.tar.gz，从这个包中得到libpcap的C语言头文件&lt;/li&gt;
+&lt;li&gt;在 &lt;a href=&#34;https://www.winpcap.org/install/&#34;&gt;https://www.winpcap.org/install/&lt;/a&gt; 下载winpcap并安装，从这里可以得到libpcap的windows DLL文件 wpcap.dll，用于运行&lt;/li&gt;
+&lt;li&gt;在 &lt;a href=&#34;http://www.winpcap.org/archive/&#34;&gt;http://www.winpcap.org/archive/&lt;/a&gt; 下载 4.1.1-WpdPack.zip，从其中的x64目录下找到 wpcap.lib 库，用于编译&lt;/li&gt;
+&lt;li&gt;执行下列命令：
+&lt;pre&gt;
+mkdir -p /c/wpdpcak/include
+mkdir -p /c/wpdpcak/lib/x64
+cp /c/Windows/System32/wpcap.dll /c/wpdpack/lib/x64/
+cp -rf libpcap-1.7.4/Win32/Include/* /c/wpdpack/include/
+cp -rf libpcap-1.7.4/pcap.h libpcap-1.7.4/pcap /c/wpdpack/include/
+cp -rf 4.1.1-WpdPack/WpdPack/Lib/x64/wpcap.lib /c/wpdpcak/lib/x64
+&lt;/pre&gt;
+这里，将相关头文库、库文件都放在 &lt;code&gt;C:\wpdpcak&lt;/code&gt; 目录下，是因为 gopcap 库的cgo编译选择是这么设置，当然你也可以修改源码的方式来重新设置目录。&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;编译过程中如果出现下列错误&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;$ go build
+# github.com/akrennmair/gopcap
+In file included from C:/WpdPack/Include/pcap.h:43:0,
+          from ..\..\..\akrennmair\gopcap\pcap.go:12:
+C:/WpdPack/Include/pcap/pcap.h:450:1: error: unknown type name &#39;Adapter&#39;
+Adapter *pcap_get_adapter(pcap_t *p);
+^
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;就将 pcap/pcap.h 中这一行注释掉。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;至此，应该再不会有问题了，编译成功。 gopcap 库的toots目录有很多使用用例，可以看看以了解如何使用。&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&#34;参考:74f61569ed0f5a8ab78927a7660545ad&#34;&gt;参考&lt;/h2&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;http://blog.golang.org/c-go-cgo&#34;&gt;http://blog.golang.org/c-go-cgo&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/akrennmair/gopcap&#34;&gt;https://github.com/akrennmair/gopcap&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+    </item>
     
     <item>
       <title>Golang CGO编程之调用返回char*指针及长度的C函数库</title>
@@ -2196,163 +2251,6 @@ int sigprocmask(int how, const sigset_t *set, sigset_t *oldset);
 &lt;p&gt;&lt;strong&gt;屏蔽之后又能怎样呢？&lt;/strong&gt;&lt;/p&gt;
 
 &lt;p&gt;To be continue &amp;hellip;&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>Golang源码阅读——crypto/subtle.ConstantTimeByteEq 深度解析</title>
-      <link>http://blog.codeg.cn/2015/01/12/go-source-code-reading-ConstantTimeByteEq/</link>
-      <pubDate>Mon, 12 Jan 2015 00:00:00 +0000</pubDate>
-      
-      <guid>http://blog.codeg.cn/2015/01/12/go-source-code-reading-ConstantTimeByteEq/</guid>
-      <description>
-
-&lt;p&gt;根据文档说明，&lt;code&gt;ConstantTimeByteEq&lt;/code&gt;返回1，如果 x == y；相反则返回0。为什么一个简单整数比较操作要搞一个单独的函数出来实现？并且其实现代码看起来要不&lt;code&gt;x == y&lt;/code&gt;复杂多了？&lt;/p&gt;
-
-&lt;h2 id=&#34;源码及分析:ef64d2df714e833ca9fe22eeddfbfeb8&#34;&gt;源码及分析&lt;/h2&gt;
-
-&lt;p&gt;先看源码实现，如下：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;// ConstantTimeByteEq returns 1 if x == y and 0 otherwise.
-func ConstantTimeByteEq(x, y uint8) int {
-	z := ^(x ^ y)
-	z &amp;amp;= z &amp;gt;&amp;gt; 4
-	z &amp;amp;= z &amp;gt;&amp;gt; 2
-	z &amp;amp;= z &amp;gt;&amp;gt; 1
-
-	return int(z)
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;分析源码可以发现，其的确是实现了该函数的功能，如果&lt;code&gt;x == y&lt;/code&gt;则返回1；相反则返回0。&lt;/p&gt;
-
-&lt;p&gt;&lt;code&gt;x ^ y&lt;/code&gt;就是x按位异或y, 以某一位为例，其异或结果为1如果x和y不同，相反为0:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;x            = 01010011
-y            = 00010011
-x ^ y        = 01000000
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;&lt;code&gt;^(x ^ y)&lt;/code&gt;是上述表达式的取反操作&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;^(x ^ y)     = 10111111 =&amp;gt; z
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;然后，我们开始右移&lt;code&gt;z&lt;/code&gt;。其过程如下：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;z &amp;gt;&amp;gt; 4       = 00001011
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;第一轮：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;z            = 10111111
-z &amp;gt;&amp;gt; 4       = 00001011
-z &amp;amp; (z &amp;gt;&amp;gt; 4) = 00001011
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;第二轮：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;z            = 00001011
-z &amp;gt;&amp;gt; 2       = 00000010
-z &amp;amp; (z &amp;gt;&amp;gt; 2) = 00000010
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;最后一轮：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;z            = 00001010
-z &amp;gt;&amp;gt; 1       = 00000001
-z &amp;amp; (z &amp;gt;&amp;gt; 1) = 00000000
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;然后我们得到&lt;code&gt;z&lt;/code&gt;的结果为0。如果&lt;code&gt;x&lt;/code&gt;与&lt;code&gt;y&lt;/code&gt;的值不同，那么其结果如下：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;z            = 11111111
-z (&amp;amp; z &amp;gt;&amp;gt; 4) = 00001111
-z (&amp;amp; z &amp;gt;&amp;gt; 2) = 00000011
-z (&amp;amp; z &amp;gt;&amp;gt; 1) = 00000001
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;因此，该函数真的就如其文档所述，当&lt;code&gt;x == y&lt;/code&gt;时返回1，否则返回0。&lt;/p&gt;
-
-&lt;h2 id=&#34;背后的含义:ef64d2df714e833ca9fe22eeddfbfeb8&#34;&gt;背后的含义&lt;/h2&gt;
-
-&lt;p&gt;一般而言，关于两个数，&lt;code&gt;x&lt;/code&gt;与&lt;code&gt;y&lt;/code&gt;之间的比较操作，如果&lt;code&gt;x&lt;/code&gt;与&lt;code&gt;y&lt;/code&gt;都为0的话，其消耗的CPU时间会比较小，其他情况下会消耗更多的CPU时间。换句话说，&lt;code&gt;x&lt;/code&gt;与&lt;code&gt;y&lt;/code&gt;之间的比较操作所耗费的CPU时间与其具体值有关。Golang源码中如此做是为了得到一致的CPU时间消耗，而与&lt;code&gt;x&lt;/code&gt;、&lt;code&gt;y&lt;/code&gt;的值具体是什么无关。通过这种方法，一个攻击者（黑客）就不可能利用基于时间相关的旁道攻击了。&lt;/p&gt;
-
-&lt;p&gt;为什么会有这种区别呢？其核心是为避免CPU的分支预测技术。请看看下面的代码：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;var a, b, c, d byte
-_ =  a == b &amp;amp;&amp;amp; c == d
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;编译出来的汇编代码可能为：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;0017 (foo.go:15) MOVQ    $0,BX
-0018 (foo.go:15) MOVQ    $0,DX
-0019 (foo.go:15) MOVQ    $0,CX
-0020 (foo.go:15) MOVQ    $0,AX
-0021 (foo.go:16) JMP     ,24
-0022 (foo.go:16) MOVQ    $1,AX
-0023 (foo.go:16) JMP     ,30
-0024 (foo.go:16) CMPB    BX,DX
-0025 (foo.go:16) JNE     ,29
-0026 (foo.go:16) CMPB    CX,AX
-0027 (foo.go:16) JNE     ,29
-0028 (foo.go:16) JMP     ,22
-0029 (foo.go:16) MOVQ    $0,AX
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;而利用 &lt;code&gt;ConstantTimeByteEq&lt;/code&gt;，如下&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;var a, b, c, d byte
-_ =  subtle.ConstantTimeByteEq(a, b) &amp;amp; subtle.ConstantTimeByteEq(c, d)
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;则汇编代码可能为：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;0018 (foo.go:15) MOVQ    $0,DX
-0019 (foo.go:15) MOVQ    $0,AX
-0020 (foo.go:15) MOVQ    $0,DI
-0021 (foo.go:15) MOVQ    $0,SI
-0022 (foo.go:16) XORQ    AX,DX
-0023 (foo.go:16) XORQ    $-1,DX
-0024 (foo.go:16) MOVQ    DX,BX
-0025 (foo.go:16) SHRB    $4,BX
-0026 (foo.go:16) ANDQ    BX,DX
-0027 (foo.go:16) MOVQ    DX,BX
-0028 (foo.go:16) SHRB    $2,BX
-0029 (foo.go:16) ANDQ    BX,DX
-0030 (foo.go:16) MOVQ    DX,AX
-0031 (foo.go:16) SHRB    $1,DX
-0032 (foo.go:16) ANDQ    DX,AX
-0033 (foo.go:16) MOVBQZX AX,DX
-0034 (foo.go:16) MOVQ    DI,BX
-0035 (foo.go:16) XORQ    SI,BX
-0036 (foo.go:16) XORQ    $-1,BX
-0037 (foo.go:16) MOVQ    BX,AX
-0038 (foo.go:16) SHRB    $4,BX
-0039 (foo.go:16) ANDQ    BX,AX
-0040 (foo.go:16) MOVQ    AX,BX
-0041 (foo.go:16) SHRB    $2,BX
-0042 (foo.go:16) ANDQ    BX,AX
-0043 (foo.go:16) MOVQ    AX,BX
-0044 (foo.go:16) SHRB    $1,BX
-0045 (foo.go:16) ANDQ    BX,AX
-0046 (foo.go:16) MOVBQZX AX,BX
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;可以看出，虽然第二种汇编指令更长更多，但其是线性执行的，没有任何分支。有道是，哪怕是一个比特的信息泄露，也有可能将你的加密体系从“基本上牢不可破”变为“希望其不值得一破”，这是件相当严肃的事情。&lt;/p&gt;
-
-&lt;h2 id=&#34;旁道攻击-sca-side-channel-attack:ef64d2df714e833ca9fe22eeddfbfeb8&#34;&gt;旁道攻击（SCA：side-channel attack）&lt;/h2&gt;
-
-&lt;p&gt;旁道攻击是避开复杂的密码算法，利用密码算法在软硬件实现的系统中泄露出的各种信息进行攻击，一般分为时间攻击(timing side-channel attack)、电磁攻击、能量攻击等三种旁道攻击方法。&lt;/p&gt;
-
-&lt;h2 id=&#34;参考资料:ef64d2df714e833ca9fe22eeddfbfeb8&#34;&gt;参考资料：&lt;/h2&gt;
-
-&lt;ol&gt;
-&lt;li&gt;&lt;a href=&#34;http://stackoverflow.com/questions/17603487/how-does-constanttimebyteeq-work&#34;&gt;http://stackoverflow.com/questions/17603487/how-does-constanttimebyteeq-work&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://stackoverflow.com/questions/18366158/why-do-we-need-a-constant-time-single-byte-comparison-function&#34;&gt;http://stackoverflow.com/questions/18366158/why-do-we-need-a-constant-time-single-byte-comparison-function&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://en.wikipedia.org/wiki/Side_channel_attack&#34;&gt;旁道攻击http://en.wikipedia.org/wiki/Side_channel_attack&lt;/a&gt;&lt;/li&gt;
-&lt;/ol&gt;
 </description>
     </item>
     
