@@ -31,6 +31,28 @@ to manage its configuration automatically and dynamically.
 例如 Docker、 Swarm、 Mesos/Marathon、 Kubernetes、 Consul、 Etcd、 Zookeeper、 BoltDB、 Rest API、 文件 等等，
 可以自动地动态管理和加载各种配置。&lt;/p&gt;
 
+&lt;p&gt;特点如下：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;快速，benchmark显示，能够达到nginx的85%的性能&lt;/li&gt;
+&lt;li&gt;没有依赖地狱，得益于Golang的特性，单个二进制文件就能运行&lt;/li&gt;
+&lt;li&gt;Rest API&lt;/li&gt;
+&lt;li&gt;监视后端，能够自动监听后端配置的变化。&lt;/li&gt;
+&lt;li&gt;配置的热重加载，无需重新启动进程或服务器&lt;/li&gt;
+&lt;li&gt;优雅地关闭Http连接&lt;/li&gt;
+&lt;li&gt;后端的断路器Circuit breaker&lt;/li&gt;
+&lt;li&gt;Round Robin rebalancer 负载平衡&lt;/li&gt;
+&lt;li&gt;Rest测量&lt;/li&gt;
+&lt;li&gt;包括小的官方docker&lt;/li&gt;
+&lt;li&gt;SSL后端支持&lt;/li&gt;
+&lt;li&gt;SSL前端支持&lt;/li&gt;
+&lt;li&gt;干净的AngularJS Web UI&lt;/li&gt;
+&lt;li&gt;支持Websocket&lt;/li&gt;
+&lt;li&gt;支持Http/2&lt;/li&gt;
+&lt;li&gt;如果网络错误重试请求&lt;/li&gt;
+&lt;li&gt;自动Https支持(Let’s Encrypt)&lt;/li&gt;
+&lt;/ol&gt;
+
 &lt;h2 id=&#34;用法:34b0e58d062ee9acee54f0313b094782&#34;&gt;用法&lt;/h2&gt;
 
 &lt;p&gt;最简单的用法当然是做一个HTTP反向代理用。&lt;/p&gt;
