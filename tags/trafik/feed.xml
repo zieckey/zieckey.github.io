@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Trafik on CodeG Blog</title>
+    <link>http://blog.codeg.cn/tags/trafik/</link>
+    <description>Recent content in Trafik on CodeG Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <copyright>Copyright (c) 2015. All rights reserved.</copyright>
+    <lastBuildDate>Thu, 26 May 2016 07:00:00 +0000</lastBuildDate>
+    <atom:link href="http://blog.codeg.cn/tags/trafik/feed/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Trafik源代码阅读</title>
+      <link>http://blog.codeg.cn/post/blog/2016-05-26-trafik-source-code-reading/</link>
+      <pubDate>Thu, 26 May 2016 07:00:00 +0000</pubDate>
+      
+      <guid>http://blog.codeg.cn/post/blog/2016-05-26-trafik-source-code-reading/</guid>
+      <description>
+
+&lt;h2 id=&#34;trafik介绍:34b0e58d062ee9acee54f0313b094782&#34;&gt;Trafik介绍&lt;/h2&gt;
+
+&lt;p&gt;其&lt;a href=&#34;https://docs.traefik.io/&#34;&gt;官网&lt;/a&gt;是这么介绍的：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Træfɪk is a modern HTTP reverse proxy and load balancer made to deploy microservices with ease. 
+It supports several backends (Docker, Swarm, Mesos/Marathon, Consul, Etcd, Zookeeper, BoltDB, Rest API, file...) 
+to manage its configuration automatically and dynamically.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;翻译过来就是：Træfɪk是一个现代的HTTP反向代理和易用的微服务负载平衡器，支持多种后端服务，
+例如 Docker、 Swarm、 Mesos/Marathon、 Kubernetes、 Consul、 Etcd、 Zookeeper、 BoltDB、 Rest API、 文件 等等，
+可以自动地动态管理和加载各种配置。&lt;/p&gt;
+
+&lt;h2 id=&#34;用法:34b0e58d062ee9acee54f0313b094782&#34;&gt;用法&lt;/h2&gt;
+
+&lt;p&gt;最简单的用法当然是做一个HTTP反向代理用。&lt;/p&gt;
+
+&lt;p&gt;假设我们有一个HTTP服务 &lt;code&gt;http://10.16.28.17:8091/echo&lt;/code&gt;, 我们用Trafik做为反向代理的配置 &lt;code&gt;trafik.toml&lt;/code&gt; 如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;logLevel = &amp;quot;DEBUG&amp;quot;
+
+defaultEntryPoints = [&amp;quot;http&amp;quot;]
+
+[entryPoints]
+  [entryPoints.http]
+  address = &amp;quot;:8080&amp;quot;
+
+[file]
+  [backends]
+    [backends.httpecho]
+      [backends.httpecho.servers.server1]
+        url = &amp;quot;http://10.16.28.17:8091&amp;quot;
+        weight = 1
+  [frontends]
+    [frontends.fe1]
+    backend = &amp;quot;httpecho&amp;quot;
+      [frontends.fe1.routes.rule1]
+      rule = &amp;quot;Path:/echo&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;参考Trafik官方文档说明，我们这个配置解释如下：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;将Trafik的日志级别 &lt;code&gt;logLevel&lt;/code&gt; 定义为 &lt;code&gt;DEBUG&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;默认的接入点 &lt;code&gt;defaultEntryPoints&lt;/code&gt; 定义为 &lt;code&gt;http&lt;/code&gt;，并且其端口为 &lt;code&gt;8080&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;然后在 &lt;code&gt;[file]&lt;/code&gt; 段定义 &lt;code&gt;backends&lt;/code&gt; 和 &lt;code&gt;frontends&lt;/code&gt;， 也就是Trafik的路由转发规则&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;backends&lt;/code&gt;段定义了一个后端服务，URL地址和权重都设置好了。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;frontends&lt;/code&gt;段定义转发规则，即将URL路径为 /echo 的请求转发到合适的 &lt;code&gt;backend&lt;/code&gt; 上。&lt;/li&gt;
+&lt;li&gt;然后我们可以用 curl 来测试转发是否正常： &lt;code&gt;curl http://localhost:8080/echo -d xxxxxx&lt;/code&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&#34;源码阅读:34b0e58d062ee9acee54f0313b094782&#34;&gt;源码阅读&lt;/h2&gt;
+
+&lt;h3 id=&#34;http多路分发器-mux:34b0e58d062ee9acee54f0313b094782&#34;&gt;HTTP多路分发器：mux&lt;/h3&gt;
+
+&lt;p&gt;&lt;code&gt;github.com/gorilla/mux&lt;/code&gt; 是一个HTTP多路分发器，其原理也比较简单，就是实现了Golang标准库中的 &lt;code&gt;net.http.Handler&lt;/code&gt; 接口，即如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;type Handler interface {
+    ServeHTTP(ResponseWriter, *Request)
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;当mux注册到HTTP服务之后，所有的HTTP请求就会由标准库 &lt;code&gt;net/http&lt;/code&gt; 转发到mux库中的 &lt;code&gt;func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request)&lt;/code&gt; 函数中，
+mux.Router.ServeHTTP这个函数再进行自己的路由规则匹配和转发。&lt;/p&gt;
+
+&lt;p&gt;Trafik使用 &lt;code&gt;github.com/gorilla/mux&lt;/code&gt; 库做路由转发。&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

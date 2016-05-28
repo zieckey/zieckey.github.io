@@ -13,36 +13,36 @@
     }
 
     </script>
-    <title>如何在win7 64位系统下安装gopcap包及使用 - CodeG Blog</title>
+    <title>Trafik源代码阅读 - CodeG Blog</title>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-<meta name="description" content="gopcap是libpcap库的Golang封装，其项目地址在这里 https://github.com/akrennmair/gopcap 。 本文简要介绍一下如何在win7 64位系统平台上使用 gopcap 库。 安装步骤如下：">
+<meta name="description" content="Trafik介绍 其官网是这么介绍的： Træfɪk is a modern HTTP reverse proxy and load balancer made to deploy microservices with ease. It supports several backends (Docker, Swarm, Mesos/Marathon, Consul, Etcd, Zookeeper, BoltDB, Rest API, file...) to manage its configuration automatically and dynamically. 翻译过来就是：Træ">
 <meta name="author" content="zieckey">
 <meta name="publisher" content="zieckey">
 <meta name="generator" content="http://gohugo.io/"/>
 
-<meta itemprop="name" content="如何在win7 64位系统下安装gopcap包及使用 - CodeG Blog">
-<meta itemprop="description" content="gopcap是libpcap库的Golang封装，其项目地址在这里 https://github.com/akrennmair/gopcap 。 本文简要介绍一下如何在win7 64位系统平台上使用 gopcap 库。 安装步骤如下：">
+<meta itemprop="name" content="Trafik源代码阅读 - CodeG Blog">
+<meta itemprop="description" content="Trafik介绍 其官网是这么介绍的： Træfɪk is a modern HTTP reverse proxy and load balancer made to deploy microservices with ease. It supports several backends (Docker, Swarm, Mesos/Marathon, Consul, Etcd, Zookeeper, BoltDB, Rest API, file...) to manage its configuration automatically and dynamically. 翻译过来就是：Træ">
 <meta itemprop="image" content="http://blog.codeg.cn/public/codeg.jpg">
 
-<meta property="og:title" content="如何在win7 64位系统下安装gopcap包及使用 - CodeG Blog" />
+<meta property="og:title" content="Trafik源代码阅读 - CodeG Blog" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="http://blog.codeg.cn/post/blog/2016-05-26-howto-build-gopcap-on-windows-x64/" />
+<meta property="og:url" content="http://blog.codeg.cn/post/blog/2016-05-26-trafik-source-code-reading/" />
 <meta property="og:image" content="http://blog.codeg.cn/public/codeg.jpg" />
-<meta property="og:description" content="gopcap是libpcap库的Golang封装，其项目地址在这里 https://github.com/akrennmair/gopcap 。 本文简要介绍一下如何在win7 64位系统平台上使用 gopcap 库。 安装步骤如下：">
+<meta property="og:description" content="Trafik介绍 其官网是这么介绍的： Træfɪk is a modern HTTP reverse proxy and load balancer made to deploy microservices with ease. It supports several backends (Docker, Swarm, Mesos/Marathon, Consul, Etcd, Zookeeper, BoltDB, Rest API, file...) to manage its configuration automatically and dynamically. 翻译过来就是：Træ">
 
 <meta name="twitter:card" content="summary">
 <meta name="twitter:site" content="@zieckey">
-<meta name="twitter:title" content="如何在win7 64位系统下安装gopcap包及使用 - CodeG Blog">
-<meta name="twitter:description" content="gopcap是libpcap库的Golang封装，其项目地址在这里 https://github.com/akrennmair/gopcap 。 本文简要介绍一下如何在win7 64位系统平台上使用 gopcap 库。 安装步骤如下：">
+<meta name="twitter:title" content="Trafik源代码阅读 - CodeG Blog">
+<meta name="twitter:description" content="Trafik介绍 其官网是这么介绍的： Træfɪk is a modern HTTP reverse proxy and load balancer made to deploy microservices with ease. It supports several backends (Docker, Swarm, Mesos/Marathon, Consul, Etcd, Zookeeper, BoltDB, Rest API, file...) to manage its configuration automatically and dynamically. 翻译过来就是：Træ">
 <meta name="twitter:creator" content="@zieckey">
 <meta name="twitter:image" content="http://blog.codeg.cn/public/codeg.jpg">
 
     <script>document.documentElement.className = document.documentElement.className.replace("no-js", "js");</script>
-    <link rel="canonical" href="http://blog.codeg.cn/post/blog/2016-05-26-howto-build-gopcap-on-windows-x64/">
-    <link rel='shortlink' href="http://blog.codeg.cn/post/blog/2016-05-26-howto-build-gopcap-on-windows-x64/"/>
+    <link rel="canonical" href="http://blog.codeg.cn/post/blog/2016-05-26-trafik-source-code-reading/">
+    <link rel='shortlink' href="http://blog.codeg.cn/post/blog/2016-05-26-trafik-source-code-reading/"/>
     <link rel="shortcut icon" href="http://blog.codeg.cn/public/favicon.ico"/>
     
 <link rel="stylesheet" id="human-style-css" href="http://blog.codeg.cn/wp-content/themes/hueman/style.css" type="text/css" media="all"/>
@@ -179,20 +179,18 @@
                   class="post type-post status-publish format-standard has-post-thumbnail hentry category-australien tag-bondi-beach tag-city2surf tag-sydney">
                 <div class="post-inner group">
 
-                  <h1 class="post-title">如何在win7 64位系统下安装gopcap包及使用</h1>
+                  <h1 class="post-title">Trafik源代码阅读</h1>
 
                   <p class="post-byline">
-                    By <a target="_blank" href="http://blog.codeg.cn/">zieckey</a> · 2016年05月25日 · 457 Words ·
-                    ~1min reading time |
-                    <a href="https://github.com/zieckey/blog/edit/master/content/post/blog/2016-05-26-howto-build-gopcap-on-windows-x64.md"
+                    By <a target="_blank" href="http://blog.codeg.cn/">zieckey</a> · 2016年05月26日 · 629 Words ·
+                    ~2min reading time |
+                    <a href="https://github.com/zieckey/blog/edit/master/content/post/blog/2016-05-26-trafik-source-code-reading.md"
                        target="_blank">编辑这个页面</a>
                     | Tags:
                     
+                    <a rel="tag" href="http://blog.codeg.cn/tags/trafik">trafik</a>
+                    
                     <a rel="tag" href="http://blog.codeg.cn/tags/golang">Golang</a>
-                    
-                    <a rel="tag" href="http://blog.codeg.cn/tags/cgo">cgo</a>
-                    
-                    <a rel="tag" href="http://blog.codeg.cn/tags/libpcap">libpcap</a>
                     
                   </p>
 
@@ -210,7 +208,7 @@
                         
                         
                         
-                        本文 <a target="_blank" href="http://blog.codeg.cn/post/blog/2016-05-26-howto-build-gopcap-on-windows-x64/">http://blog.codeg.cn/post/blog/2016-05-26-howto-build-gopcap-on-windows-x64/</a> 是作者<a target="_blank" href="http://blog.codeg.cn/">zieckey</a>在研究和学习相关内容时所做的笔记，欢迎广大朋友指正和交流！
+                        本文 <a target="_blank" href="http://blog.codeg.cn/post/blog/2016-05-26-trafik-source-code-reading/">http://blog.codeg.cn/post/blog/2016-05-26-trafik-source-code-reading/</a> 是作者<a target="_blank" href="http://blog.codeg.cn/">zieckey</a>在研究和学习相关内容时所做的笔记，欢迎广大朋友指正和交流！
                         版权所有，欢迎转载和分享，但请保留此段声明。 </p>
                       </div>
 
@@ -219,50 +217,72 @@
                     <div class="entry-inner">
                       
 
-<p><code>gopcap</code>是libpcap库的Golang封装，其项目地址在这里 <a href="https://github.com/akrennmair/gopcap">https://github.com/akrennmair/gopcap</a> 。
-本文简要介绍一下如何在win7 64位系统平台上使用 <code>gopcap</code> 库。</p>
+<h2 id="trafik介绍:34b0e58d062ee9acee54f0313b094782">Trafik介绍</h2>
 
-<p>安装步骤如下：</p>
+<p>其<a href="https://docs.traefik.io/">官网</a>是这么介绍的：</p>
 
-<ol>
-<li>安装Golang 64位版本</li>
-<li>安装mingw 64位版本，注意导入到windows环境变量中。让命令行能自动找到 gcc 命令</li>
-<li>在 <a href="http://www.tcpdump.org/">http://www.tcpdump.org/</a> 下载 libpcap-1.7.4.tar.gz，从这个包中得到libpcap的C语言头文件</li>
-<li>在 <a href="https://www.winpcap.org/install/">https://www.winpcap.org/install/</a> 下载winpcap并安装，从这里可以得到libpcap的windows DLL文件 wpcap.dll，用于运行</li>
-<li>在 <a href="http://www.winpcap.org/archive/">http://www.winpcap.org/archive/</a> 下载 4.1.1-WpdPack.zip，从其中的x64目录下找到 wpcap.lib 库，用于编译</li>
-<li>执行下列命令：
-<pre>
-mkdir -p /c/wpdpcak/include
-mkdir -p /c/wpdpcak/lib/x64
-cp /c/Windows/System32/wpcap.dll /c/wpdpack/lib/x64/
-cp -rf libpcap-1.7.4/Win32/Include/* /c/wpdpack/include/
-cp -rf libpcap-1.7.4/pcap.h libpcap-1.7.4/pcap /c/wpdpack/include/
-cp -rf 4.1.1-WpdPack/WpdPack/Lib/x64/wpcap.lib /c/wpdpcak/lib/x64
-</pre>
-这里，将相关头文库、库文件都放在 <code>C:\wpdpcak</code> 目录下，是因为 gopcap 库的cgo编译选择是这么设置，当然你也可以修改源码的方式来重新设置目录。</li>
-
-<li><p>编译过程中如果出现下列错误</p>
-
-<pre><code class="language-shell">$ go build
-# github.com/akrennmair/gopcap
-In file included from C:/WpdPack/Include/pcap.h:43:0,
-          from ..\..\..\akrennmair\gopcap\pcap.go:12:
-C:/WpdPack/Include/pcap/pcap.h:450:1: error: unknown type name 'Adapter'
-Adapter *pcap_get_adapter(pcap_t *p);
-^
+<pre><code>Træfɪk is a modern HTTP reverse proxy and load balancer made to deploy microservices with ease. 
+It supports several backends (Docker, Swarm, Mesos/Marathon, Consul, Etcd, Zookeeper, BoltDB, Rest API, file...) 
+to manage its configuration automatically and dynamically.
 </code></pre>
 
-<p>就将 pcap/pcap.h 中这一行注释掉。</p></li>
+<p>翻译过来就是：Træfɪk是一个现代的HTTP反向代理和易用的微服务负载平衡器，支持多种后端服务，
+例如 Docker、 Swarm、 Mesos/Marathon、 Kubernetes、 Consul、 Etcd、 Zookeeper、 BoltDB、 Rest API、 文件 等等，
+可以自动地动态管理和加载各种配置。</p>
 
-<li><p>至此，应该再不会有问题了，编译成功。 gopcap 库的toots目录有很多使用用例，可以看看以了解如何使用。</p></li>
-</ol>
+<h2 id="用法:34b0e58d062ee9acee54f0313b094782">用法</h2>
 
-<h2 id="参考:74f61569ed0f5a8ab78927a7660545ad">参考</h2>
+<p>最简单的用法当然是做一个HTTP反向代理用。</p>
+
+<p>假设我们有一个HTTP服务 <code>http://10.16.28.17:8091/echo</code>, 我们用Trafik做为反向代理的配置 <code>trafik.toml</code> 如下：</p>
+
+<pre><code class="language-shell">logLevel = &quot;DEBUG&quot;
+
+defaultEntryPoints = [&quot;http&quot;]
+
+[entryPoints]
+  [entryPoints.http]
+  address = &quot;:8080&quot;
+
+[file]
+  [backends]
+    [backends.httpecho]
+      [backends.httpecho.servers.server1]
+        url = &quot;http://10.16.28.17:8091&quot;
+        weight = 1
+  [frontends]
+    [frontends.fe1]
+    backend = &quot;httpecho&quot;
+      [frontends.fe1.routes.rule1]
+      rule = &quot;Path:/echo&quot;
+</code></pre>
+
+<p>参考Trafik官方文档说明，我们这个配置解释如下：</p>
 
 <ol>
-<li><a href="http://blog.golang.org/c-go-cgo">http://blog.golang.org/c-go-cgo</a></li>
-<li><a href="https://github.com/akrennmair/gopcap">https://github.com/akrennmair/gopcap</a></li>
+<li>将Trafik的日志级别 <code>logLevel</code> 定义为 <code>DEBUG</code></li>
+<li>默认的接入点 <code>defaultEntryPoints</code> 定义为 <code>http</code>，并且其端口为 <code>8080</code></li>
+<li>然后在 <code>[file]</code> 段定义 <code>backends</code> 和 <code>frontends</code>， 也就是Trafik的路由转发规则</li>
+<li><code>backends</code>段定义了一个后端服务，URL地址和权重都设置好了。</li>
+<li><code>frontends</code>段定义转发规则，即将URL路径为 /echo 的请求转发到合适的 <code>backend</code> 上。</li>
+<li>然后我们可以用 curl 来测试转发是否正常： <code>curl http://localhost:8080/echo -d xxxxxx</code></li>
 </ol>
+
+<h2 id="源码阅读:34b0e58d062ee9acee54f0313b094782">源码阅读</h2>
+
+<h3 id="http多路分发器-mux:34b0e58d062ee9acee54f0313b094782">HTTP多路分发器：mux</h3>
+
+<p><code>github.com/gorilla/mux</code> 是一个HTTP多路分发器，其原理也比较简单，就是实现了Golang标准库中的 <code>net.http.Handler</code> 接口，即如下：</p>
+
+<pre><code class="language-go">type Handler interface {
+    ServeHTTP(ResponseWriter, *Request)
+}
+</code></pre>
+
+<p>当mux注册到HTTP服务之后，所有的HTTP请求就会由标准库 <code>net/http</code> 转发到mux库中的 <code>func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request)</code> 函数中，
+mux.Router.ServeHTTP这个函数再进行自己的路由规则匹配和转发。</p>
+
+<p>Trafik使用 <code>github.com/gorilla/mux</code> 库做路由转发。</p>
 
                     </div>
 
@@ -279,7 +299,7 @@ Adapter *pcap_get_adapter(pcap_t *p);
 
                     
 
-<div class="ds-thread" data-thread-key="/post/blog/2016-05-26-howto-build-gopcap-on-windows-x64/" data-title="如何在win7 64位系统下安装gopcap包及使用" data-url="http://blog.codeg.cn/post/blog/2016-05-26-howto-build-gopcap-on-windows-x64/"></div>
+<div class="ds-thread" data-thread-key="/post/blog/2016-05-26-trafik-source-code-reading/" data-title="Trafik源代码阅读" data-url="http://blog.codeg.cn/post/blog/2016-05-26-trafik-source-code-reading/"></div>
 
 
 <script type="text/javascript">
@@ -350,20 +370,14 @@ Adapter *pcap_get_adapter(pcap_t *p);
     <ul class="post-nav group">
       <li class="next">
         
-        <a href="http://blog.codeg.cn/post/blog/2016-05-16-How-to-design-an-100trillion-lines-log-data-search-engine/" rel="next">
+        <a href="http://blog.codeg.cn/post/blog/2016-05-26-howto-build-gopcap-on-windows-x64/" rel="next">
           <i class="fa fa-chevron-right"></i>
           <strong>Next post</strong>
-          <span>如何打造一个百万亿级的日志搜索引擎:Poseidon</span>
+          <span>如何在win7 64位系统下安装gopcap包及使用</span>
         </a>
         
       </li>
       <li class="previous">
-        
-        <a href="http://blog.codeg.cn/post/blog/2016-05-26-trafik-source-code-reading/" rel="prev">
-          <i class="fa fa-chevron-left"></i>
-          <strong>Previous Post</strong>
-          <span>Trafik源代码阅读</span>
-        </a>
         
       </li>
     </ul>

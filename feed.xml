@@ -7,8 +7,85 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
     <copyright>Copyright (c) 2015. All rights reserved.</copyright>
-    <lastBuildDate>Wed, 25 May 2016 20:12:01 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 26 May 2016 07:00:00 +0000</lastBuildDate>
     <atom:link href="http://blog.codeg.cn/feed/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Trafik源代码阅读</title>
+      <link>http://blog.codeg.cn/post/blog/2016-05-26-trafik-source-code-reading/</link>
+      <pubDate>Thu, 26 May 2016 07:00:00 +0000</pubDate>
+      
+      <guid>http://blog.codeg.cn/post/blog/2016-05-26-trafik-source-code-reading/</guid>
+      <description>
+
+&lt;h2 id=&#34;trafik介绍:34b0e58d062ee9acee54f0313b094782&#34;&gt;Trafik介绍&lt;/h2&gt;
+
+&lt;p&gt;其&lt;a href=&#34;https://docs.traefik.io/&#34;&gt;官网&lt;/a&gt;是这么介绍的：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Træfɪk is a modern HTTP reverse proxy and load balancer made to deploy microservices with ease. 
+It supports several backends (Docker, Swarm, Mesos/Marathon, Consul, Etcd, Zookeeper, BoltDB, Rest API, file...) 
+to manage its configuration automatically and dynamically.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;翻译过来就是：Træfɪk是一个现代的HTTP反向代理和易用的微服务负载平衡器，支持多种后端服务，
+例如 Docker、 Swarm、 Mesos/Marathon、 Kubernetes、 Consul、 Etcd、 Zookeeper、 BoltDB、 Rest API、 文件 等等，
+可以自动地动态管理和加载各种配置。&lt;/p&gt;
+
+&lt;h2 id=&#34;用法:34b0e58d062ee9acee54f0313b094782&#34;&gt;用法&lt;/h2&gt;
+
+&lt;p&gt;最简单的用法当然是做一个HTTP反向代理用。&lt;/p&gt;
+
+&lt;p&gt;假设我们有一个HTTP服务 &lt;code&gt;http://10.16.28.17:8091/echo&lt;/code&gt;, 我们用Trafik做为反向代理的配置 &lt;code&gt;trafik.toml&lt;/code&gt; 如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;logLevel = &amp;quot;DEBUG&amp;quot;
+
+defaultEntryPoints = [&amp;quot;http&amp;quot;]
+
+[entryPoints]
+  [entryPoints.http]
+  address = &amp;quot;:8080&amp;quot;
+
+[file]
+  [backends]
+    [backends.httpecho]
+      [backends.httpecho.servers.server1]
+        url = &amp;quot;http://10.16.28.17:8091&amp;quot;
+        weight = 1
+  [frontends]
+    [frontends.fe1]
+    backend = &amp;quot;httpecho&amp;quot;
+      [frontends.fe1.routes.rule1]
+      rule = &amp;quot;Path:/echo&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;参考Trafik官方文档说明，我们这个配置解释如下：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;将Trafik的日志级别 &lt;code&gt;logLevel&lt;/code&gt; 定义为 &lt;code&gt;DEBUG&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;默认的接入点 &lt;code&gt;defaultEntryPoints&lt;/code&gt; 定义为 &lt;code&gt;http&lt;/code&gt;，并且其端口为 &lt;code&gt;8080&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;然后在 &lt;code&gt;[file]&lt;/code&gt; 段定义 &lt;code&gt;backends&lt;/code&gt; 和 &lt;code&gt;frontends&lt;/code&gt;， 也就是Trafik的路由转发规则&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;backends&lt;/code&gt;段定义了一个后端服务，URL地址和权重都设置好了。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;frontends&lt;/code&gt;段定义转发规则，即将URL路径为 /echo 的请求转发到合适的 &lt;code&gt;backend&lt;/code&gt; 上。&lt;/li&gt;
+&lt;li&gt;然后我们可以用 curl 来测试转发是否正常： &lt;code&gt;curl http://localhost:8080/echo -d xxxxxx&lt;/code&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&#34;源码阅读:34b0e58d062ee9acee54f0313b094782&#34;&gt;源码阅读&lt;/h2&gt;
+
+&lt;h3 id=&#34;http多路分发器-mux:34b0e58d062ee9acee54f0313b094782&#34;&gt;HTTP多路分发器：mux&lt;/h3&gt;
+
+&lt;p&gt;&lt;code&gt;github.com/gorilla/mux&lt;/code&gt; 是一个HTTP多路分发器，其原理也比较简单，就是实现了Golang标准库中的 &lt;code&gt;net.http.Handler&lt;/code&gt; 接口，即如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;type Handler interface {
+    ServeHTTP(ResponseWriter, *Request)
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;当mux注册到HTTP服务之后，所有的HTTP请求就会由标准库 &lt;code&gt;net/http&lt;/code&gt; 转发到mux库中的 &lt;code&gt;func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request)&lt;/code&gt; 函数中，
+mux.Router.ServeHTTP这个函数再进行自己的路由规则匹配和转发。&lt;/p&gt;
+
+&lt;p&gt;Trafik使用 &lt;code&gt;github.com/gorilla/mux&lt;/code&gt; 库做路由转发。&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>如何在win7 64位系统下安装gopcap包及使用</title>
@@ -67,19 +144,19 @@ Adapter *pcap_get_adapter(pcap_t *p);
     
     <item>
       <title>如何打造一个百万亿级的日志搜索引擎:Poseidon</title>
-      <link>http://blog.codeg.cn/post/blog/2016-05-16-How-to-design-an-100trillion-lines-log-search-engine/</link>
+      <link>http://blog.codeg.cn/post/blog/2016-05-16-How-to-design-an-100trillion-lines-log-data-search-engine/</link>
       <pubDate>Mon, 16 May 2016 20:41:00 +0000</pubDate>
       
-      <guid>http://blog.codeg.cn/post/blog/2016-05-16-How-to-design-an-100trillion-lines-log-search-engine/</guid>
+      <guid>http://blog.codeg.cn/post/blog/2016-05-16-How-to-design-an-100trillion-lines-log-data-search-engine/</guid>
       <description>
 
-&lt;h2 id=&#34;项目背景:7d3784ee0c1fe01d7ae210ea5bce28cf&#34;&gt;项目背景&lt;/h2&gt;
+&lt;h2 id=&#34;项目背景:e80e814aabd37d2bdd330e0696fcd834&#34;&gt;项目背景&lt;/h2&gt;
 
 &lt;p&gt;安全分析人员经常需要知道一个样本在某个时间段内感染了哪些电脑？范围有多广？源头是从哪里来的？样本家族是什么？
 这些信息在海量的病毒查杀日志中都有蛛丝马迹可寻，如是，对海量日志进行快速的分析和检索就成为一种至关重要的能力。
 这里海量，不是百亿、万亿，而是百万亿级别(1后面14个零)，占用100PB大小(1后面17个零)。&lt;/p&gt;
 
-&lt;h3 id=&#34;项目需求:7d3784ee0c1fe01d7ae210ea5bce28cf&#34;&gt;项目需求&lt;/h3&gt;
+&lt;h3 id=&#34;项目需求:e80e814aabd37d2bdd330e0696fcd834&#34;&gt;项目需求&lt;/h3&gt;
 
 &lt;ol&gt;
 &lt;li&gt;总数据量：百万亿条、大小100PB&lt;/li&gt;
@@ -88,9 +165,9 @@ Adapter *pcap_get_adapter(pcap_t *p);
 &lt;li&gt;自定义分词策略，例如针对路径、URL、PEStringDump等信息能有分别独立自定义的分词策略。&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h2 id=&#34;现有方案调研:7d3784ee0c1fe01d7ae210ea5bce28cf&#34;&gt;现有方案调研&lt;/h2&gt;
+&lt;h2 id=&#34;现有方案调研:e80e814aabd37d2bdd330e0696fcd834&#34;&gt;现有方案调研&lt;/h2&gt;
 
-&lt;h3 id=&#34;elasticsearch:7d3784ee0c1fe01d7ae210ea5bce28cf&#34;&gt;ElasticSearch&lt;/h3&gt;
+&lt;h3 id=&#34;elasticsearch:e80e814aabd37d2bdd330e0696fcd834&#34;&gt;ElasticSearch&lt;/h3&gt;
 
 &lt;p&gt;ElasticSearch是一个基于Lucene的搜索服务器。它提供了一个分布式多用户能力的全文搜索引擎，基于RESTful web接口。
 Elasticsearch是用Java开发的，并作为Apache许可条款下的开放源码发布，是当前非常流行的搜索引擎解决方案。&lt;/p&gt;
@@ -104,14 +181,14 @@ Elasticsearch是用Java开发的，并作为Apache许可条款下的开放源码
 2. 数据需要全部倒入到ES系统中，而原始数据由于有Map/Reduce任务也需要存储在Hadoop中，这样导致数据存储上的冗余
 3. 自定义分词不灵活，需要定制开发&lt;/p&gt;
 
-&lt;h3 id=&#34;hbase:7d3784ee0c1fe01d7ae210ea5bce28cf&#34;&gt;HBase&lt;/h3&gt;
+&lt;h3 id=&#34;hbase:e80e814aabd37d2bdd330e0696fcd834&#34;&gt;HBase&lt;/h3&gt;
 
 &lt;p&gt;HBase – Hadoop Database，是一个高可靠性、高性能、面向列、可伸缩的分布式存储系统，利用HBase技术可在廉价PC Server上搭建起大规模结构化存储集群。&lt;/p&gt;
 
 &lt;p&gt;实现上，HBase是在HDFS之上的KV存储，由于我们的原始日志每一条日志的字段多达100多个，
 在测试时发现数据膨胀了7倍多，这根本就是不能接受的。另外，HBase对自定的分词策略支持有限，也需要很多的定制开发。&lt;/p&gt;
 
-&lt;h3 id=&#34;腾讯hermes:7d3784ee0c1fe01d7ae210ea5bce28cf&#34;&gt;腾讯Hermes&lt;/h3&gt;
+&lt;h3 id=&#34;腾讯hermes:e80e814aabd37d2bdd330e0696fcd834&#34;&gt;腾讯Hermes&lt;/h3&gt;
 
 &lt;ol&gt;
 &lt;li&gt;一个基于大索引技术的海量数据实时检索分析平台&lt;/li&gt;
@@ -121,11 +198,11 @@ Elasticsearch是用Java开发的，并作为Apache许可条款下的开放源码
 &lt;li&gt;只知道其索引数据也放在HDFS中，没有太多实现细节&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h2 id=&#34;poseidon详细设计:7d3784ee0c1fe01d7ae210ea5bce28cf&#34;&gt;Poseidon详细设计&lt;/h2&gt;
+&lt;h2 id=&#34;poseidon详细设计:e80e814aabd37d2bdd330e0696fcd834&#34;&gt;Poseidon详细设计&lt;/h2&gt;
 
 &lt;p&gt;Poseidon(波塞冬)，是希腊神话中的海神，在这里寓意海量数据的主宰者。&lt;/p&gt;
 
-&lt;h3 id=&#34;设计目标:7d3784ee0c1fe01d7ae210ea5bce28cf&#34;&gt;设计目标&lt;/h3&gt;
+&lt;h3 id=&#34;设计目标:e80e814aabd37d2bdd330e0696fcd834&#34;&gt;设计目标&lt;/h3&gt;
 
 &lt;p&gt;上述分析了现有的各种方案的一些基本情况，鉴于我们的数据规模实在太大，我们有理由相信全世界能需要如此规模数据集的公司也是屈指可数的，部分需求又很特殊(分词策略)，因此只能自己开发。&lt;/p&gt;
 
@@ -140,13 +217,13 @@ Elasticsearch是用Java开发的，并作为Apache许可条款下的开放源码
 &lt;li&gt;模糊匹配&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h3 id=&#34;搜索引擎核心技术介绍-倒排索引:7d3784ee0c1fe01d7ae210ea5bce28cf&#34;&gt;搜索引擎核心技术介绍——倒排索引&lt;/h3&gt;
+&lt;h3 id=&#34;搜索引擎核心技术介绍-倒排索引:e80e814aabd37d2bdd330e0696fcd834&#34;&gt;搜索引擎核心技术介绍——倒排索引&lt;/h3&gt;
 
 &lt;p&gt;倒排索引(英语:Inverted index)，也常被称为反向索引、置入档案或反向档案，是一种索引方法，
 被用来存储在全文搜索下某个单词在一个文档或者一组文档中的存储位置的映射。
 它是文档检索系统中最常用的数据结构。通过倒排索引，可以根据单词快速获取包含这个单词的文档列表。&lt;/p&gt;
 
-&lt;h3 id=&#34;在设计之前进行相关数据准备和调研:7d3784ee0c1fe01d7ae210ea5bce28cf&#34;&gt;在设计之前进行相关数据准备和调研&lt;/h3&gt;
+&lt;h3 id=&#34;在设计之前进行相关数据准备和调研:e80e814aabd37d2bdd330e0696fcd834&#34;&gt;在设计之前进行相关数据准备和调研&lt;/h3&gt;
 
 &lt;p&gt;我们有一个业务的日志数据，每天的新增数据量在700亿条(行)左右，每条大小平均850字节，明文数据量在60TB左右，GZ压缩后占用10TB。&lt;/p&gt;
 
@@ -156,7 +233,7 @@ Elasticsearch是用Java开发的，并作为Apache许可条款下的开放源码
 3. 按倒排索引建库的话，总计需要27700亿个DocId，假如每天DocId占用4字节，需要11TB的空间
 4. 上述倒排索引需要进行一定压缩编码，实际应用时争取压缩到2TB&lt;/p&gt;
 
-&lt;h3 id=&#34;基本设计原则:7d3784ee0c1fe01d7ae210ea5bce28cf&#34;&gt;基本设计原则&lt;/h3&gt;
+&lt;h3 id=&#34;基本设计原则:e80e814aabd37d2bdd330e0696fcd834&#34;&gt;基本设计原则&lt;/h3&gt;
 
 &lt;p&gt;根据上述数据调研，我们每天的增量数据目前是放在Hadoop里的，每天的倒排索引也很大，应该也要放在Hadoop中。&lt;/p&gt;
 
@@ -166,9 +243,9 @@ Elasticsearch是用Java开发的，并作为Apache许可条款下的开放源码
 3. 类似于块存储概念
 4. 128可以最大限度利用varint压缩编码的优势&lt;/p&gt;
 
-&lt;h3 id=&#34;详细设计:7d3784ee0c1fe01d7ae210ea5bce28cf&#34;&gt;详细设计&lt;/h3&gt;
+&lt;h3 id=&#34;详细设计:e80e814aabd37d2bdd330e0696fcd834&#34;&gt;详细设计&lt;/h3&gt;
 
-&lt;h4 id=&#34;原始日志数据的存储格式设计:7d3784ee0c1fe01d7ae210ea5bce28cf&#34;&gt;原始日志数据的存储格式设计&lt;/h4&gt;
+&lt;h4 id=&#34;原始日志数据的存储格式设计:e80e814aabd37d2bdd330e0696fcd834&#34;&gt;原始日志数据的存储格式设计&lt;/h4&gt;
 
 &lt;p&gt;我们知道，原始日志数据是放在hadoop中的，考虑到都是文本数据，所以进行了GZ压缩存储。
 这就带来一个问题，如果想读取一个GZ文件中的一行日志，就需要将整个GZ文件读出来、解压，然后读取我们需要的那一行数据。
@@ -181,7 +258,7 @@ Elasticsearch是用Java开发的，并作为Apache许可条款下的开放源码
 
 &lt;p&gt;详细格式请见下图：&lt;/p&gt;
 
-&lt;h2 id=&#34;参考:7d3784ee0c1fe01d7ae210ea5bce28cf&#34;&gt;参考&lt;/h2&gt;
+&lt;h2 id=&#34;参考:e80e814aabd37d2bdd330e0696fcd834&#34;&gt;参考&lt;/h2&gt;
 
 &lt;ol&gt;
 &lt;li&gt;&lt;a href=&#34;http://www.infoq.com/cn/minibooks/this-is-search-engine&#34;&gt;《这就是搜素引擎-核心技术详解》&lt;/a&gt;&lt;/li&gt;
@@ -1977,250 +2054,6 @@ fi
 &lt;ol&gt;
 &lt;li&gt;&lt;a href=&#34;http://nsq.io/overview/design.html&#34;&gt;官方文档&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;http://wiki.jikexueyuan.com/project/nsq-guide/&#34;&gt;NSQ指南中文翻译&lt;/a&gt;&lt;/li&gt;
-&lt;/ol&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>ansible简介</title>
-      <link>http://blog.codeg.cn/2015/10/08/ansible/</link>
-      <pubDate>Thu, 08 Oct 2015 00:00:00 +0000</pubDate>
-      
-      <guid>http://blog.codeg.cn/2015/10/08/ansible/</guid>
-      <description>
-
-&lt;h2 id=&#34;简介:f188025e536204472e8b7261593031f9&#34;&gt;简介&lt;/h2&gt;
-
-&lt;p&gt;ansible是新出现的自动化运维工具，基于Python开发，集合了众多运维工具（puppet、cfengine、chef、func、fabric）的优点，实现了批量系统配置、批量程序部署、批量运行命令等功能。ansible是基于模块工作的，本身没有批量部署的能力。真正具有批量部署的是ansible所运行的模块，ansible只是提供一种框架。主要包括：&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;连接插件connection plugins：负责和被监控端实现通信；&lt;/li&gt;
-&lt;li&gt;host inventory：指定操作的主机，是一个配置文件里面定义监控的主机；&lt;/li&gt;
-&lt;li&gt;各种模块核心模块、command模块、自定义模块；&lt;/li&gt;
-&lt;li&gt;借助于插件完成记录日志邮件等功能；&lt;/li&gt;
-&lt;li&gt;playbook：剧本执行多个任务时，非必需可以让节点一次性运行多个任务。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h2 id=&#34;在centos上安装:f188025e536204472e8b7261593031f9&#34;&gt;在centos上安装&lt;/h2&gt;
-
-&lt;p&gt;直接使用yum安装即可： &lt;code&gt;sudo yum install ansible&lt;/code&gt;&lt;/p&gt;
-
-&lt;h2 id=&#34;简单使用:f188025e536204472e8b7261593031f9&#34;&gt;简单使用&lt;/h2&gt;
-
-&lt;p&gt;其默认的配置路径： &lt;code&gt;/etc/ansible/ansible.cfg&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;为了避免SHH key host检查，可以将下面配置项打开：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;host_key_checking = False
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;另外，为避免一些依赖（依赖目标机器上的软件环境），可以使用 &lt;code&gt;-m raw&lt;/code&gt; 参数，例如下面是没有加这个参数时会出错：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ ansible builddev -m shell -a &amp;quot;uname -a&amp;quot; -k       
-SSH password: 
-10.16.28.17 | FAILED &amp;gt;&amp;gt; {
-    &amp;quot;failed&amp;quot;: true, 
-    &amp;quot;msg&amp;quot;: &amp;quot;/usr/bin/python: not found\n&amp;quot;, 
-    &amp;quot;parsed&amp;quot;: false
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;加上这个参数就没有问题： &lt;code&gt;ansible builddev -m shell -m raw -a &amp;quot;uname -a&amp;quot; -k&lt;/code&gt;&lt;/p&gt;
-
-&lt;h3 id=&#34;修改配置文件:f188025e536204472e8b7261593031f9&#34;&gt;修改配置文件&lt;/h3&gt;
-
-&lt;p&gt;ansible使用配置文件 &lt;code&gt;/etc/ansible/hosts&lt;/code&gt; 。其格式如下：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;
-# This is the default ansible &#39;hosts&#39; file.
-#
-# It should live in /etc/ansible/hosts
-#
-#   - Comments begin with the &#39;#&#39; character
-#   - Blank lines are ignored
-#   - Groups of hosts are delimited by [header] elements
-#   - You can enter hostnames or ip addresses
-#   - A hostname/ip can be a member of multiple groups
-
-# Ex 1: Ungrouped hosts, specify before any group headers.
-
-green.example.com
-blue.example.com
-192.168.100.1
-192.168.100.10
-
-# Ex 2: A collection of hosts belonging to the &#39;webservers&#39; group
-
-[webservers]
-alpha.example.org
-beta.example.org
-192.168.1.100
-192.168.1.110
-
-# If you have multiple hosts following a pattern you can specify
-# them like this:
-
-www[001:006].example.com
-
-# Ex 3: A collection of database servers in the &#39;dbservers&#39; group
-
-[dbservers]
-
-db01.intranet.mydomain.net
-db02.intranet.mydomain.net
-10.25.1.56
-10.25.1.57
-
-# Here&#39;s another example of host ranges, this time there are no
-# leading 0s:
-
-db-[99:101]-node.example.com
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;我们编辑这个文件，删除原来所有的配置，然后增加一个group，最终完整文件内容如下：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;[build]
-10.16.29.179
-10.16.28.17
-10.16.28.18
-10.16.29.88
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3 id=&#34;使用:f188025e536204472e8b7261593031f9&#34;&gt;使用&lt;/h3&gt;
-
-&lt;h4 id=&#34;示例1-ansible-build-a-date-k:f188025e536204472e8b7261593031f9&#34;&gt;示例1：ansible build -a date -k&lt;/h4&gt;
-
-&lt;p&gt;该命令标示针对&lt;code&gt;build&lt;/code&gt;这一组机器，执行&lt;code&gt;date&lt;/code&gt;命令，&lt;code&gt;-k&lt;/code&gt;标示要使用ssh时提示密码输入符，&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;[codeg@build ~]$ ansible build -a date -k       
-SSH password: 
-
-paramiko: The authenticity of host &#39;10.16.29.88&#39; can&#39;t be established.
-The ssh-rsa key fingerprint is 3151f8e35301c476af609c3bb31b5e37.
-Are you sure you want to continue connecting (yes/no)?
-yes
-10.16.28.18 | success | rc=0 &amp;gt;&amp;gt;
-Thu Oct  8 11:43:49 CST 2015
-
-10.16.29.179 | success | rc=0 &amp;gt;&amp;gt;
-Thu Oct  8 11:50:14 CST 2015
-
-10.16.28.17 | success | rc=0 &amp;gt;&amp;gt;
-Thu Oct  8 11:50:14 CST 2015
-
-10.16.29.88 | success | rc=0 &amp;gt;&amp;gt;
-Thu Oct  8 11:50:18 CST 2015
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h4 id=&#34;示例2-执行复杂的命令-ansible-build-m-shell-a-ls-l-head-1-k:f188025e536204472e8b7261593031f9&#34;&gt;示例2，执行复杂的命令：ansible build -m shell -a &amp;ldquo;ls -l | head -1&amp;rdquo; -k&lt;/h4&gt;
-
-&lt;p&gt;使用shell模块，表明是执行shell指令。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ ansible build -m shell -a &amp;quot;ls -l | head -1&amp;quot; -k
-SSH password: 
-10.16.28.17 | success | rc=0 &amp;gt;&amp;gt;
-total 454360
-
-10.16.28.18 | success | rc=0 &amp;gt;&amp;gt;
-total 33288
-
-10.16.29.179 | success | rc=0 &amp;gt;&amp;gt;
-total 87776
-
-10.16.29.88 | success | rc=0 &amp;gt;&amp;gt;
-total 469384ls: write error: Broken pipe
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h4 id=&#34;示例3-文件拷贝-ansible-build-m-copy-a-src-a-sh-dest-tmp-abcx-sh-k:f188025e536204472e8b7261593031f9&#34;&gt;示例3，文件拷贝：ansible build -m copy -a &amp;ldquo;src=a.sh dest=/tmp/abcx.sh&amp;rdquo; -k&lt;/h4&gt;
-
-&lt;p&gt;使用&lt;code&gt;copy&lt;/code&gt;模块来传输文件，通过src/dest两个参数来指定原始文件和目标机的目的地址。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ ansible build -m copy -a &amp;quot;src=a.sh dest=/tmp/abcx.sh&amp;quot; -k  
-SSH password: 
-10.16.28.18 | success &amp;gt;&amp;gt; {
-    &amp;quot;changed&amp;quot;: true, 
-    &amp;quot;checksum&amp;quot;: &amp;quot;b9da991c935ccdda2231e2a3704ef943035dd4d4&amp;quot;, 
-    &amp;quot;dest&amp;quot;: &amp;quot;/tmp/abcx.sh&amp;quot;, 
-    &amp;quot;gid&amp;quot;: 3534, 
-    &amp;quot;group&amp;quot;: &amp;quot;codeg&amp;quot;, 
-    &amp;quot;md5sum&amp;quot;: &amp;quot;1506d51353f96a582b86891999e63091&amp;quot;, 
-    &amp;quot;mode&amp;quot;: &amp;quot;0664&amp;quot;, 
-    &amp;quot;owner&amp;quot;: &amp;quot;codeg&amp;quot;, 
-    &amp;quot;size&amp;quot;: 61, 
-    &amp;quot;src&amp;quot;: &amp;quot;/home/codeg/.ansible/tmp/ansible-tmp-1444292722.63-246642726358339/source&amp;quot;, 
-    &amp;quot;state&amp;quot;: &amp;quot;file&amp;quot;, 
-    &amp;quot;uid&amp;quot;: 3534
-}
-
-10.16.28.17 | success &amp;gt;&amp;gt; {
-    &amp;quot;changed&amp;quot;: true, 
-    &amp;quot;checksum&amp;quot;: &amp;quot;b9da991c935ccdda2231e2a3704ef943035dd4d4&amp;quot;, 
-    &amp;quot;dest&amp;quot;: &amp;quot;/tmp/abcx.sh&amp;quot;, 
-    &amp;quot;gid&amp;quot;: 3534, 
-    &amp;quot;group&amp;quot;: &amp;quot;codeg&amp;quot;, 
-    &amp;quot;md5sum&amp;quot;: &amp;quot;1506d51353f96a582b86891999e63091&amp;quot;, 
-    &amp;quot;mode&amp;quot;: &amp;quot;0664&amp;quot;, 
-    &amp;quot;owner&amp;quot;: &amp;quot;codeg&amp;quot;, 
-    &amp;quot;size&amp;quot;: 61, 
-    &amp;quot;src&amp;quot;: &amp;quot;/home/codeg/.ansible/tmp/ansible-tmp-1444292722.67-256074204427798/source&amp;quot;, 
-    &amp;quot;state&amp;quot;: &amp;quot;file&amp;quot;, 
-    &amp;quot;uid&amp;quot;: 3534
-}
-
-10.16.29.88 | success &amp;gt;&amp;gt; {
-    &amp;quot;changed&amp;quot;: true, 
-    &amp;quot;checksum&amp;quot;: &amp;quot;b9da991c935ccdda2231e2a3704ef943035dd4d4&amp;quot;, 
-    &amp;quot;dest&amp;quot;: &amp;quot;/tmp/abcx.sh&amp;quot;, 
-    &amp;quot;gid&amp;quot;: 3534, 
-    &amp;quot;group&amp;quot;: &amp;quot;codeg&amp;quot;, 
-    &amp;quot;md5sum&amp;quot;: &amp;quot;1506d51353f96a582b86891999e63091&amp;quot;, 
-    &amp;quot;mode&amp;quot;: &amp;quot;0664&amp;quot;, 
-    &amp;quot;owner&amp;quot;: &amp;quot;codeg&amp;quot;, 
-    &amp;quot;size&amp;quot;: 61, 
-    &amp;quot;src&amp;quot;: &amp;quot;/home/codeg/.ansible/tmp/ansible-tmp-1444292722.64-195326527082374/source&amp;quot;, 
-    &amp;quot;state&amp;quot;: &amp;quot;file&amp;quot;, 
-    &amp;quot;uid&amp;quot;: 3534
-}
-
-10.16.29.179 | success &amp;gt;&amp;gt; {
-    &amp;quot;changed&amp;quot;: true, 
-    &amp;quot;checksum&amp;quot;: &amp;quot;b9da991c935ccdda2231e2a3704ef943035dd4d4&amp;quot;, 
-    &amp;quot;dest&amp;quot;: &amp;quot;/tmp/abcx.sh&amp;quot;, 
-    &amp;quot;gid&amp;quot;: 3534, 
-    &amp;quot;group&amp;quot;: &amp;quot;codeg&amp;quot;, 
-    &amp;quot;md5sum&amp;quot;: &amp;quot;1506d51353f96a582b86891999e63091&amp;quot;, 
-    &amp;quot;mode&amp;quot;: &amp;quot;0664&amp;quot;, 
-    &amp;quot;owner&amp;quot;: &amp;quot;codeg&amp;quot;, 
-    &amp;quot;size&amp;quot;: 61, 
-    &amp;quot;src&amp;quot;: &amp;quot;/home/codeg/.ansible/tmp/ansible-tmp-1444292722.68-230895291500491/source&amp;quot;, 
-    &amp;quot;state&amp;quot;: &amp;quot;file&amp;quot;, 
-    &amp;quot;uid&amp;quot;: 3534
-}
-
-$ ansible build -m shell -a &amp;quot;ls /tmp/abcx.sh&amp;quot; -k                   
-SSH password: 
-10.16.28.18 | success | rc=0 &amp;gt;&amp;gt;
-/tmp/abcx.sh
-
-10.16.28.17 | success | rc=0 &amp;gt;&amp;gt;
-/tmp/abcx.sh
-
-10.16.29.179 | success | rc=0 &amp;gt;&amp;gt;
-/tmp/abcx.sh
-
-10.16.29.88 | success | rc=0 &amp;gt;&amp;gt;
-/tmp/abcx.sh
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h4 id=&#34;示例4-批量拷贝文件:f188025e536204472e8b7261593031f9&#34;&gt;示例4，批量拷贝文件：&lt;/h4&gt;
-
-&lt;p&gt;TODO&lt;/p&gt;
-
-&lt;h3 id=&#34;参考文献:f188025e536204472e8b7261593031f9&#34;&gt;参考文献&lt;/h3&gt;
-
-&lt;ol&gt;
-&lt;li&gt;&lt;a href=&#34;http://docs.ansible.com/&#34;&gt;官方文档&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://os.51cto.com/art/201409/451927_all.htm&#34; title=&#34;自动化运维工具之ansible&#34;&gt;自动化运维工具之ansible&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;
 </description>
     </item>

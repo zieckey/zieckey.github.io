@@ -7,8 +7,85 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
     <copyright>Copyright (c) 2015. All rights reserved.</copyright>
-    <lastBuildDate>Wed, 25 May 2016 20:12:01 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 26 May 2016 07:00:00 +0000</lastBuildDate>
     <atom:link href="http://blog.codeg.cn/tags/golang/feed/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Trafik源代码阅读</title>
+      <link>http://blog.codeg.cn/post/blog/2016-05-26-trafik-source-code-reading/</link>
+      <pubDate>Thu, 26 May 2016 07:00:00 +0000</pubDate>
+      
+      <guid>http://blog.codeg.cn/post/blog/2016-05-26-trafik-source-code-reading/</guid>
+      <description>
+
+&lt;h2 id=&#34;trafik介绍:34b0e58d062ee9acee54f0313b094782&#34;&gt;Trafik介绍&lt;/h2&gt;
+
+&lt;p&gt;其&lt;a href=&#34;https://docs.traefik.io/&#34;&gt;官网&lt;/a&gt;是这么介绍的：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Træfɪk is a modern HTTP reverse proxy and load balancer made to deploy microservices with ease. 
+It supports several backends (Docker, Swarm, Mesos/Marathon, Consul, Etcd, Zookeeper, BoltDB, Rest API, file...) 
+to manage its configuration automatically and dynamically.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;翻译过来就是：Træfɪk是一个现代的HTTP反向代理和易用的微服务负载平衡器，支持多种后端服务，
+例如 Docker、 Swarm、 Mesos/Marathon、 Kubernetes、 Consul、 Etcd、 Zookeeper、 BoltDB、 Rest API、 文件 等等，
+可以自动地动态管理和加载各种配置。&lt;/p&gt;
+
+&lt;h2 id=&#34;用法:34b0e58d062ee9acee54f0313b094782&#34;&gt;用法&lt;/h2&gt;
+
+&lt;p&gt;最简单的用法当然是做一个HTTP反向代理用。&lt;/p&gt;
+
+&lt;p&gt;假设我们有一个HTTP服务 &lt;code&gt;http://10.16.28.17:8091/echo&lt;/code&gt;, 我们用Trafik做为反向代理的配置 &lt;code&gt;trafik.toml&lt;/code&gt; 如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;logLevel = &amp;quot;DEBUG&amp;quot;
+
+defaultEntryPoints = [&amp;quot;http&amp;quot;]
+
+[entryPoints]
+  [entryPoints.http]
+  address = &amp;quot;:8080&amp;quot;
+
+[file]
+  [backends]
+    [backends.httpecho]
+      [backends.httpecho.servers.server1]
+        url = &amp;quot;http://10.16.28.17:8091&amp;quot;
+        weight = 1
+  [frontends]
+    [frontends.fe1]
+    backend = &amp;quot;httpecho&amp;quot;
+      [frontends.fe1.routes.rule1]
+      rule = &amp;quot;Path:/echo&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;参考Trafik官方文档说明，我们这个配置解释如下：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;将Trafik的日志级别 &lt;code&gt;logLevel&lt;/code&gt; 定义为 &lt;code&gt;DEBUG&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;默认的接入点 &lt;code&gt;defaultEntryPoints&lt;/code&gt; 定义为 &lt;code&gt;http&lt;/code&gt;，并且其端口为 &lt;code&gt;8080&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;然后在 &lt;code&gt;[file]&lt;/code&gt; 段定义 &lt;code&gt;backends&lt;/code&gt; 和 &lt;code&gt;frontends&lt;/code&gt;， 也就是Trafik的路由转发规则&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;backends&lt;/code&gt;段定义了一个后端服务，URL地址和权重都设置好了。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;frontends&lt;/code&gt;段定义转发规则，即将URL路径为 /echo 的请求转发到合适的 &lt;code&gt;backend&lt;/code&gt; 上。&lt;/li&gt;
+&lt;li&gt;然后我们可以用 curl 来测试转发是否正常： &lt;code&gt;curl http://localhost:8080/echo -d xxxxxx&lt;/code&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&#34;源码阅读:34b0e58d062ee9acee54f0313b094782&#34;&gt;源码阅读&lt;/h2&gt;
+
+&lt;h3 id=&#34;http多路分发器-mux:34b0e58d062ee9acee54f0313b094782&#34;&gt;HTTP多路分发器：mux&lt;/h3&gt;
+
+&lt;p&gt;&lt;code&gt;github.com/gorilla/mux&lt;/code&gt; 是一个HTTP多路分发器，其原理也比较简单，就是实现了Golang标准库中的 &lt;code&gt;net.http.Handler&lt;/code&gt; 接口，即如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;type Handler interface {
+    ServeHTTP(ResponseWriter, *Request)
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;当mux注册到HTTP服务之后，所有的HTTP请求就会由标准库 &lt;code&gt;net/http&lt;/code&gt; 转发到mux库中的 &lt;code&gt;func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request)&lt;/code&gt; 函数中，
+mux.Router.ServeHTTP这个函数再进行自己的路由规则匹配和转发。&lt;/p&gt;
+
+&lt;p&gt;Trafik使用 &lt;code&gt;github.com/gorilla/mux&lt;/code&gt; 库做路由转发。&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>如何在win7 64位系统下安装gopcap包及使用</title>
@@ -2140,117 +2217,6 @@ func (m *MHtml) GetBoundary(r *textproto.Reader) string {
 
 &lt;p&gt;&lt;a href=&#34;http://godoc.org/mime&#34;&gt;http://godoc.org/mime&lt;/a&gt;
 &lt;a href=&#34;http://godoc.org/net/textproto&#34;&gt;http://godoc.org/net/textproto&lt;/a&gt;&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>多进程编程</title>
-      <link>http://blog.codeg.cn/2015/01/13/linux-system-programming/</link>
-      <pubDate>Tue, 13 Jan 2015 00:00:00 +0000</pubDate>
-      
-      <guid>http://blog.codeg.cn/2015/01/13/linux-system-programming/</guid>
-      <description>
-
-&lt;h3 id=&#34;wait-和-waitpid:3f64be113f8a592d17a2347ee2a95fd7&#34;&gt;wait 和 waitpid&lt;/h3&gt;
-
-&lt;p&gt;当一个进程正常或异常退出时，内核就向其父进程发送&lt;code&gt;SIGCHLD&lt;/code&gt;信号。因为子进程退出是一个异步事件，所以该信号也是内核向父进程发送的异步信号。&lt;/p&gt;
-
-&lt;p&gt;wait的函数原型是：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-c&#34;&gt;#include &amp;lt;sys/types.h&amp;gt;
-#include &amp;lt;sys/wait.h&amp;gt;
-
-pid_t wait(int *status);
-pid_t waitpid(pid_t pid, int *status, int options);
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;参数status用来保存被收集进程退出时的一些状态信息，它是一个指向int类型的指针。进程一旦调用了wait或waitpid，则可能发生：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;如果其所有子进程都还在运行，则阻塞&lt;/li&gt;
-&lt;li&gt;如果某个子进程已经退出， wait/waitpid就会收集这个子进程的信息，并把它彻底销毁后返回&lt;/li&gt;
-&lt;li&gt;如果没有任何子进程，则会立即出错返回　　　　&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;这两个函数的区别在于：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;在子进程结束之前，wait使其调用者阻塞，而waitpid有一个选项，可以使调用者不阻塞。&lt;/li&gt;
-&lt;li&gt;waitpid并不等待在其调用之后的第一个终止子进程，它有若干选项可以控制它所等待的子进程。&lt;/li&gt;
-&lt;li&gt;对于wait()，其唯一的出错是调用进程没有子进程；对于waitpid()，若指定的进程或进程组不存在，或者参数pid指定的进程不是调用进程的子进程都可能出错。&lt;/li&gt;
-&lt;li&gt;waitpid()提供了wait()没有的三个功能：一是waitpid()可等待一个特定的进程；二是waitpid()提供了一个wait()的非阻塞版本（有时希望取的一个子进程的状态，但不想使父进程阻塞，waitpid() 提供了一个这样的选择：WNOHANG，它可以使调用者不阻塞）；三是waitpid()支持作业控制。&lt;/li&gt;
-&lt;li&gt;wait(&amp;amp;status) 的功能就等于waitpid(-1, &amp;amp;status, 0);&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;下面看一个示例代码：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-c&#34;&gt;#include&amp;lt;stdio.h&amp;gt;
-#include&amp;lt;sys/types.h&amp;gt;
-#include&amp;lt;sys/wait.h&amp;gt;
-#include&amp;lt;unistd.h&amp;gt;
-#include&amp;lt;stdlib.h&amp;gt;
-
-int main()
-{
-    pid_t child;
-    int i;
-    child = fork();
-    if(child &amp;lt; 0){
-        printf(&amp;quot;create failed!\n&amp;quot;);
-        return (1);
-    }
-    else if (0 == child){
-        printf(&amp;quot;this is the child process pid= %d\n&amp;quot;,getpid());
-        for(i = 0;i&amp;lt;5;i++){
-            printf(&amp;quot;this is the child process print %d !\n&amp;quot;,i+1);
-        }
-        printf(&amp;quot;the child end\n&amp;quot;);
-    }
-    else{
-        printf(&amp;quot;this is the father process,ppid=%d\n&amp;quot;,getppid());
-        printf(&amp;quot;father wait the child end\n&amp;quot;);
-        wait(&amp;amp;child);
-        printf(&amp;quot;father end\n&amp;quot;);
-    }
-
-    return 0;
-}
-
-运行结果：
-$ ./wait 
-this is the father process,ppid=21831
-father wait the child end
-this is the child process pid= 22126
-this is the child process print 1 !
-this is the child process print 2 !
-this is the child process print 3 !
-this is the child process print 4 !
-this is the child process print 5 !
-the child end
-father end
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3 id=&#34;sigprocmask:3f64be113f8a592d17a2347ee2a95fd7&#34;&gt;sigprocmask&lt;/h3&gt;
-
-&lt;p&gt;有时候不希望在接到信号时就立即停止当前执行去处理信号，同时也不希望忽略该信号，而是延时一段时间去调用信号处理函数。这种情况是通过阻塞信号实现的，即调用&lt;code&gt;sigprocmask&lt;/code&gt;系统函数。&lt;/p&gt;
-
-&lt;p&gt;&lt;code&gt;sigprocmask&lt;/code&gt;功能描述：设定对信号屏蔽集内的信号的处理方式(阻塞或不阻塞)。函数原型：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-c&#34;&gt;#include &amp;lt;signal.h&amp;gt;
-int sigprocmask(int how, const sigset_t *set, sigset_t *oldset);
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;参数&lt;code&gt;how&lt;/code&gt;用于指定信号修改的方式，可能选择有三种&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;SIG_BLOCK   将set信号集合加入进程的信号屏蔽列表中&lt;/li&gt;
-&lt;li&gt;SIG_UNBLOCK 将set信号集合从进程的信号屏蔽列表中删除&lt;/li&gt;
-&lt;li&gt;SIG_SETMASK 将set信号集合设定为新的进程的信息屏蔽列表&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;strong&gt;屏蔽之后又能怎样呢？&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;To be continue &amp;hellip;&lt;/p&gt;
 </description>
     </item>
     
