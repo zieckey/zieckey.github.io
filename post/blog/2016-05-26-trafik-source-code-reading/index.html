@@ -182,7 +182,7 @@
                   <h1 class="post-title">Trafik源代码阅读</h1>
 
                   <p class="post-byline">
-                    By <a target="_blank" href="http://blog.codeg.cn/">zieckey</a> · 2016年05月26日 · 629 Words ·
+                    By <a target="_blank" href="http://blog.codeg.cn/">zieckey</a> · 2016年05月26日 · 814 Words ·
                     ~2min reading time |
                     <a href="https://github.com/zieckey/blog/edit/master/content/post/blog/2016-05-26-trafik-source-code-reading.md"
                        target="_blank">编辑这个页面</a>
@@ -269,6 +269,31 @@ defaultEntryPoints = [&quot;http&quot;]
 </ol>
 
 <h2 id="源码阅读:34b0e58d062ee9acee54f0313b094782">源码阅读</h2>
+
+<h3 id="源码编译:34b0e58d062ee9acee54f0313b094782">源码编译</h3>
+
+<p>按照官方文档的说明即可编译出来。其中几个需要的地方：</p>
+
+<ol>
+<li>提前下载好 go-bindata 的源码并编译出二进制出来安装的 $PATH 路径下</li>
+<li>提前下载好 glide 的源码并编译出二进制出来安装的 $PATH 路径下</li>
+<li>如果在windows下编译的话，trafik依赖的一个 <code>github.com/mailgun/log</code> 库支持unix系统，需要做一下修改。将<code>NewSysLogger</code>函数修改如下：</li>
+</ol>
+
+<pre><code class="language-go">func NewSysLogger(conf Config) (Logger, error) {
+	debugW := os.Stdout
+	infoW := os.Stdout
+	warnW := os.Stdout
+	errorW := os.Stdout
+
+	sev, err := SeverityFromString(conf.Severity)
+	if err != nil {
+		return nil, err
+	}
+
+	return &amp;sysLogger{sev, debugW, infoW, warnW, errorW}, nil
+}
+</code></pre>
 
 <h3 id="http多路分发器-mux:34b0e58d062ee9acee54f0313b094782">HTTP多路分发器：mux</h3>
 
