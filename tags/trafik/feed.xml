@@ -131,6 +131,13 @@ defaultEntryPoints = [&amp;quot;http&amp;quot;]
 mux.Router.ServeHTTP这个函数再进行自己的路由规则匹配和转发。&lt;/p&gt;
 
 &lt;p&gt;Trafik使用 &lt;code&gt;github.com/gorilla/mux&lt;/code&gt; 库做路由转发。&lt;/p&gt;
+
+&lt;h2 id=&#34;参考:34b0e58d062ee9acee54f0313b094782&#34;&gt;参考&lt;/h2&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://docs.traefik.io/&#34;&gt;官方网站 https://docs.traefik.io/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/containous/traefik&#34;&gt;项目源码 https://github.com/containous/traefik&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
 </description>
     </item>
     

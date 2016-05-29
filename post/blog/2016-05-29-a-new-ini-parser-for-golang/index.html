@@ -13,36 +13,36 @@
     }
 
     </script>
-    <title>Trafik源代码阅读 - CodeG Blog</title>
+    <title>发布一个Golang版本的INI解析器 - CodeG Blog</title>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-<meta name="description" content="Trafik介绍 其官网是这么介绍的： Træfɪk is a modern HTTP reverse proxy and load balancer made to deploy microservices with ease. It supports several backends (Docker, Swarm, Mesos/Marathon, Consul, Etcd, Zookeeper, BoltDB, Rest API, file...) to manage its configuration automatically and dynamically. 翻译过来就是：Træ">
+<meta name="description" content="goini 这是一个为Golang开发的读取INI格式文件的库，它还能读取类似于INI格式的key/value对数据。 goini 的设计目标是简单、灵活、高效，">
 <meta name="author" content="zieckey">
 <meta name="publisher" content="zieckey">
 <meta name="generator" content="http://gohugo.io/"/>
 
-<meta itemprop="name" content="Trafik源代码阅读 - CodeG Blog">
-<meta itemprop="description" content="Trafik介绍 其官网是这么介绍的： Træfɪk is a modern HTTP reverse proxy and load balancer made to deploy microservices with ease. It supports several backends (Docker, Swarm, Mesos/Marathon, Consul, Etcd, Zookeeper, BoltDB, Rest API, file...) to manage its configuration automatically and dynamically. 翻译过来就是：Træ">
+<meta itemprop="name" content="发布一个Golang版本的INI解析器 - CodeG Blog">
+<meta itemprop="description" content="goini 这是一个为Golang开发的读取INI格式文件的库，它还能读取类似于INI格式的key/value对数据。 goini 的设计目标是简单、灵活、高效，">
 <meta itemprop="image" content="http://blog.codeg.cn/public/codeg.jpg">
 
-<meta property="og:title" content="Trafik源代码阅读 - CodeG Blog" />
+<meta property="og:title" content="发布一个Golang版本的INI解析器 - CodeG Blog" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="http://blog.codeg.cn/post/blog/2016-05-26-trafik-source-code-reading/" />
+<meta property="og:url" content="http://blog.codeg.cn/post/blog/2016-05-29-a-new-ini-parser-for-golang/" />
 <meta property="og:image" content="http://blog.codeg.cn/public/codeg.jpg" />
-<meta property="og:description" content="Trafik介绍 其官网是这么介绍的： Træfɪk is a modern HTTP reverse proxy and load balancer made to deploy microservices with ease. It supports several backends (Docker, Swarm, Mesos/Marathon, Consul, Etcd, Zookeeper, BoltDB, Rest API, file...) to manage its configuration automatically and dynamically. 翻译过来就是：Træ">
+<meta property="og:description" content="goini 这是一个为Golang开发的读取INI格式文件的库，它还能读取类似于INI格式的key/value对数据。 goini 的设计目标是简单、灵活、高效，">
 
 <meta name="twitter:card" content="summary">
 <meta name="twitter:site" content="@zieckey">
-<meta name="twitter:title" content="Trafik源代码阅读 - CodeG Blog">
-<meta name="twitter:description" content="Trafik介绍 其官网是这么介绍的： Træfɪk is a modern HTTP reverse proxy and load balancer made to deploy microservices with ease. It supports several backends (Docker, Swarm, Mesos/Marathon, Consul, Etcd, Zookeeper, BoltDB, Rest API, file...) to manage its configuration automatically and dynamically. 翻译过来就是：Træ">
+<meta name="twitter:title" content="发布一个Golang版本的INI解析器 - CodeG Blog">
+<meta name="twitter:description" content="goini 这是一个为Golang开发的读取INI格式文件的库，它还能读取类似于INI格式的key/value对数据。 goini 的设计目标是简单、灵活、高效，">
 <meta name="twitter:creator" content="@zieckey">
 <meta name="twitter:image" content="http://blog.codeg.cn/public/codeg.jpg">
 
     <script>document.documentElement.className = document.documentElement.className.replace("no-js", "js");</script>
-    <link rel="canonical" href="http://blog.codeg.cn/post/blog/2016-05-26-trafik-source-code-reading/">
-    <link rel='shortlink' href="http://blog.codeg.cn/post/blog/2016-05-26-trafik-source-code-reading/"/>
+    <link rel="canonical" href="http://blog.codeg.cn/post/blog/2016-05-29-a-new-ini-parser-for-golang/">
+    <link rel='shortlink' href="http://blog.codeg.cn/post/blog/2016-05-29-a-new-ini-parser-for-golang/"/>
     <link rel="shortcut icon" href="http://blog.codeg.cn/public/favicon.ico"/>
     
 <link rel="stylesheet" id="human-style-css" href="http://blog.codeg.cn/wp-content/themes/hueman/style.css" type="text/css" media="all"/>
@@ -179,16 +179,16 @@
                   class="post type-post status-publish format-standard has-post-thumbnail hentry category-australien tag-bondi-beach tag-city2surf tag-sydney">
                 <div class="post-inner group">
 
-                  <h1 class="post-title">Trafik源代码阅读</h1>
+                  <h1 class="post-title">发布一个Golang版本的INI解析器</h1>
 
                   <p class="post-byline">
-                    By <a target="_blank" href="http://blog.codeg.cn/">zieckey</a> · 2016年05月26日 · 1057 Words ·
-                    ~3min reading time |
-                    <a href="https://github.com/zieckey/blog/edit/master/content/post/blog/2016-05-26-trafik-source-code-reading.md"
+                    By <a target="_blank" href="http://blog.codeg.cn/">zieckey</a> · 2016年05月29日 · 609 Words ·
+                    ~2min reading time |
+                    <a href="https://github.com/zieckey/blog/edit/master/content/post/blog/2016-05-29-a-new-ini-parser-for-golang.md"
                        target="_blank">编辑这个页面</a>
                     | Tags:
                     
-                    <a rel="tag" href="http://blog.codeg.cn/tags/trafik">trafik</a>
+                    <a rel="tag" href="http://blog.codeg.cn/tags/ini">INI</a>
                     
                     <a rel="tag" href="http://blog.codeg.cn/tags/golang">Golang</a>
                     
@@ -208,7 +208,7 @@
                         
                         
                         
-                        本文 <a target="_blank" href="http://blog.codeg.cn/post/blog/2016-05-26-trafik-source-code-reading/">http://blog.codeg.cn/post/blog/2016-05-26-trafik-source-code-reading/</a> 是作者<a target="_blank" href="http://blog.codeg.cn/">zieckey</a>在研究和学习相关内容时所做的笔记，欢迎广大朋友指正和交流！
+                        本文 <a target="_blank" href="http://blog.codeg.cn/post/blog/2016-05-29-a-new-ini-parser-for-golang/">http://blog.codeg.cn/post/blog/2016-05-29-a-new-ini-parser-for-golang/</a> 是作者<a target="_blank" href="http://blog.codeg.cn/">zieckey</a>在研究和学习相关内容时所做的笔记，欢迎广大朋友指正和交流！
                         版权所有，欢迎转载和分享，但请保留此段声明。 </p>
                       </div>
 
@@ -217,125 +217,128 @@
                     <div class="entry-inner">
                       
 
-<h2 id="trafik介绍:34b0e58d062ee9acee54f0313b094782">Trafik介绍</h2>
+<h2 id="goini:8fa3c65ec3a305344ff164eb6635eadc">goini</h2>
 
-<p>其<a href="https://docs.traefik.io/">官网</a>是这么介绍的：</p>
+<p>这是一个为Golang开发的读取INI格式文件的库，它还能读取类似于INI格式的key/value对数据。</p>
 
-<pre><code>Træfɪk is a modern HTTP reverse proxy and load balancer made to deploy microservices with ease. 
-It supports several backends (Docker, Swarm, Mesos/Marathon, Consul, Etcd, Zookeeper, BoltDB, Rest API, file...) 
-to manage its configuration automatically and dynamically.
+<p><code>goini</code> 的设计目标是简单、灵活、高效，有如下特性：</p>
+
+<ol>
+<li>支持标准INI格式</li>
+<li>支持节</li>
+<li>支持从本地磁盘中读取INI文件</li>
+<li>支持从内存数据中读取INI数据</li>
+<li>支持解析形如INI格式的key/value对数据，分隔符可以自定义</li>
+<li>支持UTF8编码</li>
+<li>支持注释符 <code>;</code> or <code>#</code></li>
+<li>支持级联继承</li>
+<li>仅仅只依赖Golang标准库</li>
+<li>测试用户100%覆盖</li>
+</ol>
+
+<h2 id="使用时导入:8fa3c65ec3a305344ff164eb6635eadc">使用时导入</h2>
+
+<pre><code>import github.com/zieckey/goini
 </code></pre>
 
-<p>翻译过来就是：Træfɪk是一个现代的HTTP反向代理和易用的微服务负载平衡器，支持多种后端服务，
-例如 Docker、 Swarm、 Mesos/Marathon、 Kubernetes、 Consul、 Etcd、 Zookeeper、 BoltDB、 Rest API、 文件 等等，
-可以自动地动态管理和加载各种配置。</p>
+<h2 id="用法示例:8fa3c65ec3a305344ff164eb6635eadc">用法示例</h2>
 
-<p>特点如下：</p>
+<h3 id="示例1-解析ini文件:8fa3c65ec3a305344ff164eb6635eadc">示例1 : 解析INI文件</h3>
 
-<ol>
-<li>快速，benchmark显示，能够达到nginx的85%的性能</li>
-<li>没有依赖地狱，得益于Golang的特性，单个二进制文件就能运行</li>
-<li>Rest API</li>
-<li>监视后端，能够自动监听后端配置的变化。</li>
-<li>配置的热重加载，无需重新启动进程或服务器</li>
-<li>优雅地关闭Http连接</li>
-<li>后端的断路器Circuit breaker</li>
-<li>Round Robin rebalancer 负载平衡</li>
-<li>Rest测量</li>
-<li>包括小的官方docker</li>
-<li>SSL后端支持</li>
-<li>SSL前端支持</li>
-<li>干净的AngularJS Web UI</li>
-<li>支持Websocket</li>
-<li>支持Http/2</li>
-<li>如果网络错误重试请求</li>
-<li>自动Https支持(Let’s Encrypt)</li>
-</ol>
+<pre><code class="language-go">import github.com/zieckey/goini
 
-<h2 id="用法:34b0e58d062ee9acee54f0313b094782">用法</h2>
+ini := goini.New()
+err := ini.ParseFile(filename)
+if err != nil {
+	fmt.Printf(&quot;parse INI file %v failed : %v\n&quot;, filename, err.Error())
+	return
+}
 
-<p>最简单的用法当然是做一个HTTP反向代理用。</p>
-
-<p>假设我们有一个HTTP服务 <code>http://10.16.28.17:8091/echo</code>, 我们用Trafik做为反向代理的配置 <code>trafik.toml</code> 如下：</p>
-
-<pre><code class="language-shell">logLevel = &quot;DEBUG&quot;
-
-defaultEntryPoints = [&quot;http&quot;]
-
-[entryPoints]
-  [entryPoints.http]
-  address = &quot;:8080&quot;
-
-[file]
-  [backends]
-    [backends.httpecho]
-      [backends.httpecho.servers.server1]
-        url = &quot;http://10.16.28.17:8091&quot;
-        weight = 1
-  [frontends]
-    [frontends.fe1]
-    backend = &quot;httpecho&quot;
-      [frontends.fe1.routes.rule1]
-      rule = &quot;Path:/echo&quot;
+v, ok := ini.Get(&quot;the-key&quot;)
+//...
 </code></pre>
 
-<p>参考Trafik官方文档说明，我们这个配置解释如下：</p>
+<h3 id="示例2-解析内存中形如ini格式的数据:8fa3c65ec3a305344ff164eb6635eadc">示例2 ： 解析内存中形如INI格式的数据</h3>
 
-<ol>
-<li>将Trafik的日志级别 <code>logLevel</code> 定义为 <code>DEBUG</code></li>
-<li>默认的接入点 <code>defaultEntryPoints</code> 定义为 <code>http</code>，并且其端口为 <code>8080</code></li>
-<li>然后在 <code>[file]</code> 段定义 <code>backends</code> 和 <code>frontends</code>， 也就是Trafik的路由转发规则</li>
-<li><code>backends</code>段定义了一个后端服务，URL地址和权重都设置好了。</li>
-<li><code>frontends</code>段定义转发规则，即将URL路径为 /echo 的请求转发到合适的 <code>backend</code> 上。</li>
-<li>然后我们可以用 curl 来测试转发是否正常： <code>curl http://localhost:8080/echo -d xxxxxx</code></li>
-</ol>
+<pre><code class="language-go">raw := []byte(&quot;a:av||b:bv||c:cv||||d:dv||||||&quot;)
+ini := goini.New()
+err := ini.Parse(raw, &quot;||&quot;, &quot;:&quot;)
+if err != nil {
+    fmt.Printf(&quot;parse INI memory data failed : %v\n&quot;, err.Error())
+    return
+}
 
-<h2 id="源码阅读:34b0e58d062ee9acee54f0313b094782">源码阅读</h2>
+key := &quot;a&quot;
+v, ok := ini.Get(key)
+if ok {
+    fmt.Printf(&quot;The value of %v is [%v]\n&quot;, key, v) // Output : The value of a is [av]
+}
 
-<h3 id="源码编译:34b0e58d062ee9acee54f0313b094782">源码编译</h3>
-
-<p>按照官方文档的说明即可编译出来。其中几个需要的地方：</p>
-
-<ol>
-<li>提前下载好 go-bindata 的源码并编译出二进制出来安装的 $PATH 路径下</li>
-<li>提前下载好 glide 的源码并编译出二进制出来安装的 $PATH 路径下</li>
-<li>如果在windows下编译的话，trafik依赖的一个 <code>github.com/mailgun/log</code> 库支持unix系统，需要做一下修改。将<code>NewSysLogger</code>函数修改如下：</li>
-</ol>
-
-<pre><code class="language-go">func NewSysLogger(conf Config) (Logger, error) {
-	debugW := os.Stdout
-	infoW := os.Stdout
-	warnW := os.Stdout
-	errorW := os.Stdout
-
-	sev, err := SeverityFromString(conf.Severity)
-	if err != nil {
-		return nil, err
-	}
-
-	return &amp;sysLogger{sev, debugW, infoW, warnW, errorW}, nil
+key = &quot;c&quot;
+v, ok = ini.Get(key)
+if ok {
+    fmt.Printf(&quot;The value of %v is [%v]\n&quot;, key, v) // Output : The value of c is [cv]
 }
 </code></pre>
 
-<h3 id="http多路分发器-mux:34b0e58d062ee9acee54f0313b094782">HTTP多路分发器：mux</h3>
+<h3 id="example-3-解析级联继承ini文件:8fa3c65ec3a305344ff164eb6635eadc">Example 3 : 解析级联继承INI文件</h3>
 
-<p><code>github.com/gorilla/mux</code> 是一个HTTP多路分发器，其原理也比较简单，就是实现了Golang标准库中的 <code>net.http.Handler</code> 接口，即如下：</p>
+<p>假设我们有一个项目，该项目会部署到多个不同的生产环境中，每一个生产环境的配置都不尽相同，一般情况下，就得为每一个环境分别管理其各自的配置。
+为了简化配置，我们抽取各个生产环境中配置的公共部分形成一个 <code>common.ini</code>, 然后让每个生产环境的配置从这个INI配置文件继承，
+这样就可以大大简化配置文件的维护工作。</p>
 
-<pre><code class="language-go">type Handler interface {
-    ServeHTTP(ResponseWriter, *Request)
-}
+<p><code>common.ini</code> 举例如下:</p>
+
+<pre><code class="language-ini">product=common
+combo=common
+debug=0
+
+version=0.0.0.0
+encoding=0
+
+[sss]
+a = aval
+b = bval
 </code></pre>
 
-<p>当mux注册到HTTP服务之后，所有的HTTP请求就会由标准库 <code>net/http</code> 转发到mux库中的 <code>func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request)</code> 函数中，
-mux.Router.ServeHTTP这个函数再进行自己的路由规则匹配和转发。</p>
+<p>项目 <code>project1.ini</code> 从 <code>common.ini</code> 继承而来，如下：</p>
 
-<p>Trafik使用 <code>github.com/gorilla/mux</code> 库做路由转发。</p>
+<pre><code class="language-ini">inherited_from=common.ini
 
-<h2 id="参考:34b0e58d062ee9acee54f0313b094782">参考</h2>
+;the following config will override the values inherited from common.ini
+product=project1
+combo=test
+debug=1
+
+local=0
+mid=c4ca4238a0b923820dcc509a6f75849b
+
+[sss]
+a = project1-aval
+c = project1-cval
+</code></pre>
+
+<p>这个说话，我们使用 <code>goini.LoadInheritedINI(&quot;project1.ini&quot;)</code> 来解析这个配置文件，其效果相当下面的INI配置：</p>
+
+<pre><code class="language-ini">product=project1
+combo=test
+debug=1
+
+local=0
+mid=c4ca4238a0b923820dcc509a6f75849b
+
+version=0.0.0.0
+encoding=0
+
+[sss]
+a = project1-aval
+c = project1-cval
+</code></pre>
+
+<h2 id="参考:8fa3c65ec3a305344ff164eb6635eadc">参考</h2>
 
 <ol>
-<li><a href="https://docs.traefik.io/">官方网站 https://docs.traefik.io/</a></li>
-<li><a href="https://github.com/containous/traefik">项目源码 https://github.com/containous/traefik</a></li>
+<li><a href="https://github.com/zieckey/goini">项目源码 https://github.com/zieckey/goini</a></li>
 </ol>
 
                     </div>
@@ -353,7 +356,7 @@ mux.Router.ServeHTTP这个函数再进行自己的路由规则匹配和转发。
 
                     
 
-<div class="ds-thread" data-thread-key="/post/blog/2016-05-26-trafik-source-code-reading/" data-title="Trafik源代码阅读" data-url="http://blog.codeg.cn/post/blog/2016-05-26-trafik-source-code-reading/"></div>
+<div class="ds-thread" data-thread-key="/post/blog/2016-05-29-a-new-ini-parser-for-golang/" data-title="发布一个Golang版本的INI解析器" data-url="http://blog.codeg.cn/post/blog/2016-05-29-a-new-ini-parser-for-golang/"></div>
 
 
 <script type="text/javascript">
@@ -424,20 +427,14 @@ mux.Router.ServeHTTP这个函数再进行自己的路由规则匹配和转发。
     <ul class="post-nav group">
       <li class="next">
         
-        <a href="http://blog.codeg.cn/post/blog/2016-05-26-howto-build-gopcap-on-windows-x64/" rel="next">
+        <a href="http://blog.codeg.cn/post/blog/2016-05-26-trafik-source-code-reading/" rel="next">
           <i class="fa fa-chevron-right"></i>
           <strong>Next post</strong>
-          <span>如何在win7 64位系统下安装gopcap包及使用</span>
+          <span>Trafik源代码阅读</span>
         </a>
         
       </li>
       <li class="previous">
-        
-        <a href="http://blog.codeg.cn/post/blog/2016-05-29-a-new-ini-parser-for-golang/" rel="prev">
-          <i class="fa fa-chevron-left"></i>
-          <strong>Previous Post</strong>
-          <span>发布一个Golang版本的INI解析器</span>
-        </a>
         
       </li>
     </ul>
