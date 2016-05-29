@@ -82,7 +82,7 @@ if ok {
 }
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h3 id=&#34;example-3-解析级联继承ini文件:8fa3c65ec3a305344ff164eb6635eadc&#34;&gt;Example 3 : 解析级联继承INI文件&lt;/h3&gt;
+&lt;h3 id=&#34;示例3-解析级联继承ini文件:8fa3c65ec3a305344ff164eb6635eadc&#34;&gt;示例3 : 解析级联继承INI文件&lt;/h3&gt;
 
 &lt;p&gt;假设我们有一个项目，该项目会部署到多个不同的生产环境中，每一个生产环境的配置都不尽相同，一般情况下，就得为每一个环境分别管理其各自的配置。
 为了简化配置，我们抽取各个生产环境中配置的公共部分形成一个 &lt;code&gt;common.ini&lt;/code&gt;, 然后让每个生产环境的配置从这个INI配置文件继承，
