@@ -182,8 +182,8 @@
                   <h1 class="post-title">nsq介绍及源码阅读</h1>
 
                   <p class="post-byline">
-                    By <a target="_blank" href="http://blog.codeg.cn/">zieckey</a> · 2015年10月22日 · 584 Words ·
-                    ~2min reading time |
+                    By <a target="_blank" href="http://blog.codeg.cn/">zieckey</a> · 2015年10月22日 · 1454 Words ·
+                    ~3min reading time |
                     <a href="https://github.com/zieckey/blog/edit/master/content/post/blog/2015-10-22-nsq.md"
                        target="_blank">编辑这个页面</a>
                     | Tags:
@@ -221,13 +221,41 @@
 
 <h3 id="nsq消费者:d95215f25ddc5c9409dc591338ad4840">nsq消费者</h3>
 
-<p>主要请参考<code>nsq_tail</code>代码。消息处理代码为<code>func (c *Conn) readLoop()</code>。</p>
+<p>主要请参考<code>nsq_tail</code>代码。<code>nsqd</code>的回应消息处理代码为<code>func (c *Conn) readLoop()</code>。</p>
 
 <p>TCP消息流的二进制结构请参考官方文档：<a href="http://nsq.io/clients/tcp_protocol_spec.html">http://nsq.io/clients/tcp_protocol_spec.html</a></p>
 
-<h3 id="nsqd内部处理逻辑:d95215f25ddc5c9409dc591338ad4840">nsqd内部处理逻辑</h3>
+<p>nsq消费者与<code>nsqd</code>建立连接的流程如下：</p>
 
-<h4 id="与nsqlookupd交互:d95215f25ddc5c9409dc591338ad4840">与nsqlookupd交互</h4>
+<ol>
+<li>当建立好TCP连接后，客户端必须发送一个 4 字节的 &ldquo;magic&rdquo; 标识码，表示通讯协议的版本。<code>V2</code>(4 个字节的 ASCII [space][space][V][2]) 消费用到的推送流协议（和发布用到的请求/响应协议）</li>
+<li>认证后，客户端可以发送<code>IDENTIFY</code>命令来停供常用的元数据（比如，更多的描述标识码）和协商特性。服务器会根据客户端请求的内容返回一个JSON数据或直接返回<code>OK</code></li>
+<li>然后，客户端还必须使用<code>SUB</code>命令订阅一个话题(Topic)和通道(Channel)。成功后服务器会返回<code>OK</code></li>
+<li>最后，还需要设置<code>RDY</code>状态。如果<code>RDY</code>状态为 0 ，意味着客户端不会收到任何消息。因此需要设置一个<code>RDY</code>状态值，例如设置100，不需要任何附加命令，将会有 100 条消息推送到客户端</li>
+</ol>
+
+<p>消费消息数据时，需要给NSQD返回该消息是否成功被处理。只有成功被处理的消息，才真正从NSQ队列中删除不会再投递到任何消费者。</p>
+
+<h3 id="nsq生产者:d95215f25ddc5c9409dc591338ad4840">nsq生产者</h3>
+
+<p>主要参考<a href="https://github.com/nsqio/go-nsq">https://github.com/nsqio/go-nsq</a>项目中<code>Producer</code>类的实现。</p>
+
+<p>nsq生产者与<code>nsqd</code>建立连接的流程如下：</p>
+
+<ol>
+<li>当建立好TCP连接后，客户端必须发送一个 4 字节的 &ldquo;magic&rdquo; 标识码，表示通讯协议的版本。<code>V2</code>(4 个字节的 ASCII [space][space][V][2]) 消费用到的推送流协议（和发布用到的请求/响应协议）</li>
+<li>认证后，客户端可以发送<code>IDENTIFY</code>命令来停供常用的元数据（比如，更多的描述标识码）和协商特性。服务器会根据客户端请求的内容返回一个JSON数据或直接返回<code>OK</code>，表明连接建立成功。</li>
+</ol>
+
+<p>将消息投递到NSQD时，成功后NSQD会返回<code>OK</code>。由于返回消息上没有ID，表明上看是不能做pipeline操作的。
+不过由于在一条连接上NSQD的返回消息肯定与接收到的消息顺序一一对应，因此可以做pipeline操作，可以连续调用多次<code>PUB/MPUB</code>命令，
+但需要将这些命令保存下来，等待NSQD返回数据后再决定是否将这些命令标记完成还是标记为需要重新投递。</p>
+
+<p>实现时，可以借用TCP的滑动窗口概念。如果滑动窗口为1，相当于每次调用<code>PUB/MPUB</code>命令都需要等待服务器返回后才决定下一步操作，这就退化为同步操作。</p>
+
+<h2 id="nsqd内部处理逻辑:d95215f25ddc5c9409dc591338ad4840">nsqd内部处理逻辑</h2>
+
+<h3 id="与nsqlookupd交互:d95215f25ddc5c9409dc591338ad4840">与nsqlookupd交互</h3>
 
 <p>代码调用路径如下：</p>
 
@@ -236,11 +264,11 @@
 	func (n *NSQD) lookupLoop() : 91行： case val := &lt;-n.notifyChan:
 </code></pre>
 
-<h4 id="消息分发:d95215f25ddc5c9409dc591338ad4840">消息分发</h4>
+<h3 id="消息分发:d95215f25ddc5c9409dc591338ad4840">消息分发</h3>
 
 <p><code>func (t *Topic) messagePump()</code> 这里进行消息的分发，直接将该topic下的消息推送给所有的channel上。</p>
 
-<h4 id="消息id:d95215f25ddc5c9409dc591338ad4840">消息ID</h4>
+<h3 id="消息id:d95215f25ddc5c9409dc591338ad4840">消息ID</h3>
 
 <p><code>func (n *NSQD) idPump()</code> 这里生成新的消息ID，然后放入到 <code>n.idChan</code> 中。64位int64的guid生成算法参考<a href="https://github.com/bmizerany/noeqd">https://github.com/bmizerany/noeqd</a>，主要部分解释如下：</p>
 
@@ -249,7 +277,7 @@
 顺序好 - 12 bits - 每个机器在同一毫秒内一共支持4096个
 </code></pre>
 
-<h4 id="pub接口:d95215f25ddc5c9409dc591338ad4840">pub接口</h4>
+<h3 id="pub接口:d95215f25ddc5c9409dc591338ad4840">pub接口</h3>
 
 <p>发布一条消息到NSQ消息队列中。代码路径 <code>func (s *httpServer) doPUB(w http.ResponseWriter, req *http.Request, ps httprouter.Params) (interface{}, error)</code> 。</p>
 
