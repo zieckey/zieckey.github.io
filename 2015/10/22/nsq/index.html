@@ -182,8 +182,8 @@
                   <h1 class="post-title">nsq介绍及源码阅读</h1>
 
                   <p class="post-byline">
-                    By <a target="_blank" href="http://blog.codeg.cn/">zieckey</a> · 2015年10月22日 · 1454 Words ·
-                    ~3min reading time |
+                    By <a target="_blank" href="http://blog.codeg.cn/">zieckey</a> · 2015年10月22日 · 1618 Words ·
+                    ~4min reading time |
                     <a href="https://github.com/zieckey/blog/edit/master/content/post/blog/2015-10-22-nsq.md"
                        target="_blank">编辑这个页面</a>
                     | Tags:
@@ -255,6 +255,10 @@
 
 <h2 id="nsqd内部处理逻辑:d95215f25ddc5c9409dc591338ad4840">nsqd内部处理逻辑</h2>
 
+<p>一个Topic可以有多<code>Channel</code>，每个消息都会复制一份放入<code>Channel</code>中，也就是说每个<code>Channel</code>的数据都是独立的。如果消费速度更不上生产的速度，那么每个<code>Channel</code>上的数据都会序列化到磁盘上，这里是一个坑，有可能会因此导致数据写磁盘多份。</p>
+
+<p>另外，NSQ不能保证数据的消费顺序与生产顺序完全一致。</p>
+
 <h3 id="与nsqlookupd交互:d95215f25ddc5c9409dc591338ad4840">与nsqlookupd交互</h3>
 
 <p>代码调用路径如下：</p>
@@ -274,7 +278,7 @@
 
 <pre><code>time - 41位 (当前毫秒数，一共69年)
 配置好的机器ID - 10 bits - 一共支持1024个机器
-顺序好 - 12 bits - 每个机器在同一毫秒内一共支持4096个
+顺序号 - 12 bits - 每个机器在同一毫秒内一共支持4096个
 </code></pre>
 
 <h3 id="pub接口:d95215f25ddc5c9409dc591338ad4840">pub接口</h3>
@@ -291,6 +295,8 @@
 <li>创建一个新的Message：<code>msg := NewMessage(&lt;-s.ctx.nsqd.idChan, body)</code></li>
 <li>将该消息放到<code>Topic</code>上：<code>err = topic.PutMessage(msg)</code></li>
 </ol>
+
+<h3 id="接收一个新的客户端消费者:d95215f25ddc5c9409dc591338ad4840">接收一个新的客户端消费者</h3>
 
 <h2 id="参考文献:d95215f25ddc5c9409dc591338ad4840">参考文献</h2>
 
