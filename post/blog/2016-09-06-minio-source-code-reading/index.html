@@ -13,36 +13,36 @@
     }
 
     </script>
-    <title>发布一个Golang版本的INI解析器 - CodeG Blog</title>
+    <title>minio源码阅读 - CodeG Blog</title>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-<meta name="description" content="goini 这是一个为Golang开发的读取INI格式文件的库，它还能读取类似于INI格式的key/value对数据。 goini 的设计目标是简单、灵活、高效，">
+<meta name="description" content="minio是Go实现的一个完全兼容S3的服务，和大多Go项目一样，干净小巧，没有依赖，编译运行一键搞定，便利之极。本文对其中不乏代码做了一个简单的源码阅读和解释。">
 <meta name="author" content="zieckey">
 <meta name="publisher" content="zieckey">
 <meta name="generator" content="http://gohugo.io/"/>
 
-<meta itemprop="name" content="发布一个Golang版本的INI解析器 - CodeG Blog">
-<meta itemprop="description" content="goini 这是一个为Golang开发的读取INI格式文件的库，它还能读取类似于INI格式的key/value对数据。 goini 的设计目标是简单、灵活、高效，">
+<meta itemprop="name" content="minio源码阅读 - CodeG Blog">
+<meta itemprop="description" content="minio是Go实现的一个完全兼容S3的服务，和大多Go项目一样，干净小巧，没有依赖，编译运行一键搞定，便利之极。本文对其中不乏代码做了一个简单的源码阅读和解释。">
 <meta itemprop="image" content="http://blog.codeg.cn/public/codeg.jpg">
 
-<meta property="og:title" content="发布一个Golang版本的INI解析器 - CodeG Blog" />
+<meta property="og:title" content="minio源码阅读 - CodeG Blog" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="http://blog.codeg.cn/post/blog/2016-05-29-a-new-ini-parser-for-golang/" />
+<meta property="og:url" content="http://blog.codeg.cn/post/blog/2016-09-06-minio-source-code-reading/" />
 <meta property="og:image" content="http://blog.codeg.cn/public/codeg.jpg" />
-<meta property="og:description" content="goini 这是一个为Golang开发的读取INI格式文件的库，它还能读取类似于INI格式的key/value对数据。 goini 的设计目标是简单、灵活、高效，">
+<meta property="og:description" content="minio是Go实现的一个完全兼容S3的服务，和大多Go项目一样，干净小巧，没有依赖，编译运行一键搞定，便利之极。本文对其中不乏代码做了一个简单的源码阅读和解释。">
 
 <meta name="twitter:card" content="summary">
 <meta name="twitter:site" content="@zieckey">
-<meta name="twitter:title" content="发布一个Golang版本的INI解析器 - CodeG Blog">
-<meta name="twitter:description" content="goini 这是一个为Golang开发的读取INI格式文件的库，它还能读取类似于INI格式的key/value对数据。 goini 的设计目标是简单、灵活、高效，">
+<meta name="twitter:title" content="minio源码阅读 - CodeG Blog">
+<meta name="twitter:description" content="minio是Go实现的一个完全兼容S3的服务，和大多Go项目一样，干净小巧，没有依赖，编译运行一键搞定，便利之极。本文对其中不乏代码做了一个简单的源码阅读和解释。">
 <meta name="twitter:creator" content="@zieckey">
 <meta name="twitter:image" content="http://blog.codeg.cn/public/codeg.jpg">
 
     <script>document.documentElement.className = document.documentElement.className.replace("no-js", "js");</script>
-    <link rel="canonical" href="http://blog.codeg.cn/post/blog/2016-05-29-a-new-ini-parser-for-golang/">
-    <link rel='shortlink' href="http://blog.codeg.cn/post/blog/2016-05-29-a-new-ini-parser-for-golang/"/>
+    <link rel="canonical" href="http://blog.codeg.cn/post/blog/2016-09-06-minio-source-code-reading/">
+    <link rel='shortlink' href="http://blog.codeg.cn/post/blog/2016-09-06-minio-source-code-reading/"/>
     <link rel="shortcut icon" href="http://blog.codeg.cn/public/favicon.ico"/>
     
 <link rel="stylesheet" id="human-style-css" href="http://blog.codeg.cn/wp-content/themes/hueman/style.css" type="text/css" media="all"/>
@@ -179,16 +179,18 @@
                   class="post type-post status-publish format-standard has-post-thumbnail hentry category-australien tag-bondi-beach tag-city2surf tag-sydney">
                 <div class="post-inner group">
 
-                  <h1 class="post-title">发布一个Golang版本的INI解析器</h1>
+                  <h1 class="post-title">minio源码阅读</h1>
 
                   <p class="post-byline">
-                    By <a target="_blank" href="http://blog.codeg.cn/">zieckey</a> · 2016年05月29日 · 610 Words ·
-                    ~2min reading time |
-                    <a href="https://github.com/zieckey/blog/edit/master/content/post/blog/2016-05-29-a-new-ini-parser-for-golang.md"
+                    By <a target="_blank" href="http://blog.codeg.cn/">zieckey</a> · 2016年09月06日 · 1587 Words ·
+                    ~4min reading time |
+                    <a href="https://github.com/zieckey/blog/edit/master/content/post/blog/2016-09-06-minio-source-code-reading.md"
                        target="_blank">编辑这个页面</a>
                     | Tags:
                     
-                    <a rel="tag" href="http://blog.codeg.cn/tags/ini">INI</a>
+                    <a rel="tag" href="http://blog.codeg.cn/tags/s3">S3</a>
+                    
+                    <a rel="tag" href="http://blog.codeg.cn/tags/minio">minio</a>
                     
                     <a rel="tag" href="http://blog.codeg.cn/tags/golang">Golang</a>
                     
@@ -208,7 +210,7 @@
                         
                         
                         
-                        本文 <a target="_blank" href="http://blog.codeg.cn/post/blog/2016-05-29-a-new-ini-parser-for-golang/">http://blog.codeg.cn/post/blog/2016-05-29-a-new-ini-parser-for-golang/</a> 是作者<a target="_blank" href="http://blog.codeg.cn/">zieckey</a>在研究和学习相关内容时所做的笔记，欢迎广大朋友指正和交流！
+                        本文 <a target="_blank" href="http://blog.codeg.cn/post/blog/2016-09-06-minio-source-code-reading/">http://blog.codeg.cn/post/blog/2016-09-06-minio-source-code-reading/</a> 是作者<a target="_blank" href="http://blog.codeg.cn/">zieckey</a>在研究和学习相关内容时所做的笔记，欢迎广大朋友指正和交流！
                         版权所有，欢迎转载和分享，但请保留此段声明。 </p>
                       </div>
 
@@ -217,128 +219,78 @@
                     <div class="entry-inner">
                       
 
-<h2 id="goini:8fa3c65ec3a305344ff164eb6635eadc">goini</h2>
+<h2 id="简介:68197fcc8cceffccb0f0dc5b0599d2bc">简介</h2>
 
-<p>这是一个为Golang开发的读取INI格式文件的库，它还能读取类似于INI格式的key/value对数据。</p>
+<p>minio是Go实现的一个完全兼容S3的服务，和大多Go项目一样，干净小巧，没有依赖，编译运行一键搞定，便利之极。</p>
 
-<p><code>goini</code> 的设计目标是简单、灵活、高效，有如下特性：</p>
+<h2 id="源码阅读:68197fcc8cceffccb0f0dc5b0599d2bc">源码阅读</h2>
+
+<h3 id="http事件注册:68197fcc8cceffccb0f0dc5b0599d2bc">HTTP事件注册</h3>
+
+<p>启动阶段的初始化工作还是相当繁琐，没戏看。重点看一下运行期间的功能。</p>
+
+<p>minio进程起来了，对外提供HTTP服务，那么找到HTTP的事件注册的函数就是最好的入口点。事件处理函数的注册代码路径为：serverMain -&gt; configureServerHandler -&gt; api-router.go:registerAPIRouter</p>
+
+<p>在<code>registerAPIRouter</code>这个函数中，注册了所有HTTP相关的事件处理回调函数。事件分发使用了<code>github.com/gorilla/mux</code>库。这个mux库，在Golang的项目中，使用率还是蛮多的，上次我在<code>Trafix</code>项目中也看到是使用mux库来处理HTTP事件注册和分发处理。</p>
+
+<h3 id="putobject-上传一个对象:68197fcc8cceffccb0f0dc5b0599d2bc">PutObject：上传一个对象</h3>
+
+<p>注册回调函数为<code>bucket.Methods(&quot;PUT&quot;).Path(&quot;/{object:.+}&quot;).HandlerFunc(api.PutObjectHandler)</code></p>
+
+<p>下面我们来分析一下<code>func (api objectAPIHandlers) PutObjectHandler(w http.ResponseWriter, r *http.Request)</code>函数的实现。</p>
 
 <ol>
-<li>支持标准INI格式</li>
-<li>支持节</li>
-<li>支持从本地磁盘中读取INI文件</li>
-<li>支持从内存数据中读取INI数据</li>
-<li>支持解析形如INI格式的key/value对数据，分隔符可以自定义</li>
-<li>支持UTF8编码</li>
-<li>支持注释符 <code>;</code> or <code>#</code></li>
-<li>支持级联继承</li>
-<li>仅仅只依赖Golang标准库</li>
-<li>测试用户100%覆盖</li>
+<li>首先，检测HTTP HEADER中是否有设置 <code>X-Amz-Copy-Source</code></li>
+<li>检测HTTP HEADER中的<code>Content-Md5</code>，并获取该MD5（注意：该MD5是16进制数Base64Encode之后的结果）</li>
+<li>检测是否有相应权限</li>
+<li>检测是否超过最大大小限制</li>
+<li>根据权限，调用相应的函数。这里我们重点介绍<code>api.ObjectAPI.PutObject(bucket, object, size, r.Body, metadata)</code></li>
+<li>如果是单机版本，会进入<code>func (fs fsObjects) PutObject(bucket string, object string, size int64, data io.Reader, metadata map[string]string) (string, error)</code>函数中</li>
 </ol>
 
-<h2 id="使用时导入:8fa3c65ec3a305344ff164eb6635eadc">使用时导入</h2>
-
-<pre><code>import github.com/zieckey/goini
-</code></pre>
-
-<h2 id="用法示例:8fa3c65ec3a305344ff164eb6635eadc">用法示例</h2>
-
-<h3 id="示例1-解析ini文件:8fa3c65ec3a305344ff164eb6635eadc">示例1 : 解析INI文件</h3>
-
-<pre><code class="language-go">import github.com/zieckey/goini
-
-ini := goini.New()
-err := ini.ParseFile(filename)
-if err != nil {
-	fmt.Printf(&quot;parse INI file %v failed : %v\n&quot;, filename, err.Error())
-	return
-}
-
-v, ok := ini.Get(&quot;the-key&quot;)
-//...
-</code></pre>
-
-<h3 id="示例2-解析内存中形如ini格式的数据:8fa3c65ec3a305344ff164eb6635eadc">示例2 ： 解析内存中形如INI格式的数据</h3>
-
-<pre><code class="language-go">raw := []byte(&quot;a:av||b:bv||c:cv||||d:dv||||||&quot;)
-ini := goini.New()
-err := ini.Parse(raw, &quot;||&quot;, &quot;:&quot;)
-if err != nil {
-    fmt.Printf(&quot;parse INI memory data failed : %v\n&quot;, err.Error())
-    return
-}
-
-key := &quot;a&quot;
-v, ok := ini.Get(key)
-if ok {
-    fmt.Printf(&quot;The value of %v is [%v]\n&quot;, key, v) // Output : The value of a is [av]
-}
-
-key = &quot;c&quot;
-v, ok = ini.Get(key)
-if ok {
-    fmt.Printf(&quot;The value of %v is [%v]\n&quot;, key, v) // Output : The value of c is [cv]
-}
-</code></pre>
-
-<h3 id="示例3-解析级联继承ini文件:8fa3c65ec3a305344ff164eb6635eadc">示例3 : 解析级联继承INI文件</h3>
-
-<p>假设我们有一个项目，该项目会部署到多个不同的生产环境中，每一个生产环境的配置都不尽相同，一般情况下，就得为每一个环境分别管理其各自的配置。
-为了简化配置，我们抽取各个生产环境中配置的公共部分形成一个 <code>common.ini</code>, 然后让每个生产环境的配置从这个INI配置文件继承，
-这样就可以大大简化配置文件的维护工作。</p>
-
-<p><code>common.ini</code> 举例如下:</p>
-
-<pre><code class="language-ini">product=common
-combo=common
-debug=0
-
-version=0.0.0.0
-encoding=0
-
-[sss]
-a = aval
-b = bval
-</code></pre>
-
-<p>项目 <code>project1.ini</code> 从 <code>common.ini</code> 继承而来，如下：</p>
-
-<pre><code class="language-ini">inherited_from=common.ini
-
-;the following config will override the values inherited from common.ini
-product=project1
-combo=test
-debug=1
-
-local=0
-mid=c4ca4238a0b923820dcc509a6f75849b
-
-[sss]
-a = project1-aval
-c = project1-cval
-</code></pre>
-
-<p>这个说话，我们使用 <code>goini.LoadInheritedINI(&quot;project1.ini&quot;)</code> 来解析这个配置文件，其效果相当下面的INI配置：</p>
-
-<pre><code class="language-ini">product=project1
-combo=test
-debug=1
-
-local=0
-mid=c4ca4238a0b923820dcc509a6f75849b
-
-version=0.0.0.0
-encoding=0
-
-[sss]
-a = project1-aval
-c = project1-cval
-</code></pre>
-
-<h2 id="参考:8fa3c65ec3a305344ff164eb6635eadc">参考</h2>
+<p>继续分析<code>func (fs fsObjects) PutObject(...)</code>函数</p>
 
 <ol>
-<li><a href="https://github.com/zieckey/goini">项目源码 https://github.com/zieckey/goini</a></li>
+<li>首先检测 BucketName、ObjectName 是否合法</li>
+<li>生成一个UUID，然后根据UUID生成一个唯一的临时的obj路径<code>tempObj</code></li>
+<li>new一个MD5对象，用来计算上传的数据的MD5</li>
+<li>根据HTTP请求的Reader生成一个io.TeeReader对象，用来读取数据的同时，顺便计算一下MD5值</li>
+<li>调用<code>func fsCreateFile(...)</code>来创建一个临时的对象文件</li>
+<li>再检查计算出来的MD5是否与HTTP HEADER中的MD5完全一致</li>
+<li>如果MD5不一致就删除临时文件，返回错误。如果MD5完全一致，就将临时文件Rename为目标文件</li>
+<li>最后，如果HTTP HEADER中有额外的meta数据需要写入，就调用<code>writeFSMetadata</code>写入meta文件中</li>
+<li>最最后，返回数据的MD5值</li>
+</ol>
+
+<p>上面<code>func fsCreateFile(...)</code>中，会调用<code>disk.AppendFile(...)</code>来创建文件。如果是单机版，这个函数的具体实现为<code>func (s *posix) AppendFile(volume, path string, buf []byte) (err error)</code>。</p>
+
+<h3 id="getobject-查询一个对象:68197fcc8cceffccb0f0dc5b0599d2bc">GetObject：查询一个对象</h3>
+
+<p>注册回调函数为<code>bucket.Methods(&quot;GET&quot;).Path(&quot;/{object:.+}&quot;).HandlerFunc(api.GetObjectHandler)</code>，该函数分析如下：</p>
+
+<ol>
+<li>从URL中获取 <code>bucket</code> 、 <code>object</code> 的具体值</li>
+<li>检测是否有权限</li>
+<li>查询ObjectInfo数据</li>
+<li>检测HTTP HEADER看看，是否HTTP Range查询模式（也就是说minio支持断点续传）</li>
+<li>调用<code>api.ObjectAPI.GetObject</code>来获取对象数据</li>
+<li>如果是单机版，会进入<code>func (fs fsObjects) GetObject(bucket, object string, offset int64, length int64, writer io.Writer) (err error)</code>函数中</li>
+</ol>
+
+<p>继续分析<code>func (fs fsObjects) GetObject(...)</code>函数</p>
+
+<ol>
+<li>首先检测 BucketName、ObjectName 是否合法</li>
+<li>继续检测其他参数是否合法，例如 offset、length 等</li>
+<li>调用<code>fs.storage.StatFile</code>接口来获取对象文件的长度信息，并与请求参数做对比，核验是否合法</li>
+<li>调用<code>fs.storage.ReadFile</code>来获取文件数据</li>
+</ol>
+
+<h2 id="参考:68197fcc8cceffccb0f0dc5b0599d2bc">参考</h2>
+
+<ol>
+<li><a href="https://github.com/minio/minio">项目源码 https://github.com/minio/minio</a></li>
+<li><a href="github.com/gorilla/mux">mux项目官网 github.com/gorilla/mux</a></li>
 </ol>
 
                     </div>
@@ -356,7 +308,7 @@ c = project1-cval
 
                     
 
-<div class="ds-thread" data-thread-key="/post/blog/2016-05-29-a-new-ini-parser-for-golang/" data-title="发布一个Golang版本的INI解析器" data-url="http://blog.codeg.cn/post/blog/2016-05-29-a-new-ini-parser-for-golang/"></div>
+<div class="ds-thread" data-thread-key="/post/blog/2016-09-06-minio-source-code-reading/" data-title="minio源码阅读" data-url="http://blog.codeg.cn/post/blog/2016-09-06-minio-source-code-reading/"></div>
 
 
 <script type="text/javascript">
@@ -427,20 +379,14 @@ c = project1-cval
     <ul class="post-nav group">
       <li class="next">
         
-        <a href="http://blog.codeg.cn/post/blog/2016-05-26-trafik-source-code-reading/" rel="next">
+        <a href="http://blog.codeg.cn/post/blog/2016-05-29-a-new-ini-parser-for-golang/" rel="next">
           <i class="fa fa-chevron-right"></i>
           <strong>Next post</strong>
-          <span>Trafik源代码阅读</span>
+          <span>发布一个Golang版本的INI解析器</span>
         </a>
         
       </li>
       <li class="previous">
-        
-        <a href="http://blog.codeg.cn/post/blog/2016-09-06-minio-source-code-reading/" rel="prev">
-          <i class="fa fa-chevron-left"></i>
-          <strong>Previous Post</strong>
-          <span>minio源码阅读</span>
-        </a>
         
       </li>
     </ul>

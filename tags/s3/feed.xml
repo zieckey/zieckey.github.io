@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>S3 on CodeG Blog</title>
+    <link>http://blog.codeg.cn/tags/s3/</link>
+    <description>Recent content in S3 on CodeG Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <copyright>Copyright (c) 2015. All rights reserved.</copyright>
+    <lastBuildDate>Tue, 06 Sep 2016 11:52:00 +0000</lastBuildDate>
+    <atom:link href="http://blog.codeg.cn/tags/s3/feed/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>minio源码阅读</title>
+      <link>http://blog.codeg.cn/post/blog/2016-09-06-minio-source-code-reading/</link>
+      <pubDate>Tue, 06 Sep 2016 11:52:00 +0000</pubDate>
+      
+      <guid>http://blog.codeg.cn/post/blog/2016-09-06-minio-source-code-reading/</guid>
+      <description>
+
+&lt;h2 id=&#34;简介:68197fcc8cceffccb0f0dc5b0599d2bc&#34;&gt;简介&lt;/h2&gt;
+
+&lt;p&gt;minio是Go实现的一个完全兼容S3的服务，和大多Go项目一样，干净小巧，没有依赖，编译运行一键搞定，便利之极。&lt;/p&gt;
+
+&lt;h2 id=&#34;源码阅读:68197fcc8cceffccb0f0dc5b0599d2bc&#34;&gt;源码阅读&lt;/h2&gt;
+
+&lt;h3 id=&#34;http事件注册:68197fcc8cceffccb0f0dc5b0599d2bc&#34;&gt;HTTP事件注册&lt;/h3&gt;
+
+&lt;p&gt;启动阶段的初始化工作还是相当繁琐，没戏看。重点看一下运行期间的功能。&lt;/p&gt;
+
+&lt;p&gt;minio进程起来了，对外提供HTTP服务，那么找到HTTP的事件注册的函数就是最好的入口点。事件处理函数的注册代码路径为：serverMain -&amp;gt; configureServerHandler -&amp;gt; api-router.go:registerAPIRouter&lt;/p&gt;
+
+&lt;p&gt;在&lt;code&gt;registerAPIRouter&lt;/code&gt;这个函数中，注册了所有HTTP相关的事件处理回调函数。事件分发使用了&lt;code&gt;github.com/gorilla/mux&lt;/code&gt;库。这个mux库，在Golang的项目中，使用率还是蛮多的，上次我在&lt;code&gt;Trafix&lt;/code&gt;项目中也看到是使用mux库来处理HTTP事件注册和分发处理。&lt;/p&gt;
+
+&lt;h3 id=&#34;putobject-上传一个对象:68197fcc8cceffccb0f0dc5b0599d2bc&#34;&gt;PutObject：上传一个对象&lt;/h3&gt;
+
+&lt;p&gt;注册回调函数为&lt;code&gt;bucket.Methods(&amp;quot;PUT&amp;quot;).Path(&amp;quot;/{object:.+}&amp;quot;).HandlerFunc(api.PutObjectHandler)&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;下面我们来分析一下&lt;code&gt;func (api objectAPIHandlers) PutObjectHandler(w http.ResponseWriter, r *http.Request)&lt;/code&gt;函数的实现。&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;首先，检测HTTP HEADER中是否有设置 &lt;code&gt;X-Amz-Copy-Source&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;检测HTTP HEADER中的&lt;code&gt;Content-Md5&lt;/code&gt;，并获取该MD5（注意：该MD5是16进制数Base64Encode之后的结果）&lt;/li&gt;
+&lt;li&gt;检测是否有相应权限&lt;/li&gt;
+&lt;li&gt;检测是否超过最大大小限制&lt;/li&gt;
+&lt;li&gt;根据权限，调用相应的函数。这里我们重点介绍&lt;code&gt;api.ObjectAPI.PutObject(bucket, object, size, r.Body, metadata)&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;如果是单机版本，会进入&lt;code&gt;func (fs fsObjects) PutObject(bucket string, object string, size int64, data io.Reader, metadata map[string]string) (string, error)&lt;/code&gt;函数中&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;继续分析&lt;code&gt;func (fs fsObjects) PutObject(...)&lt;/code&gt;函数&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;首先检测 BucketName、ObjectName 是否合法&lt;/li&gt;
+&lt;li&gt;生成一个UUID，然后根据UUID生成一个唯一的临时的obj路径&lt;code&gt;tempObj&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;new一个MD5对象，用来计算上传的数据的MD5&lt;/li&gt;
+&lt;li&gt;根据HTTP请求的Reader生成一个io.TeeReader对象，用来读取数据的同时，顺便计算一下MD5值&lt;/li&gt;
+&lt;li&gt;调用&lt;code&gt;func fsCreateFile(...)&lt;/code&gt;来创建一个临时的对象文件&lt;/li&gt;
+&lt;li&gt;再检查计算出来的MD5是否与HTTP HEADER中的MD5完全一致&lt;/li&gt;
+&lt;li&gt;如果MD5不一致就删除临时文件，返回错误。如果MD5完全一致，就将临时文件Rename为目标文件&lt;/li&gt;
+&lt;li&gt;最后，如果HTTP HEADER中有额外的meta数据需要写入，就调用&lt;code&gt;writeFSMetadata&lt;/code&gt;写入meta文件中&lt;/li&gt;
+&lt;li&gt;最最后，返回数据的MD5值&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;上面&lt;code&gt;func fsCreateFile(...)&lt;/code&gt;中，会调用&lt;code&gt;disk.AppendFile(...)&lt;/code&gt;来创建文件。如果是单机版，这个函数的具体实现为&lt;code&gt;func (s *posix) AppendFile(volume, path string, buf []byte) (err error)&lt;/code&gt;。&lt;/p&gt;
+
+&lt;h3 id=&#34;getobject-查询一个对象:68197fcc8cceffccb0f0dc5b0599d2bc&#34;&gt;GetObject：查询一个对象&lt;/h3&gt;
+
+&lt;p&gt;注册回调函数为&lt;code&gt;bucket.Methods(&amp;quot;GET&amp;quot;).Path(&amp;quot;/{object:.+}&amp;quot;).HandlerFunc(api.GetObjectHandler)&lt;/code&gt;，该函数分析如下：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;从URL中获取 &lt;code&gt;bucket&lt;/code&gt; 、 &lt;code&gt;object&lt;/code&gt; 的具体值&lt;/li&gt;
+&lt;li&gt;检测是否有权限&lt;/li&gt;
+&lt;li&gt;查询ObjectInfo数据&lt;/li&gt;
+&lt;li&gt;检测HTTP HEADER看看，是否HTTP Range查询模式（也就是说minio支持断点续传）&lt;/li&gt;
+&lt;li&gt;调用&lt;code&gt;api.ObjectAPI.GetObject&lt;/code&gt;来获取对象数据&lt;/li&gt;
+&lt;li&gt;如果是单机版，会进入&lt;code&gt;func (fs fsObjects) GetObject(bucket, object string, offset int64, length int64, writer io.Writer) (err error)&lt;/code&gt;函数中&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;继续分析&lt;code&gt;func (fs fsObjects) GetObject(...)&lt;/code&gt;函数&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;首先检测 BucketName、ObjectName 是否合法&lt;/li&gt;
+&lt;li&gt;继续检测其他参数是否合法，例如 offset、length 等&lt;/li&gt;
+&lt;li&gt;调用&lt;code&gt;fs.storage.StatFile&lt;/code&gt;接口来获取对象文件的长度信息，并与请求参数做对比，核验是否合法&lt;/li&gt;
+&lt;li&gt;调用&lt;code&gt;fs.storage.ReadFile&lt;/code&gt;来获取文件数据&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&#34;参考:68197fcc8cceffccb0f0dc5b0599d2bc&#34;&gt;参考&lt;/h2&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/minio/minio&#34;&gt;项目源码 https://github.com/minio/minio&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;github.com/gorilla/mux&#34;&gt;mux项目官网 github.com/gorilla/mux&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>
