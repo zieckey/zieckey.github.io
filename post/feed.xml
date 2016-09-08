@@ -2030,7 +2030,7 @@ func main() {
 
 &lt;ol&gt;
 &lt;li&gt;&lt;a href=&#34;http://baike.haosou.com/doc/302938-320692.html&#34;&gt;双缓冲技术介绍&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/zieckey/go-doublebuffering&#34;&gt;Golang实现的示例源码在这里 https://github.com/zieckey/go-doublebuffering&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/zieckey/dbuf&#34;&gt;Golang实现的示例源码在这里 https://github.com/zieckey/dbuf&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;
 </description>
     </item>
