@@ -7,8 +7,174 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
     <copyright>Copyright (c) 2015. All rights reserved.</copyright>
-    <lastBuildDate>Tue, 06 Sep 2016 11:52:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 14 Mar 2017 18:13:00 +0000</lastBuildDate>
     <atom:link href="http://blog.codeg.cn/categories/blog/feed/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>evpp与muduo吞吐量对比</title>
+      <link>http://blog.codeg.cn/post/blog/2017-03-14-the-throughput-benchmark-test-of-evpp-vs-muduo/</link>
+      <pubDate>Tue, 14 Mar 2017 18:13:00 +0000</pubDate>
+      
+      <guid>http://blog.codeg.cn/post/blog/2017-03-14-the-throughput-benchmark-test-of-evpp-vs-muduo/</guid>
+      <description>
+
+&lt;h3 id=&#34;简介:251aeffb3a5bb5eef7cdbb7cd5914ca7&#34;&gt;简介&lt;/h3&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://github.com/chenshuo/muduo&#34;&gt;muduo&lt;/a&gt;是最近几年中国开源界里产生的优秀作品。它是由业内大牛陈硕实现的。详细介绍，请参考其博客介绍&lt;a href=&#34;http://blog.csdn.net/solstice/article/details/5848547&#34;&gt;http://blog.csdn.net/solstice/article/details/5848547&lt;/a&gt;。&lt;/p&gt;
+
+&lt;p&gt;本次测试是参考陈硕的博客文章&lt;a href=&#34;http://blog.csdn.net/solstice/article/details/5864889&#34;&gt;muduo与libevent2吞吐量对比&lt;/a&gt;，该文章的结论是：&lt;a href=&#34;https://github.com/chenshuo/muduo&#34;&gt;muduo&lt;/a&gt;吞吐量平均比&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent2&lt;/a&gt;高 &lt;strong&gt;18%&lt;/strong&gt; 以上。&lt;/p&gt;
+
+&lt;p&gt;由于&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;本身是基于&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent2&lt;/a&gt;实现的，因此我们希望将&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;和&lt;a href=&#34;https://github.com/chenshuo/muduo&#34;&gt;muduo&lt;/a&gt;放到一起做一次全面的性能测试。本文是关于这两个库在吞吐量方面的测试。最终测试结论如下：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;在吞吐量方面的性能总体来说，比较接近，各擅胜场&lt;/li&gt;
+&lt;li&gt;在单个消息较大时（&amp;gt;81K)，&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;比&lt;a href=&#34;https://github.com/chenshuo/muduo&#34;&gt;muduo&lt;/a&gt;整体上更快&lt;/li&gt;
+&lt;li&gt;在单个消息不太大时，并发数小于1000时，&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;占优&lt;/li&gt;
+&lt;li&gt;在单个消息不太大时，并发数大于1000时，&lt;a href=&#34;https://github.com/chenshuo/muduo&#34;&gt;muduo&lt;/a&gt;占优&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&#34;测试对象:251aeffb3a5bb5eef7cdbb7cd5914ca7&#34;&gt;测试对象&lt;/h3&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/Qihoo360/evpp/archive/v0.2.4.zip&#34;&gt;evpp-v0.2.4&lt;/a&gt; based on libevent-2.0.21&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/chenshuo/muduo/archive/v1.0.9.zip&#34;&gt;muduo-v1.0.9&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&#34;测试环境:251aeffb3a5bb5eef7cdbb7cd5914ca7&#34;&gt;测试环境&lt;/h3&gt;
+
+&lt;ol&gt;
+&lt;li&gt;Linux CentOS 6.2, 2.6.32-220.7.1.el6.x86_64&lt;/li&gt;
+&lt;li&gt;Intel&amp;reg; Xeon&amp;reg; CPU E5-2630 v2 @ 2.60GHz&lt;/li&gt;
+&lt;li&gt;gcc version 4.8.2 20140120 (Red Hat 4.8.2-15) (GCC)&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&#34;测试方法:251aeffb3a5bb5eef7cdbb7cd5914ca7&#34;&gt;测试方法&lt;/h3&gt;
+
+&lt;p&gt;依据 boost.asio 性能测试 &lt;a href=&#34;http://think-async.com/Asio/LinuxPerformanceImprovements&#34;&gt;http://think-async.com/Asio/LinuxPerformanceImprovements&lt;/a&gt; 的办法，用 ping pong 协议来测试吞吐量。&lt;/p&gt;
+
+&lt;p&gt;简单地说，ping pong 协议是客户端和服务器都实现 echo 协议。当 TCP 连接建立时，客户端向服务器发送一些数据，服务器会 echo 回这些数据，然后客户端再 echo 回服务器。这些数据就会像乒乓球一样在客户端和服务器之间来回传送，直到有一方断开连接为止。这是用来测试吞吐量的常用办法。&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://github.com/chenshuo/muduo&#34;&gt;muduo&lt;/a&gt;的测试代码在软件包内的路径为 &lt;code&gt;examples/pingpong/&lt;/code&gt;，代码如&lt;a href=&#34;https://github.com/chenshuo/muduo/tree/master/examples/pingpong&#34;&gt;https://github.com/chenshuo/muduo/tree/master/examples/pingpong&lt;/a&gt;所示。并使用&lt;code&gt;BUILD_TYPE=release ./build.sh&lt;/code&gt;方式编译&lt;a href=&#34;https://github.com/chenshuo/muduo&#34;&gt;muduo&lt;/a&gt;的优化版本。&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;的测试代码在软件包内的路径为&lt;code&gt;benchmark/throughput/evpp&lt;/code&gt;，代码如&lt;a href=&#34;https://github.com/Qihoo360/evpp/tree/master/benchmark/throughput/evpp&#34;&gt;https://github.com/Qihoo360/evpp/tree/master/benchmark/throughput/evpp&lt;/a&gt;所示。并使用 &lt;code&gt;tools&lt;/code&gt;目录下的&lt;code&gt;benchmark-build.sh&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;我们做了下面两项测试：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;单线程测试，测试并发连接数为 1/10/100/1000/10000 时，消息大小分别为 4096 8192 81920 409600 时的吞吐量&lt;/li&gt;
+&lt;li&gt;多线程测试，并发连接数为 100 或 1000，服务器和客户端的线程数同时设为 2/3/4/6/8，ping pong 消息的大小为 16k bytes。测试用的 shell 脚本可从&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;的源码包中找到。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&#34;单线程测试结果数据:251aeffb3a5bb5eef7cdbb7cd5914ca7&#34;&gt;单线程测试结果数据&lt;/h3&gt;
+
+&lt;p&gt;数字越大越好。&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Name&lt;/th&gt;
+&lt;th&gt;Message Size&lt;/th&gt;
+&lt;th&gt;1 connection&lt;/th&gt;
+&lt;th&gt;10 connection&lt;/th&gt;
+&lt;th&gt;100 connection&lt;/th&gt;
+&lt;th&gt;1000 connection&lt;/th&gt;
+&lt;th&gt;10000 connection&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;evpp&lt;/td&gt;
+&lt;td&gt;4096&lt;/td&gt;
+&lt;td&gt;229.274&lt;/td&gt;
+&lt;td&gt;631.611&lt;/td&gt;
+&lt;td&gt;671.219&lt;/td&gt;
+&lt;td&gt;495.566&lt;/td&gt;
+&lt;td&gt;366.071&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;muduo&lt;/td&gt;
+&lt;td&gt;4096&lt;/td&gt;
+&lt;td&gt;222.117&lt;/td&gt;
+&lt;td&gt;609.152&lt;/td&gt;
+&lt;td&gt;631.119&lt;/td&gt;
+&lt;td&gt;514.235&lt;/td&gt;
+&lt;td&gt;365.959&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;evpp&lt;/td&gt;
+&lt;td&gt;8192&lt;/td&gt;
+&lt;td&gt;394.162&lt;/td&gt;
+&lt;td&gt;1079.67&lt;/td&gt;
+&lt;td&gt;1127.09&lt;/td&gt;
+&lt;td&gt;786.706&lt;/td&gt;
+&lt;td&gt;645.866&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;muduo&lt;/td&gt;
+&lt;td&gt;8192&lt;/td&gt;
+&lt;td&gt;393.683&lt;/td&gt;
+&lt;td&gt;1064.43&lt;/td&gt;
+&lt;td&gt;1103.02&lt;/td&gt;
+&lt;td&gt;815.269&lt;/td&gt;
+&lt;td&gt;670.503&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;evpp&lt;/td&gt;
+&lt;td&gt;81920&lt;/td&gt;
+&lt;td&gt;1565.22&lt;/td&gt;
+&lt;td&gt;2079.77&lt;/td&gt;
+&lt;td&gt;1464.16&lt;/td&gt;
+&lt;td&gt;1323.09&lt;/td&gt;
+&lt;td&gt;1297.18&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;muduo&lt;/td&gt;
+&lt;td&gt;81920&lt;/td&gt;
+&lt;td&gt;1567.959&lt;/td&gt;
+&lt;td&gt;2180.467&lt;/td&gt;
+&lt;td&gt;1432.009&lt;/td&gt;
+&lt;td&gt;1267.181&lt;/td&gt;
+&lt;td&gt;1159.278&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;evpp&lt;/td&gt;
+&lt;td&gt;409600&lt;/td&gt;
+&lt;td&gt;1950.79&lt;/td&gt;
+&lt;td&gt;2363.68&lt;/td&gt;
+&lt;td&gt;1528.97&lt;/td&gt;
+&lt;td&gt;1290.17&lt;/td&gt;
+&lt;td&gt;1039.96&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;muduo&lt;/td&gt;
+&lt;td&gt;409600&lt;/td&gt;
+&lt;td&gt;1887.057&lt;/td&gt;
+&lt;td&gt;2213.813&lt;/td&gt;
+&lt;td&gt;1305.899&lt;/td&gt;
+&lt;td&gt;1131.383&lt;/td&gt;
+&lt;td&gt;1043.612&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;我们用&lt;a href=&#34;https://github.com/zieckey/gochart&#34;&gt;https://github.com/zieckey/gochart&lt;/a&gt;这个图标绘制工具将上述数据绘制为图表。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/1thread-4096-evpp-vs-muduo.png&#34; alt=&#34;&#34; /&gt;
+&lt;img src=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/1thread-8192-evpp-vs-muduo.png&#34; alt=&#34;&#34; /&gt;
+&lt;img src=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/1thread-81920-evpp-vs-muduo.png&#34; alt=&#34;&#34; /&gt;
+&lt;img src=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/1thread-409600-evpp-vs-muduo.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;多线程测试结果数据:251aeffb3a5bb5eef7cdbb7cd5914ca7&#34;&gt;多线程测试结果数据&lt;/h3&gt;
+</description>
+    </item>
     
     <item>
       <title>minio源码阅读</title>
@@ -2107,106 +2273,6 @@ fi
 &lt;ol&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/bkeepers/dotenv&#34;&gt;dotenv&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/joho/godotenv&#34;&gt;godotenv&lt;/a&gt;&lt;/li&gt;
-&lt;/ol&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>nsq介绍及源码阅读</title>
-      <link>http://blog.codeg.cn/2015/10/22/nsq/</link>
-      <pubDate>Thu, 22 Oct 2015 00:00:00 +0000</pubDate>
-      
-      <guid>http://blog.codeg.cn/2015/10/22/nsq/</guid>
-      <description>
-
-&lt;h2 id=&#34;简介:d95215f25ddc5c9409dc591338ad4840&#34;&gt;简介&lt;/h2&gt;
-
-&lt;h2 id=&#34;nsq客户端逻辑:d95215f25ddc5c9409dc591338ad4840&#34;&gt;nsq客户端逻辑&lt;/h2&gt;
-
-&lt;h3 id=&#34;nsq消费者:d95215f25ddc5c9409dc591338ad4840&#34;&gt;nsq消费者&lt;/h3&gt;
-
-&lt;p&gt;主要请参考&lt;code&gt;nsq_tail&lt;/code&gt;代码。&lt;code&gt;nsqd&lt;/code&gt;的回应消息处理代码为&lt;code&gt;func (c *Conn) readLoop()&lt;/code&gt;。&lt;/p&gt;
-
-&lt;p&gt;TCP消息流的二进制结构请参考官方文档：&lt;a href=&#34;http://nsq.io/clients/tcp_protocol_spec.html&#34;&gt;http://nsq.io/clients/tcp_protocol_spec.html&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;nsq消费者与&lt;code&gt;nsqd&lt;/code&gt;建立连接的流程如下：&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;当建立好TCP连接后，客户端必须发送一个 4 字节的 &amp;ldquo;magic&amp;rdquo; 标识码，表示通讯协议的版本。&lt;code&gt;V2&lt;/code&gt;(4 个字节的 ASCII [space][space][V][2]) 消费用到的推送流协议（和发布用到的请求/响应协议）&lt;/li&gt;
-&lt;li&gt;认证后，客户端可以发送&lt;code&gt;IDENTIFY&lt;/code&gt;命令来停供常用的元数据（比如，更多的描述标识码）和协商特性。服务器会根据客户端请求的内容返回一个JSON数据或直接返回&lt;code&gt;OK&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;然后，客户端还必须使用&lt;code&gt;SUB&lt;/code&gt;命令订阅一个话题(Topic)和通道(Channel)。成功后服务器会返回&lt;code&gt;OK&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;最后，还需要设置&lt;code&gt;RDY&lt;/code&gt;状态。如果&lt;code&gt;RDY&lt;/code&gt;状态为 0 ，意味着客户端不会收到任何消息。因此需要设置一个&lt;code&gt;RDY&lt;/code&gt;状态值，例如设置100，不需要任何附加命令，将会有 100 条消息推送到客户端&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;消费消息数据时，需要给NSQD返回该消息是否成功被处理。只有成功被处理的消息，才真正从NSQ队列中删除不会再投递到任何消费者。&lt;/p&gt;
-
-&lt;h3 id=&#34;nsq生产者:d95215f25ddc5c9409dc591338ad4840&#34;&gt;nsq生产者&lt;/h3&gt;
-
-&lt;p&gt;主要参考&lt;a href=&#34;https://github.com/nsqio/go-nsq&#34;&gt;https://github.com/nsqio/go-nsq&lt;/a&gt;项目中&lt;code&gt;Producer&lt;/code&gt;类的实现。&lt;/p&gt;
-
-&lt;p&gt;nsq生产者与&lt;code&gt;nsqd&lt;/code&gt;建立连接的流程如下：&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;当建立好TCP连接后，客户端必须发送一个 4 字节的 &amp;ldquo;magic&amp;rdquo; 标识码，表示通讯协议的版本。&lt;code&gt;V2&lt;/code&gt;(4 个字节的 ASCII [space][space][V][2]) 消费用到的推送流协议（和发布用到的请求/响应协议）&lt;/li&gt;
-&lt;li&gt;认证后，客户端可以发送&lt;code&gt;IDENTIFY&lt;/code&gt;命令来停供常用的元数据（比如，更多的描述标识码）和协商特性。服务器会根据客户端请求的内容返回一个JSON数据或直接返回&lt;code&gt;OK&lt;/code&gt;，表明连接建立成功。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;将消息投递到NSQD时，成功后NSQD会返回&lt;code&gt;OK&lt;/code&gt;。由于返回消息上没有ID，表明上看是不能做pipeline操作的。
-不过由于在一条连接上NSQD的返回消息肯定与接收到的消息顺序一一对应，因此可以做pipeline操作，可以连续调用多次&lt;code&gt;PUB/MPUB&lt;/code&gt;命令，
-但需要将这些命令保存下来，等待NSQD返回数据后再决定是否将这些命令标记完成还是标记为需要重新投递。&lt;/p&gt;
-
-&lt;p&gt;实现时，可以借用TCP的滑动窗口概念。如果滑动窗口为1，相当于每次调用&lt;code&gt;PUB/MPUB&lt;/code&gt;命令都需要等待服务器返回后才决定下一步操作，这就退化为同步操作。&lt;/p&gt;
-
-&lt;h2 id=&#34;nsqd内部处理逻辑:d95215f25ddc5c9409dc591338ad4840&#34;&gt;nsqd内部处理逻辑&lt;/h2&gt;
-
-&lt;p&gt;一个Topic可以有多&lt;code&gt;Channel&lt;/code&gt;，每个消息都会复制一份放入&lt;code&gt;Channel&lt;/code&gt;中，也就是说每个&lt;code&gt;Channel&lt;/code&gt;的数据都是独立的。如果消费速度更不上生产的速度，那么每个&lt;code&gt;Channel&lt;/code&gt;上的数据都会序列化到磁盘上，这里是一个坑，有可能会因此导致数据写磁盘多份。&lt;/p&gt;
-
-&lt;p&gt;另外，NSQ不能保证数据的消费顺序与生产顺序完全一致。&lt;/p&gt;
-
-&lt;h3 id=&#34;与nsqlookupd交互:d95215f25ddc5c9409dc591338ad4840&#34;&gt;与nsqlookupd交互&lt;/h3&gt;
-
-&lt;p&gt;代码调用路径如下：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;	nsqd.Main()
-	n.waitGroup.Wrap(func() { n.lookupLoop() })
-	func (n *NSQD) lookupLoop() : 91行： case val := &amp;lt;-n.notifyChan:
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3 id=&#34;消息分发:d95215f25ddc5c9409dc591338ad4840&#34;&gt;消息分发&lt;/h3&gt;
-
-&lt;p&gt;&lt;code&gt;func (t *Topic) messagePump()&lt;/code&gt; 这里进行消息的分发，直接将该topic下的消息推送给所有的channel上。&lt;/p&gt;
-
-&lt;h3 id=&#34;消息id:d95215f25ddc5c9409dc591338ad4840&#34;&gt;消息ID&lt;/h3&gt;
-
-&lt;p&gt;&lt;code&gt;func (n *NSQD) idPump()&lt;/code&gt; 这里生成新的消息ID，然后放入到 &lt;code&gt;n.idChan&lt;/code&gt; 中。64位int64的guid生成算法参考&lt;a href=&#34;https://github.com/bmizerany/noeqd&#34;&gt;https://github.com/bmizerany/noeqd&lt;/a&gt;，主要部分解释如下：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;time - 41位 (当前毫秒数，一共69年)
-配置好的机器ID - 10 bits - 一共支持1024个机器
-顺序号 - 12 bits - 每个机器在同一毫秒内一共支持4096个
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3 id=&#34;pub接口:d95215f25ddc5c9409dc591338ad4840&#34;&gt;pub接口&lt;/h3&gt;
-
-&lt;p&gt;发布一条消息到NSQ消息队列中。代码路径 &lt;code&gt;func (s *httpServer) doPUB(w http.ResponseWriter, req *http.Request, ps httprouter.Params) (interface{}, error)&lt;/code&gt; 。&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;判断消息长度是否超过限制&lt;/li&gt;
-&lt;li&gt;获取topic名称&lt;/li&gt;
-&lt;li&gt;根据topic名称，获取&lt;code&gt;Topic&lt;/code&gt;对象，最终会调用到这里：&lt;code&gt;func (n *NSQD) GetTopic(topicName string) *Topic&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;如果topic存在，直接返回&lt;code&gt;Topic&lt;/code&gt;对象&lt;/li&gt;
-&lt;li&gt;如果topic不存在，就创建一个:&lt;code&gt;func NewTopic(topicName string, ctx *context, deleteCallback func(*Topic)) *Topic&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;创建&lt;code&gt;Topic&lt;/code&gt;之后，询问&lt;code&gt;lookupd&lt;/code&gt;，获取所有关注这个topic的channel列表，然后获取或创建这些&lt;code&gt;Channel&lt;/code&gt;。&lt;/li&gt;
-&lt;li&gt;创建一个新的Message：&lt;code&gt;msg := NewMessage(&amp;lt;-s.ctx.nsqd.idChan, body)&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;将该消息放到&lt;code&gt;Topic&lt;/code&gt;上：&lt;code&gt;err = topic.PutMessage(msg)&lt;/code&gt;&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h3 id=&#34;接收一个新的客户端消费者:d95215f25ddc5c9409dc591338ad4840&#34;&gt;接收一个新的客户端消费者&lt;/h3&gt;
-
-&lt;h2 id=&#34;参考文献:d95215f25ddc5c9409dc591338ad4840&#34;&gt;参考文献&lt;/h2&gt;
-
-&lt;ol&gt;
-&lt;li&gt;&lt;a href=&#34;http://nsq.io/overview/design.html&#34;&gt;官方文档&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://wiki.jikexueyuan.com/project/nsq-guide/&#34;&gt;NSQ指南中文翻译&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;
 </description>
     </item>
