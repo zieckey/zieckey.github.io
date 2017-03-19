@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html class="no-js">
+<head>
+    <base href="http://blog.codeg.cn/">
+    <script>
+    document._writeOriginal = document.write;
+    document.write = function(str) {
+        if (str.indexOf('livereload.js') > -1) {
+            document._writeOriginal(str);
+        } else {
+            document._writeOriginal('<!-- Be Hijack!! -->');
+        }
+    }
+
+    </script>
+    <title>发布一个高性能的Reactor模式的C&#43;&#43;网络库：evpp - CodeG Blog</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+<meta name="description" content="简介 evpp是一个基于libevent开发的现代化的支持C&#43;&#43;11特性的高性能网络库，自带TCP/UDP/HTTP等协议的异步非阻塞式的服务">
+<meta name="author" content="zieckey">
+<meta name="publisher" content="zieckey">
+<meta name="generator" content="http://gohugo.io/"/>
+
+<meta itemprop="name" content="发布一个高性能的Reactor模式的C&#43;&#43;网络库：evpp - CodeG Blog">
+<meta itemprop="description" content="简介 evpp是一个基于libevent开发的现代化的支持C&#43;&#43;11特性的高性能网络库，自带TCP/UDP/HTTP等协议的异步非阻塞式的服务">
+<meta itemprop="image" content="http://blog.codeg.cn/public/codeg.jpg">
+
+<meta property="og:title" content="发布一个高性能的Reactor模式的C&#43;&#43;网络库：evpp - CodeG Blog" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://blog.codeg.cn/post/blog/2017-03-13-release-a-high-performance-C&#43;&#43;11-network-library/" />
+<meta property="og:image" content="http://blog.codeg.cn/public/codeg.jpg" />
+<meta property="og:description" content="简介 evpp是一个基于libevent开发的现代化的支持C&#43;&#43;11特性的高性能网络库，自带TCP/UDP/HTTP等协议的异步非阻塞式的服务">
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@zieckey">
+<meta name="twitter:title" content="发布一个高性能的Reactor模式的C&#43;&#43;网络库：evpp - CodeG Blog">
+<meta name="twitter:description" content="简介 evpp是一个基于libevent开发的现代化的支持C&#43;&#43;11特性的高性能网络库，自带TCP/UDP/HTTP等协议的异步非阻塞式的服务">
+<meta name="twitter:creator" content="@zieckey">
+<meta name="twitter:image" content="http://blog.codeg.cn/public/codeg.jpg">
+
+    <script>document.documentElement.className = document.documentElement.className.replace("no-js", "js");</script>
+    <link rel="canonical" href="http://blog.codeg.cn/post/blog/2017-03-13-release-a-high-performance-C&#43;&#43;11-network-library/">
+    <link rel='shortlink' href="http://blog.codeg.cn/post/blog/2017-03-13-release-a-high-performance-C&#43;&#43;11-network-library/"/>
+    <link rel="shortcut icon" href="http://blog.codeg.cn/public/favicon.ico"/>
+    
+<link rel="stylesheet" id="human-style-css" href="http://blog.codeg.cn/wp-content/themes/hueman/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css2" href="http://blog.codeg.cn/wp-content/themes/hueman-child/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="responsive-css" href="http://blog.codeg.cn/wp-content/themes/hueman/responsive.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="font-awesome-css" href="http://blog.codeg.cn/wp-content/themes/hueman/fonts/font-awesome.min.css" type="text/css" media="all"/>
+<link rel="stylesheet" href="http://blog.codeg.cn/public/highlight/styles/github.css">
+<script src="http://blog.codeg.cn/public/highlight/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<link rel="stylesheet" id="human-style-css3" href="http://blog.codeg.cn/wp-content/themes/hueman-child/user.css" type="text/css" media="all"/>
+<link rel="stylesheet" href="public/font/hack/css/hack.min.css">
+
+<script type="text/javascript" src="assets/js/jquery-2.1.1.min.js"></script>
+<script type="text/javascript" src="wp-content/themes/hueman/js/jquery.jplayer.min.js"></script>
+<script type="text/javascript" src="wp-content/themes/hueman/js/scripts.js"></script>
+<script type="text/javascript" src="assets/picturefill/picturefill.min.js"></script>
+<script type="text/javascript" src="assets/js/jquery.matchHeight-min.js"></script>
+<script type="text/javascript" async defer src="assets/js/myblog.js"></script>
+
+
+    
+    <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?16a8034e97e7943d9bd7f7310a59a7d8";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+    </script>
+
+
+    
+    <script src="http://s4.cnzz.com/z_stat.php?id=1253999623&web_id=1253999623" language="JavaScript"></script>
+</head>
+
+<body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome">
+<div id="wrapper">
+  <header id="header">
+
+  <nav class="nav-container group" id="nav-topbar">
+    <div class="nav-toggle"><i class="fa fa-bars"></i></div>
+    <div class="nav-text"></div>
+    <div class="nav-wrap container">
+      <a rel="nofollow" href="http://blog.codeg.cn/" class="nav-cs-icon">
+        <img width="40" height="40" src="http://blog.codeg.cn/public/codeg.jpg" alt="codeg" title="Home">
+      </a>
+      <ul id="menu-default-menu" class="nav container-inner group">
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="http://blog.codeg.cn/">首页</a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="http://blog.codeg.cn/post/">技术文章</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="http://blog.codeg.cn/about/">关于我</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="http://blog.codeg.cn/feed.xml" type="application/rss+xml" target="_blank">订阅</a>
+        </li>
+        <li class="menu-item menu-item-type-post_type menu-item-text">
+        聪明的解释器
+        </li>
+      </ul>
+    </div>
+
+    <div class="container">
+      <div class="container-inner">
+        <div class="toggle-search"><i class="fa fa-search"></i></div>
+        <div class="search-expand">
+          <div class="search-expand-inner">
+            <form method="get" class="searchform themeform" action="https://www.so.com/s">
+              <div>
+                <input type="text" class="search" name="q" placeholder="Press enter to start searching">
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+    
+
+  </nav>
+  
+
+  <div class="container group">
+    <div class="container-inner">
+
+      <div class="group pad">
+
+        <div class="group pad">
+          <h1 class="site-title">
+            <a rel="nofollow" href="http://blog.codeg.cn/" rel="home">
+              <img style="border-radius: 50%;width:72px;height:72px;margin:0 auto;" alt="codeg" src="http://blog.codeg.cn/public/codeg.jpg"></img>
+              CodeG Blog
+            </a>
+          </h1>
+          <p class="site-description"> 思路决定出路，态度决定高度。 </p>
+        </div>
+
+      </div>
+    </div>
+    
+  </div>
+  
+
+</header>
+
+
+
+  <div class="container" id="page">
+    <div class="container-inner">
+      <div class="main">
+        <div class="main-inner group">
+          <section class="content">
+            <div class="page-title pad group">
+              <ul class="meta-single group">
+                
+                <li class="category">
+                  <a href="http://blog.codeg.cn/categories/blog/" rel="category tag">blog</a>
+                </li>
+                
+              </ul>
+            </div>
+
+            <div class="pad group">
+
+              <article
+                  class="post type-post status-publish format-standard has-post-thumbnail hentry category-australien tag-bondi-beach tag-city2surf tag-sydney">
+                <div class="post-inner group">
+
+                  <h1 class="post-title">发布一个高性能的Reactor模式的C&#43;&#43;网络库：evpp</h1>
+
+                  <p class="post-byline">
+                    By <a target="_blank" href="http://blog.codeg.cn/">zieckey</a> · 2017年03月13日 · 2370 Words ·
+                    ~5min reading time |
+                    <a href="https://github.com/zieckey/blog/edit/master/content/post/blog/2017-03-13-release-a-high-performance-C&#43;&#43;11-network-library.md"
+                       target="_blank">编辑这个页面</a>
+                    | Tags:
+                    
+                    <a rel="tag" href="http://blog.codeg.cn/tags/c11">C&#43;&#43;11</a>
+                    
+                    <a rel="tag" href="http://blog.codeg.cn/tags/evpp">evpp</a>
+                    
+                  </p>
+
+                  <div class="clear"></div>
+
+                  <div class="entry">
+
+                    <div style="border: 1px dashed #e0e0e0; padding: 10px 10px 10px 10px; background-color: #fffeee; background-repeat: no-repeat; background-attachment: scroll; background-position: 1% 50%; -moz-background-size: auto auto; -moz-background-clip: -moz-initial; -moz-background-origin: -moz-initial; -moz-background-inline-policy: -moz-initial;">
+                      
+                      
+                      
+                      
+                      <div>
+                        
+                        
+                        
+                        
+                        本文 <a target="_blank" href="http://blog.codeg.cn/post/blog/2017-03-13-release-a-high-performance-C&#43;&#43;11-network-library/">http://blog.codeg.cn/post/blog/2017-03-13-release-a-high-performance-C&#43;&#43;11-network-library/</a> 是作者<a target="_blank" href="http://blog.codeg.cn/">zieckey</a>在研究和学习相关内容时所做的笔记，欢迎广大朋友指正和交流！
+                        版权所有，欢迎转载和分享，但请保留此段声明。 </p>
+                      </div>
+
+                    </div>
+
+                    <div class="entry-inner">
+                      
+
+<h2 id="简介:936b642af201f8dee8eb70b9b4d592bb">简介</h2>
+
+<p><a href="https://github.com/Qihoo360/evpp">evpp</a>是一个基于<a href="https://github.com/libevent/libevent">libevent</a>开发的现代化的支持C++11特性的高性能网络库，自带TCP/UDP/HTTP等协议的异步非阻塞式的服务器和客户端库。</p>
+
+<h2 id="特性:936b642af201f8dee8eb70b9b4d592bb">特性</h2>
+
+<ol>
+<li>现代版的C++11接口</li>
+<li>非阻塞异步接口都是C++11的functional/bind形式的回调仿函数（不是<a href="https://github.com/libevent/libevent">libevent</a>中的C风格的函数指针）</li>
+<li>非阻塞纯异步多线程TCP服务器/客户端</li>
+<li>非阻塞纯异步多线程HTTP服务器/客户端</li>
+<li>非阻塞纯异步多线程UDP服务器</li>
+<li>支持多进程模式</li>
+<li>优秀的跨平台特性和高性能（继承自<a href="https://github.com/libevent/libevent">libevent</a>的优点）</li>
+</ol>
+
+<p>除此之外，基于该库之上，还提供两个附带的应用层协议库：</p>
+
+<ol>
+<li><code>evmc</code> ：一个纯异步非阻塞式的<code>memcached</code>的C++客户端库，支持<code>membase</code>集群模式。该库已经用于生产环境，每天发起1000多<strong>亿</strong>次memcache查询请求。详情请见：<a href="http://blog.codeg.cn/apps/evmc/readme.md">evmc readme</a></li>
+<li><code>evnsq</code> ： 一个纯异步非阻塞式的<code>NSQ</code>的C++客户端库，支持消费者、生产者、服务发现等特性。该库已经用于生产环境，每天生产200多<strong>亿</strong>条日志消息。详情请见：<a href="http://blog.codeg.cn/apps/evnsq/readme.md">evnsq readme</a></li>
+</ol>
+
+<p>将来还会推出<code>redis</code>的客户端库。</p>
+
+<h2 id="项目由来:936b642af201f8dee8eb70b9b4d592bb">项目由来</h2>
+
+<p>我们开发小组负责的业务需要用到TCP协议来建设长连接网关服务和一些其他的一些基于TCP的短连接服务，在调研开源项目的过程中，没有发现一个合适的库来满足我们要求。结合我们自身的业务情况，理想中的C++网络库应具备一下几个特性：</p>
+
+<ol>
+<li>接口简单易用，最好是C++接口</li>
+<li>多线程，也能支持多进程</li>
+<li>最好是基于<a href="https://github.com/libevent/libevent">libevent</a>实现（因为现有的历史遗留框架、基础库等是依赖<a href="https://github.com/libevent/libevent">libevent</a>），这样能很方便嵌入<a href="https://github.com/libevent/libevent">libevent</a>的事件循环，否则改动较大或者集成起来的程序可能会有很多跨线程的调用（这些会带来编程的复杂性以及跨线程锁带来的性能下降）</li>
+</ol>
+
+<p>基于这些需求，可供选择的不多，所以我们只能自己开发一个。开发过程中，接口设计方面基本上大部分是参考<a href="https://github.com/chenshuo/muduo">muduo</a>项目来设计和实现的，当然也做了一些取舍和增改；同时也大量借鉴了<a href="https://golang.org">Golang</a>的一些设计哲学和思想。下面举几个小例子来说明一下：</p>
+
+<ol>
+<li><code>Duration</code> ： 这是一个时间区间相关的类，自带时间单位信息，参考了<a href="https://golang.org">Golang</a>项目中的<code>Duration</code>实现。我们在其他项目中见到太多的时间是不带单位的，例如<code>timeout</code>，到底是秒、毫秒还是微秒？需要看文档说明或具体实现，好一点的设计会将单位带在变量名中，例如<code>timeout_ms</code>，但还是没有<code>Duration</code>这种独立的类好。目前C++11中也有类似的实现<code>std::chrono::duration</code>，但稍显复杂，没有咱们这个借鉴<a href="https://golang.org">Golang</a>实现的版本来的简单明了</li>
+<li><code>Buffer</code> ： 这是一个缓冲区类，融合了<code>muduo</code>和<a href="https://golang.org">Golang</a>两个项目中相关类的设计和实现</li>
+<li><code>http::Server</code> : 这是一个http服务器类，自带线程池，它的事件循环和工作线程调度，完全是线程安全的，业务层不用太多关心跨线程调用问题。同时，还将http服务器的核心功能单独抽取出来形成<code>http::Service</code>类，是一个可嵌入型的服务器类，可以嵌入到已有的<a href="https://github.com/libevent/libevent">libevent</a>事件循环中</li>
+<li>网络地址的表达就仅仅使用<code>&quot;ip:port&quot;</code>这种形式字符串表示，就是参考<a href="https://golang.org">Golang</a>的设计</li>
+<li><code>httpc::ConnPool</code>是一个http的客户端连接池库，设计上尽量考虑高性能和复用。以后基于此还可以增加负载均衡和故障转移等特性</li>
+</ol>
+
+<p>另外，我们实现过程中极其重视线程安全问题，一个事件相关的资源必须在其所属的<code>EventLoop</code>（每个<code>EventLoop</code>绑定一个线程）中初始化和析构释放，这样我们能最大限度的减少出错的可能。为了达到这个目标我们重载<code>event_add</code>和<code>event_del</code>等函数，每一次调用<code>event_add</code>，就在对应的线程私有数据中记录该对象，在调用<code>event_del</code>时，检查之前该线程私有数据中是否拥有该对象，然后在整个程序退出前，再完整的检查所有线程的私有数据，看看是否仍然有对象没有析构释放。具体实现稍有区别，详细代码实现可以参考 <a href="https://github.com/Qihoo360/evpp/blob/master/evpp/inner_pre.cc#L46~L87">https://github.com/Qihoo360/evpp/blob/master/evpp/inner_pre.cc#L46~L87</a>。我们如此苛刻的追求线程安全，只是为了让一个程序能<strong>安静的平稳的退出或Reload</strong>，因为我们深刻的理解“编写永远运行的系统，和编写运行一段时间后平静关闭的系统是两码事”，后者要困难的多得多。</p>
+
+<h2 id="吞吐量benchmark测试报告:936b642af201f8dee8eb70b9b4d592bb">吞吐量Benchmark测试报告</h2>
+
+<p>本文用 ping pong 测试来对比<a href="https://github.com/Qihoo360/evpp">evpp</a>与<a href="https://github.com/libevent/libevent">libevent</a>、<a href="http://www.boost.org/">boost.asio</a>、muduo] 等网络的吞吐量，测试结果表明<a href="https://github.com/Qihoo360/evpp">evpp</a>吞吐量与<a href="http://www.boost.org/">boost.asio</a>、<a href="https://github.com/chenshuo/muduo">muduo</a>等相当，比<a href="https://github.com/libevent/libevent">libevent</a>高<strong>17%~130%</strong>左右。</p>
+
+<p><a href="https://github.com/Qihoo360/evpp">evpp</a>本身是基于<a href="https://github.com/libevent/libevent">libevent</a>实现的，不过<a href="https://github.com/Qihoo360/evpp">evpp</a>只是用了<a href="https://github.com/libevent/libevent">libevent</a>的事件循环，并没有用<a href="https://github.com/libevent/libevent">libevent</a>的<code>evbuffer</code>，而是自己参考<a href="https://github.com/chenshuo/muduo">muduo</a>和<a href="https://golang.org">Golang</a>实现了自己的网络IO读写类<a href="https://github.com/Qihoo360/evpp/blob/master/evpp/buffer.h">Buffer</a>。</p>
+
+<p>性能测试相关的代码都在这里：<a href="https://github.com/Qihoo360/evpp/tree/master/benchmark/">https://github.com/Qihoo360/evpp/tree/master/benchmark/</a>.</p>
+
+<h5 id="测试对象:936b642af201f8dee8eb70b9b4d592bb">测试对象</h5>
+
+<ol>
+<li><a href="https://github.com/Qihoo360/evpp/archive/0.2.0.tar.gz">evpp-0.2.0</a> based on libevent-2.0.21</li>
+<li>boost.asio-1.53</li>
+<li>libevent-2.0.21</li>
+</ol>
+
+<h5 id="系统环境:936b642af201f8dee8eb70b9b4d592bb">系统环境</h5>
+
+<ul>
+<li>操作系统：Linux CentOS 6.2, 2.6.32-220.7.1.el6.x86_64</li>
+<li>硬件CPU：Intel&reg; Xeon&reg; CPU E5-2630 v2 @ 2.60GHz</li>
+</ul>
+
+<p><img src="https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-libevent-1thread-all.png" alt="" />
+<img src="https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-all.png" alt="" /></p>
+
+<h2 id="几个简单的示例代码:936b642af201f8dee8eb70b9b4d592bb">几个简单的示例代码</h2>
+
+<h2 id="tcp-echo服务器:936b642af201f8dee8eb70b9b4d592bb">TCP Echo服务器</h2>
+
+<pre><code class="language-cpp">#include &lt;evpp/tcp_server.h&gt;
+#include &lt;evpp/buffer.h&gt;
+#include &lt;evpp/tcp_conn.h&gt;
+
+int main(int argc, char* argv[]) {
+    std::string addr = &quot;0.0.0.0:9099&quot;;
+    int thread_num = 4;
+    evpp::EventLoop loop;
+    evpp::TCPServer server(&amp;loop, addr, &quot;TCPEchoServer&quot;, thread_num);
+    server.SetMessageCallback([](const evpp::TCPConnPtr&amp; conn,
+                                 evpp::Buffer* msg,
+                                 evpp::Timestamp ts) {
+        conn-&gt;Send(msg);
+    });
+    server.SetConnectionCallback([](const evpp::TCPConnPtr&amp; conn) {
+        if (conn-&gt;IsConnected()) {
+            LOG_INFO &lt;&lt; &quot;A new connection from &quot; &lt;&lt; conn-&gt;remote_addr();
+        } else {
+            LOG_INFO &lt;&lt; &quot;Lost the connection from &quot; &lt;&lt; conn-&gt;remote_addr();
+        }
+    });
+    server.Init();
+    server.Start();
+    loop.Run();
+    return 0;
+}
+</code></pre>
+
+<h3 id="http-echo服务器:936b642af201f8dee8eb70b9b4d592bb">HTTP Echo服务器</h3>
+
+<pre><code class="language-cpp">#include &lt;evpp/exp.h&gt;
+#include &lt;evpp/http/http_server.h&gt;
+
+int main(int argc, char* argv[]) {
+    std::vector&lt;int&gt; ports = { 9009, 23456, 23457 };
+    int thread_num = 2;
+    evpp::http::Server server(thread_num);
+    server.RegisterHandler(&quot;/echo&quot;,
+                           [](evpp::EventLoop* loop,
+                              const evpp::http::ContextPtr&amp; ctx,
+                              const evpp::http::HTTPSendResponseCallback&amp; cb) {
+        cb(ctx-&gt;body().ToString()); }
+    );
+    server.Init(ports);
+    server.Start();
+    while (!server.IsStopped()) {
+        usleep(1);
+    }
+    return 0;
+}
+
+</code></pre>
+
+<h3 id="udp-echo服务器:936b642af201f8dee8eb70b9b4d592bb">UDP Echo服务器</h3>
+
+<pre><code class="language-cpp">#include &lt;evpp/exp.h&gt;
+#include &lt;evpp/udp/udp_server.h&gt;
+#include &lt;evpp/udp/udp_message.h&gt;
+
+int main(int argc, char* argv[]) {
+    std::vector&lt;int&gt; ports = { 1053, 5353 };
+    evpp::udp::Server server;
+    server.SetMessageHandler([](evpp::EventLoop* loop, evpp::udp::MessagePtr&amp; msg) {
+        evpp::udp::SendMessage(msg);
+    });
+    server.Init(ports);
+    server.Start();
+
+    while (!server.IsStopped()) {
+        usleep(1);
+    }
+    return 0;
+}
+</code></pre>
+
+<h2 id="致谢:936b642af201f8dee8eb70b9b4d592bb">致谢</h2>
+
+<ol>
+<li>感谢<a href="http://www.360.cn" title="http://www.360.cn">奇虎360公司</a>对该项目的支持</li>
+<li>感谢<a href="https://github.com/libevent/libevent">libevent</a>, <a href="https://github.com/google/glog">glog</a>, <a href="https://github.com/google/googletest">gtest</a>, <a href="https://golang.org">Golang</a>等项目</li>
+<li><a href="https://github.com/Qihoo360/evpp">evpp</a>深度参考了<a href="https://github.com/chenshuo/muduo">muduo</a>项目的实现和设计，非常感谢<a href="https://github.com/chenshuo" title="https://github.com/chenshuo">Chen Shuo</a></li>
+</ol>
+
+                    </div>
+
+                    
+<div class="bdsharebuttonbox">
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网"></a>
+    <a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博"></a>
+</div>
+<script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{},"image":{"viewList":["weixin","tsina","qzone","renren","tqq"],"viewText":"分享到：","viewSize":"24"},"selectShare":{"bdContainerClass":null,"bdSelectMiniList":["weixin","tsina","qzone","renren","tqq"]}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+
+                    
+
+<div class="ds-thread" data-thread-key="/post/blog/2017-03-13-release-a-high-performance-C&#43;&#43;11-network-library/" data-title="发布一个高性能的Reactor模式的C&#43;&#43;网络库：evpp" data-url="http://blog.codeg.cn/post/blog/2017-03-13-release-a-high-performance-C&#43;&#43;11-network-library/"></div>
+
+
+<script type="text/javascript">
+                    var duoshuoQuery = {short_name:"codeg"};
+                        (function() {
+                            var ds = document.createElement('script');
+                            ds.type = 'text/javascript';ds.async = true;
+                            ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+                            ds.charset = 'UTF-8';
+                            (document.getElementsByTagName('head')[0]
+                             || document.getElementsByTagName('body')[0]).appendChild(ds);
+                        })();
+                    </script>
+
+                    
+                    <div class="clear"></div>
+                  </div>
+                  
+
+                </div>
+                
+              </article>
+              
+              <div class="clear"></div>
+              
+              
+              
+            </div>
+          </section>
+          <div class="sidebar s1">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>Contact:</p>
+      <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo"
+        href="http://weibo.com/zieckey" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/zieckey" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub"
+        href="https://github.com/zieckey" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+    <li>
+        <a class="social-tooltip" title="On WeChat"
+           href="http://blog.codeg.cn/images/githubpages/logo/wechat.qr.png" target="_blank">
+            <i class="fa fa-wechat"></i>
+        </a>
+    </li>
+</ul>
+
+    </div>
+    
+    
+    
+
+
+    <ul class="post-nav group">
+      <li class="next">
+        
+        <a href="http://blog.codeg.cn/post/blog/2016-09-06-minio-source-code-reading/" rel="next">
+          <i class="fa fa-chevron-right"></i>
+          <strong>Next post</strong>
+          <span>minio源码阅读</span>
+        </a>
+        
+      </li>
+      <li class="previous">
+        
+        <a href="http://blog.codeg.cn/post/blog/2017-03-14-the-throughput-benchmark-test-of-evpp-vs-muduo/" rel="prev">
+          <i class="fa fa-chevron-left"></i>
+          <strong>Previous Post</strong>
+          <span>evpp与muduo吞吐量对比</span>
+        </a>
+        
+      </li>
+    </ul>
+    <div id="search-2" class="widget widget_search"><h3>Search</h3>
+      <form method="get" class="searchform themeform" action="https://www.so.com/s">
+        <div>
+          <input type="text" class="search" name="q" placeholder="Press enter to start searching">
+        </div>
+      </form>
+    </div>
+  </div>
+  
+</div>
+
+          <div class="sidebar s2">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>More</p>
+    </div>
+    <div id="categories-2" class="widget widget_categories"><h3>Categories</h3>
+      <ul>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer id="footer">
+  <section class="container" id="footer-bottom">
+    <div class="container-inner">
+      <a id="back-to-top" href="#"><i class="fa fa-angle-up"></i></a>
+      <div class="pad group">
+        <div class="grid one-half">
+          <div id="copyright">
+            <p>Copyright © 2016. All Rights Reserved. <br>Powered by
+              <a rel="nofollow" href="http://gohugo.io/" target="_blank">Hugo - the static site generator</a>.
+              <a rel="nofollow" href="http://golang.org" target="_blank">#golang</a>.
+            </p>
+          </div>
+          
+        </div>
+        
+        <div class="grid one-half last">
+          <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo"
+        href="http://weibo.com/zieckey" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/zieckey" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub"
+        href="https://github.com/zieckey" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+    <li>
+        <a class="social-tooltip" title="On WeChat"
+           href="http://blog.codeg.cn/images/githubpages/logo/wechat.qr.png" target="_blank">
+            <i class="fa fa-wechat"></i>
+        </a>
+    </li>
+</ul>
+
+        </div>
+      </div>
+
+    </div>
+    
+  </section>
+  
+</footer>
+
+</div>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-10147768-2', 'auto');
+  ga('send', 'pageview');
+
+  $('#messagesbsb').remove();
+
+</script>
+</body>
+</html>
+

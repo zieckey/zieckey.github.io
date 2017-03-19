@@ -196,6 +196,176 @@
     </item>
     
     <item>
+      <title>发布一个高性能的Reactor模式的C&#43;&#43;网络库：evpp</title>
+      <link>http://blog.codeg.cn/post/blog/2017-03-13-release-a-high-performance-C&#43;&#43;11-network-library/</link>
+      <pubDate>Mon, 13 Mar 2017 18:13:00 +0000</pubDate>
+      
+      <guid>http://blog.codeg.cn/post/blog/2017-03-13-release-a-high-performance-C&#43;&#43;11-network-library/</guid>
+      <description>
+
+&lt;h2 id=&#34;简介:936b642af201f8dee8eb70b9b4d592bb&#34;&gt;简介&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;是一个基于&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent&lt;/a&gt;开发的现代化的支持C++11特性的高性能网络库，自带TCP/UDP/HTTP等协议的异步非阻塞式的服务器和客户端库。&lt;/p&gt;
+
+&lt;h2 id=&#34;特性:936b642af201f8dee8eb70b9b4d592bb&#34;&gt;特性&lt;/h2&gt;
+
+&lt;ol&gt;
+&lt;li&gt;现代版的C++11接口&lt;/li&gt;
+&lt;li&gt;非阻塞异步接口都是C++11的functional/bind形式的回调仿函数（不是&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent&lt;/a&gt;中的C风格的函数指针）&lt;/li&gt;
+&lt;li&gt;非阻塞纯异步多线程TCP服务器/客户端&lt;/li&gt;
+&lt;li&gt;非阻塞纯异步多线程HTTP服务器/客户端&lt;/li&gt;
+&lt;li&gt;非阻塞纯异步多线程UDP服务器&lt;/li&gt;
+&lt;li&gt;支持多进程模式&lt;/li&gt;
+&lt;li&gt;优秀的跨平台特性和高性能（继承自&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent&lt;/a&gt;的优点）&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;除此之外，基于该库之上，还提供两个附带的应用层协议库：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;evmc&lt;/code&gt; ：一个纯异步非阻塞式的&lt;code&gt;memcached&lt;/code&gt;的C++客户端库，支持&lt;code&gt;membase&lt;/code&gt;集群模式。该库已经用于生产环境，每天发起1000多&lt;strong&gt;亿&lt;/strong&gt;次memcache查询请求。详情请见：&lt;a href=&#34;http://blog.codeg.cn/apps/evmc/readme.md&#34;&gt;evmc readme&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;evnsq&lt;/code&gt; ： 一个纯异步非阻塞式的&lt;code&gt;NSQ&lt;/code&gt;的C++客户端库，支持消费者、生产者、服务发现等特性。该库已经用于生产环境，每天生产200多&lt;strong&gt;亿&lt;/strong&gt;条日志消息。详情请见：&lt;a href=&#34;http://blog.codeg.cn/apps/evnsq/readme.md&#34;&gt;evnsq readme&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;将来还会推出&lt;code&gt;redis&lt;/code&gt;的客户端库。&lt;/p&gt;
+
+&lt;h2 id=&#34;项目由来:936b642af201f8dee8eb70b9b4d592bb&#34;&gt;项目由来&lt;/h2&gt;
+
+&lt;p&gt;我们开发小组负责的业务需要用到TCP协议来建设长连接网关服务和一些其他的一些基于TCP的短连接服务，在调研开源项目的过程中，没有发现一个合适的库来满足我们要求。结合我们自身的业务情况，理想中的C++网络库应具备一下几个特性：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;接口简单易用，最好是C++接口&lt;/li&gt;
+&lt;li&gt;多线程，也能支持多进程&lt;/li&gt;
+&lt;li&gt;最好是基于&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent&lt;/a&gt;实现（因为现有的历史遗留框架、基础库等是依赖&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent&lt;/a&gt;），这样能很方便嵌入&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent&lt;/a&gt;的事件循环，否则改动较大或者集成起来的程序可能会有很多跨线程的调用（这些会带来编程的复杂性以及跨线程锁带来的性能下降）&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;基于这些需求，可供选择的不多，所以我们只能自己开发一个。开发过程中，接口设计方面基本上大部分是参考&lt;a href=&#34;https://github.com/chenshuo/muduo&#34;&gt;muduo&lt;/a&gt;项目来设计和实现的，当然也做了一些取舍和增改；同时也大量借鉴了&lt;a href=&#34;https://golang.org&#34;&gt;Golang&lt;/a&gt;的一些设计哲学和思想。下面举几个小例子来说明一下：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;Duration&lt;/code&gt; ： 这是一个时间区间相关的类，自带时间单位信息，参考了&lt;a href=&#34;https://golang.org&#34;&gt;Golang&lt;/a&gt;项目中的&lt;code&gt;Duration&lt;/code&gt;实现。我们在其他项目中见到太多的时间是不带单位的，例如&lt;code&gt;timeout&lt;/code&gt;，到底是秒、毫秒还是微秒？需要看文档说明或具体实现，好一点的设计会将单位带在变量名中，例如&lt;code&gt;timeout_ms&lt;/code&gt;，但还是没有&lt;code&gt;Duration&lt;/code&gt;这种独立的类好。目前C++11中也有类似的实现&lt;code&gt;std::chrono::duration&lt;/code&gt;，但稍显复杂，没有咱们这个借鉴&lt;a href=&#34;https://golang.org&#34;&gt;Golang&lt;/a&gt;实现的版本来的简单明了&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Buffer&lt;/code&gt; ： 这是一个缓冲区类，融合了&lt;code&gt;muduo&lt;/code&gt;和&lt;a href=&#34;https://golang.org&#34;&gt;Golang&lt;/a&gt;两个项目中相关类的设计和实现&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;http::Server&lt;/code&gt; : 这是一个http服务器类，自带线程池，它的事件循环和工作线程调度，完全是线程安全的，业务层不用太多关心跨线程调用问题。同时，还将http服务器的核心功能单独抽取出来形成&lt;code&gt;http::Service&lt;/code&gt;类，是一个可嵌入型的服务器类，可以嵌入到已有的&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent&lt;/a&gt;事件循环中&lt;/li&gt;
+&lt;li&gt;网络地址的表达就仅仅使用&lt;code&gt;&amp;quot;ip:port&amp;quot;&lt;/code&gt;这种形式字符串表示，就是参考&lt;a href=&#34;https://golang.org&#34;&gt;Golang&lt;/a&gt;的设计&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;httpc::ConnPool&lt;/code&gt;是一个http的客户端连接池库，设计上尽量考虑高性能和复用。以后基于此还可以增加负载均衡和故障转移等特性&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;另外，我们实现过程中极其重视线程安全问题，一个事件相关的资源必须在其所属的&lt;code&gt;EventLoop&lt;/code&gt;（每个&lt;code&gt;EventLoop&lt;/code&gt;绑定一个线程）中初始化和析构释放，这样我们能最大限度的减少出错的可能。为了达到这个目标我们重载&lt;code&gt;event_add&lt;/code&gt;和&lt;code&gt;event_del&lt;/code&gt;等函数，每一次调用&lt;code&gt;event_add&lt;/code&gt;，就在对应的线程私有数据中记录该对象，在调用&lt;code&gt;event_del&lt;/code&gt;时，检查之前该线程私有数据中是否拥有该对象，然后在整个程序退出前，再完整的检查所有线程的私有数据，看看是否仍然有对象没有析构释放。具体实现稍有区别，详细代码实现可以参考 &lt;a href=&#34;https://github.com/Qihoo360/evpp/blob/master/evpp/inner_pre.cc#L46~L87&#34;&gt;https://github.com/Qihoo360/evpp/blob/master/evpp/inner_pre.cc#L46~L87&lt;/a&gt;。我们如此苛刻的追求线程安全，只是为了让一个程序能&lt;strong&gt;安静的平稳的退出或Reload&lt;/strong&gt;，因为我们深刻的理解“编写永远运行的系统，和编写运行一段时间后平静关闭的系统是两码事”，后者要困难的多得多。&lt;/p&gt;
+
+&lt;h2 id=&#34;吞吐量benchmark测试报告:936b642af201f8dee8eb70b9b4d592bb&#34;&gt;吞吐量Benchmark测试报告&lt;/h2&gt;
+
+&lt;p&gt;本文用 ping pong 测试来对比&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;与&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent&lt;/a&gt;、&lt;a href=&#34;http://www.boost.org/&#34;&gt;boost.asio&lt;/a&gt;、muduo] 等网络的吞吐量，测试结果表明&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;吞吐量与&lt;a href=&#34;http://www.boost.org/&#34;&gt;boost.asio&lt;/a&gt;、&lt;a href=&#34;https://github.com/chenshuo/muduo&#34;&gt;muduo&lt;/a&gt;等相当，比&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent&lt;/a&gt;高&lt;strong&gt;17%~130%&lt;/strong&gt;左右。&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;本身是基于&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent&lt;/a&gt;实现的，不过&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;只是用了&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent&lt;/a&gt;的事件循环，并没有用&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent&lt;/a&gt;的&lt;code&gt;evbuffer&lt;/code&gt;，而是自己参考&lt;a href=&#34;https://github.com/chenshuo/muduo&#34;&gt;muduo&lt;/a&gt;和&lt;a href=&#34;https://golang.org&#34;&gt;Golang&lt;/a&gt;实现了自己的网络IO读写类&lt;a href=&#34;https://github.com/Qihoo360/evpp/blob/master/evpp/buffer.h&#34;&gt;Buffer&lt;/a&gt;。&lt;/p&gt;
+
+&lt;p&gt;性能测试相关的代码都在这里：&lt;a href=&#34;https://github.com/Qihoo360/evpp/tree/master/benchmark/&#34;&gt;https://github.com/Qihoo360/evpp/tree/master/benchmark/&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h5 id=&#34;测试对象:936b642af201f8dee8eb70b9b4d592bb&#34;&gt;测试对象&lt;/h5&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/Qihoo360/evpp/archive/0.2.0.tar.gz&#34;&gt;evpp-0.2.0&lt;/a&gt; based on libevent-2.0.21&lt;/li&gt;
+&lt;li&gt;boost.asio-1.53&lt;/li&gt;
+&lt;li&gt;libevent-2.0.21&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h5 id=&#34;系统环境:936b642af201f8dee8eb70b9b4d592bb&#34;&gt;系统环境&lt;/h5&gt;
+
+&lt;ul&gt;
+&lt;li&gt;操作系统：Linux CentOS 6.2, 2.6.32-220.7.1.el6.x86_64&lt;/li&gt;
+&lt;li&gt;硬件CPU：Intel&amp;reg; Xeon&amp;reg; CPU E5-2630 v2 @ 2.60GHz&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-libevent-1thread-all.png&#34; alt=&#34;&#34; /&gt;
+&lt;img src=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-all.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;几个简单的示例代码:936b642af201f8dee8eb70b9b4d592bb&#34;&gt;几个简单的示例代码&lt;/h2&gt;
+
+&lt;h2 id=&#34;tcp-echo服务器:936b642af201f8dee8eb70b9b4d592bb&#34;&gt;TCP Echo服务器&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;#include &amp;lt;evpp/tcp_server.h&amp;gt;
+#include &amp;lt;evpp/buffer.h&amp;gt;
+#include &amp;lt;evpp/tcp_conn.h&amp;gt;
+
+int main(int argc, char* argv[]) {
+    std::string addr = &amp;quot;0.0.0.0:9099&amp;quot;;
+    int thread_num = 4;
+    evpp::EventLoop loop;
+    evpp::TCPServer server(&amp;amp;loop, addr, &amp;quot;TCPEchoServer&amp;quot;, thread_num);
+    server.SetMessageCallback([](const evpp::TCPConnPtr&amp;amp; conn,
+                                 evpp::Buffer* msg,
+                                 evpp::Timestamp ts) {
+        conn-&amp;gt;Send(msg);
+    });
+    server.SetConnectionCallback([](const evpp::TCPConnPtr&amp;amp; conn) {
+        if (conn-&amp;gt;IsConnected()) {
+            LOG_INFO &amp;lt;&amp;lt; &amp;quot;A new connection from &amp;quot; &amp;lt;&amp;lt; conn-&amp;gt;remote_addr();
+        } else {
+            LOG_INFO &amp;lt;&amp;lt; &amp;quot;Lost the connection from &amp;quot; &amp;lt;&amp;lt; conn-&amp;gt;remote_addr();
+        }
+    });
+    server.Init();
+    server.Start();
+    loop.Run();
+    return 0;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;http-echo服务器:936b642af201f8dee8eb70b9b4d592bb&#34;&gt;HTTP Echo服务器&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;#include &amp;lt;evpp/exp.h&amp;gt;
+#include &amp;lt;evpp/http/http_server.h&amp;gt;
+
+int main(int argc, char* argv[]) {
+    std::vector&amp;lt;int&amp;gt; ports = { 9009, 23456, 23457 };
+    int thread_num = 2;
+    evpp::http::Server server(thread_num);
+    server.RegisterHandler(&amp;quot;/echo&amp;quot;,
+                           [](evpp::EventLoop* loop,
+                              const evpp::http::ContextPtr&amp;amp; ctx,
+                              const evpp::http::HTTPSendResponseCallback&amp;amp; cb) {
+        cb(ctx-&amp;gt;body().ToString()); }
+    );
+    server.Init(ports);
+    server.Start();
+    while (!server.IsStopped()) {
+        usleep(1);
+    }
+    return 0;
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;udp-echo服务器:936b642af201f8dee8eb70b9b4d592bb&#34;&gt;UDP Echo服务器&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;#include &amp;lt;evpp/exp.h&amp;gt;
+#include &amp;lt;evpp/udp/udp_server.h&amp;gt;
+#include &amp;lt;evpp/udp/udp_message.h&amp;gt;
+
+int main(int argc, char* argv[]) {
+    std::vector&amp;lt;int&amp;gt; ports = { 1053, 5353 };
+    evpp::udp::Server server;
+    server.SetMessageHandler([](evpp::EventLoop* loop, evpp::udp::MessagePtr&amp;amp; msg) {
+        evpp::udp::SendMessage(msg);
+    });
+    server.Init(ports);
+    server.Start();
+
+    while (!server.IsStopped()) {
+        usleep(1);
+    }
+    return 0;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;致谢:936b642af201f8dee8eb70b9b4d592bb&#34;&gt;致谢&lt;/h2&gt;
+
+&lt;ol&gt;
+&lt;li&gt;感谢&lt;a href=&#34;http://www.360.cn&#34; title=&#34;http://www.360.cn&#34;&gt;奇虎360公司&lt;/a&gt;对该项目的支持&lt;/li&gt;
+&lt;li&gt;感谢&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent&lt;/a&gt;, &lt;a href=&#34;https://github.com/google/glog&#34;&gt;glog&lt;/a&gt;, &lt;a href=&#34;https://github.com/google/googletest&#34;&gt;gtest&lt;/a&gt;, &lt;a href=&#34;https://golang.org&#34;&gt;Golang&lt;/a&gt;等项目&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;深度参考了&lt;a href=&#34;https://github.com/chenshuo/muduo&#34;&gt;muduo&lt;/a&gt;项目的实现和设计，非常感谢&lt;a href=&#34;https://github.com/chenshuo&#34; title=&#34;https://github.com/chenshuo&#34;&gt;Chen Shuo&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+    </item>
+    
+    <item>
       <title>minio源码阅读</title>
       <link>http://blog.codeg.cn/post/blog/2016-09-06-minio-source-code-reading/</link>
       <pubDate>Tue, 06 Sep 2016 11:52:00 +0000</pubDate>
@@ -2216,83 +2386,6 @@ func main() {
 &lt;ol&gt;
 &lt;li&gt;&lt;a href=&#34;http://baike.haosou.com/doc/302938-320692.html&#34;&gt;双缓冲技术介绍&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/zieckey/dbuf&#34;&gt;Golang实现的示例源码在这里 https://github.com/zieckey/dbuf&lt;/a&gt;&lt;/li&gt;
-&lt;/ol&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>serf介绍</title>
-      <link>http://blog.codeg.cn/2015/12/20/serf/</link>
-      <pubDate>Sun, 20 Dec 2015 00:00:00 +0000</pubDate>
-      
-      <guid>http://blog.codeg.cn/2015/12/20/serf/</guid>
-      <description>
-
-&lt;h2 id=&#34;简介:0944400516c0fa656ac8b2fdb8ad1608&#34;&gt;简介&lt;/h2&gt;
-
-&lt;p&gt;Serf是一个无中心化的服务调度和服务发现工具。它容错性极好、无中心化设计、没有单点故障。Serf是建立在Gossip协议之上的，Gossip协议就是为无中心化通信而设计的。为了让一个新节点加入Serf集群，只需要知道集群中的任意一个节点即可，一旦新节点加入进来，它将获得集群中所有的成员信息。Gossip协议让Serf的配置和启动变得非常容易。&lt;/p&gt;
-
-&lt;h2 id=&#34;如何使用:0944400516c0fa656ac8b2fdb8ad1608&#34;&gt;如何使用&lt;/h2&gt;
-
-&lt;p&gt;在官方网站 &lt;a href=&#34;https://www.serfdom.io/downloads.html&#34;&gt;https://www.serfdom.io/downloads.html&lt;/a&gt; 下载合适的版本。&lt;/p&gt;
-
-&lt;h3 id=&#34;简单使用:0944400516c0fa656ac8b2fdb8ad1608&#34;&gt;简单使用&lt;/h3&gt;
-
-&lt;p&gt;新建一个事件处理器脚本，例如 handler.sh ：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;#!/bin/bash
-if [ &amp;quot;${SERF_USER_EVENT}&amp;quot; = &amp;quot;memresponse&amp;quot; ]; then
-    cat &amp;gt;&amp;gt; /tmp/mem.txt
-    echo &amp;quot;\n&amp;quot; &amp;gt;&amp;gt; /tmp/mem.txt
-fi
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;再启动 serf 服务，绑定&lt;code&gt;handler.sh&lt;/code&gt;为默认的事件处理器：
-    ./serf agent -bind=133.130.106.57:5001 -rpc-addr=133.130.106.57:7373   -log-level=debug -event-handler=./handler.sh&lt;/p&gt;
-
-&lt;p&gt;再再再另一个console窗口利用serf命令发送一个事件到之前启动的serf：
-    ./serf event -rpc-addr=133.130.106.57:7373 memresponse xcxx&lt;/p&gt;
-
-&lt;p&gt;我们可以到serf服务的窗口输出：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$  ./serf agent -bind=133.130.106.57:5001 -rpc-addr=133.130.106.57:7373   -log-level=debug -event-handler=./handler.sh
-==&amp;gt; Starting Serf agent...
-==&amp;gt; Starting Serf agent RPC...
-==&amp;gt; Serf agent running!
-         Node name: &#39;133-130-106-57&#39;
-         Bind addr: &#39;133.130.106.57:5001&#39;
-          RPC addr: &#39;133.130.106.57:7373&#39;
-         Encrypted: false
-          Snapshot: false
-           Profile: lan
-
-==&amp;gt; Log data will now stream in as it occurs:
-
-    2015/12/20 10:06:03 [INFO] agent: Serf agent starting
-    2015/12/20 10:06:03 [WARN] memberlist: Binding to public address without encryption!
-    2015/12/20 10:06:03 [INFO] serf: EventMemberJoin: 133-130-106-57 133.130.106.57
-    2015/12/20 10:06:04 [INFO] agent: Received event: member-join
-    2015/12/20 10:06:04 [DEBUG] agent: Event &#39;member-join&#39; script output: 
-    2015/12/20 10:06:13 [INFO] agent.ipc: Accepted client: 133.130.106.57:34964
-    2015/12/20 10:06:13 [DEBUG] agent: Requesting user event send: memresponse. Coalesced: true. Payload: &amp;quot;xcxx&amp;quot;
-    2015/12/20 10:06:14 [INFO] agent: Received event: user-event: memresponse
-    2015/12/20 10:06:14 [DEBUG] agent: Event &#39;user&#39; script output: 
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;我们去看看 &lt;code&gt;/tmp/mem.txt&lt;/code&gt; 文件的内容如下：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;xcxx
-\n
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3 id=&#34;构建serf集群:0944400516c0fa656ac8b2fdb8ad1608&#34;&gt;构建serf集群&lt;/h3&gt;
-
-&lt;h2 id=&#34;参考文献:0944400516c0fa656ac8b2fdb8ad1608&#34;&gt;参考文献&lt;/h2&gt;
-
-&lt;ol&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.serfdom.io&#34;&gt;官方网站 https://www.serfdom.io&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.digitalocean.com/community/tutorials/how-to-set-up-a-serf-cluster-on-several-ubuntu-vps&#34;&gt;https://www.digitalocean.com/community/tutorials/how-to-set-up-a-serf-cluster-on-several-ubuntu-vps&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://iankent.uk/blog/getting-started-with-hashicorp-serf/&#34;&gt;http://iankent.uk/blog/getting-started-with-hashicorp-serf/&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;
 </description>
     </item>
