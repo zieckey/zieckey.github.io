@@ -182,8 +182,8 @@
                   <h1 class="post-title">evpp与muduo吞吐量对比</h1>
 
                   <p class="post-byline">
-                    By <a target="_blank" href="http://blog.codeg.cn/">zieckey</a> · 2017年03月14日 · 1099 Words ·
-                    ~3min reading time |
+                    By <a target="_blank" href="http://blog.codeg.cn/">zieckey</a> · 2017年03月14日 · 1792 Words ·
+                    ~4min reading time |
                     <a href="https://github.com/zieckey/blog/edit/master/content/post/blog/2017-03-14-the-throughput-benchmark-test-of-evpp-vs-muduo.md"
                        target="_blank">编辑这个页面</a>
                     | Tags:
@@ -225,14 +225,7 @@
 
 <p>本次测试是参考陈硕的博客文章<a href="http://blog.csdn.net/solstice/article/details/5864889">muduo与libevent2吞吐量对比</a>，该文章的结论是：<a href="https://github.com/chenshuo/muduo">muduo</a>吞吐量平均比<a href="https://github.com/libevent/libevent">libevent2</a>高 <strong>18%</strong> 以上。</p>
 
-<p>由于<a href="https://github.com/Qihoo360/evpp">evpp</a>本身是基于<a href="https://github.com/libevent/libevent">libevent2</a>实现的，因此我们希望将<a href="https://github.com/Qihoo360/evpp">evpp</a>和<a href="https://github.com/chenshuo/muduo">muduo</a>放到一起做一次全面的性能测试。本文是关于这两个库在吞吐量方面的测试。最终测试结论如下：</p>
-
-<ol>
-<li>在吞吐量方面的性能总体来说，比较接近，各擅胜场</li>
-<li>在单个消息较大时（&gt;81K)，<a href="https://github.com/Qihoo360/evpp">evpp</a>比<a href="https://github.com/chenshuo/muduo">muduo</a>整体上更快</li>
-<li>在单个消息不太大时，并发数小于1000时，<a href="https://github.com/Qihoo360/evpp">evpp</a>占优</li>
-<li>在单个消息不太大时，并发数大于1000时，<a href="https://github.com/chenshuo/muduo">muduo</a>占优</li>
-</ol>
+<p>由于<a href="https://github.com/Qihoo360/evpp">evpp</a>本身是基于<a href="https://github.com/libevent/libevent">libevent2</a>实现的，因此我们希望将<a href="https://github.com/Qihoo360/evpp">evpp</a>和<a href="https://github.com/chenshuo/muduo">muduo</a>放到一起做一次全面的性能测试。本文是关于这两个库在吞吐量方面的测试。</p>
 
 <h3 id="测试对象:251aeffb3a5bb5eef7cdbb7cd5914ca7">测试对象</h3>
 
@@ -268,7 +261,20 @@
 
 <h3 id="单线程测试结果数据:251aeffb3a5bb5eef7cdbb7cd5914ca7">单线程测试结果数据</h3>
 
-<p>数字越大越好。</p>
+<p>最终测试结论如下：</p>
+
+<ol>
+<li>在吞吐量方面的性能总体来说，比较接近，各擅胜场</li>
+<li>在单个消息较大时（&gt;81K)，<a href="https://github.com/Qihoo360/evpp">evpp</a>比<a href="https://github.com/chenshuo/muduo">muduo</a>整体上更快</li>
+<li>在单个消息不太大时，并发数小于1000时，<a href="https://github.com/Qihoo360/evpp">evpp</a>占优</li>
+<li>在单个消息不太大时，并发数大于1000时，<a href="https://github.com/chenshuo/muduo">muduo</a>占优</li>
+</ol>
+
+<p>测试中，单个消息较大时，<a href="https://github.com/Qihoo360/evpp">evpp</a>比<a href="https://github.com/chenshuo/muduo">muduo</a>整体上更快的结论，我们认为是与<code>Buffer</code>类的设计实现有关。<a href="https://github.com/Qihoo360/evpp">evpp</a>的<code>Buffer</code>类是自己人肉实现的内存管理，而<a href="https://github.com/chenshuo/muduo">muduo</a>的<code>Buffer</code>类的底层是用<code>std::vector&lt;char&gt;</code>实现的，我们推测<a href="https://github.com/chenshuo/muduo">muduo</a>的这个实现性能方面稍差。本次吞吐量测试中，主要的开销是网络IO事件的触发回调和数据读写，当消息size不太大时，网络IO的事件触发耗费CPU更多；当消息size较大时，数据的读写和拷贝占用更多CPU。当然这只是一个推测，后面如果有时间或大家感兴趣，可以自行验证两个库的<code>Buffer</code>类的操作性能。</p>
+
+<p>这个测试结果进一步推断，<a href="https://github.com/Qihoo360/evpp">evpp</a>比<a href="https://github.com/libevent/libevent">libevent2</a>更快（因为<a href="https://github.com/chenshuo/muduo">muduo</a>吞吐量平均比<a href="https://github.com/libevent/libevent">libevent2</a>高 <strong>18%</strong> 以上），表面上看不符合逻辑，因为<a href="https://github.com/Qihoo360/evpp">evpp</a>的底层就是<a href="https://github.com/libevent/libevent">libevent2</a>，但仔细分析发现，<a href="https://github.com/Qihoo360/evpp">evpp</a>只是用了<a href="https://github.com/libevent/libevent">libevent2</a>核心的事件循环，并没有用<a href="https://github.com/libevent/libevent">libevent2</a>中的<code>evbuffer</code>相关类和函数来读写网络数据，而是借鉴<a href="https://github.com/chenshuo/muduo">muduo</a>和<a href="https://golang.org">Golang</a>实现了自己独立的[Buffer]类来读写网络数据。</p>
+
+<p>下面是具体的测试数据和图表。</p>
 
 <table>
 <thead>
@@ -276,10 +282,10 @@
 <th>Name</th>
 <th>Message Size</th>
 <th>1 connection</th>
-<th>10 connection</th>
-<th>100 connection</th>
-<th>1000 connection</th>
-<th>10000 connection</th>
+<th>10 connections</th>
+<th>100 connections</th>
+<th>1000 connections</th>
+<th>10000 connections</th>
 </tr>
 </thead>
 
@@ -366,14 +372,27 @@
 </tbody>
 </table>
 
-<p>我们用<a href="https://github.com/zieckey/gochart">https://github.com/zieckey/gochart</a>这个图标绘制工具将上述数据绘制为图表。</p>
+<p>我们用<a href="https://github.com/zieckey/gochart">https://github.com/zieckey/gochart</a>这个图表绘制工具将上述数据绘制为图表。</p>
 
 <p><img src="https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/1thread-4096-evpp-vs-muduo.png" alt="" />
 <img src="https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/1thread-8192-evpp-vs-muduo.png" alt="" />
 <img src="https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/1thread-81920-evpp-vs-muduo.png" alt="" />
 <img src="https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/1thread-409600-evpp-vs-muduo.png" alt="" /></p>
 
-<h3 id="多线程测试结果数据:251aeffb3a5bb5eef7cdbb7cd5914ca7">多线程测试结果数据</h3>
+<h3 id="多线程测试结果:251aeffb3a5bb5eef7cdbb7cd5914ca7">多线程测试结果</h3>
+
+<p>测试结论如下：</p>
+
+<ol>
+<li>在多线程场景下，<a href="https://github.com/Qihoo360/evpp">evpp</a>和<a href="https://github.com/chenshuo/muduo">muduo</a>两个库在吞吐量方面，的性能整体上来看没有明显区别，分阶段分别领先</li>
+<li>100并发连接比1000并发连接测试，两个库的吞吐量都明显的高得多</li>
+<li>在100并发连接测试下，随着线程数的增长，吞吐量基本上是线性增长。<a href="https://github.com/chenshuo/muduo">muduo</a>库在中段领先于<a href="https://github.com/Qihoo360/evpp">evpp</a>，但在前期和后期又弱于<a href="https://github.com/Qihoo360/evpp">evpp</a></li>
+<li>在1000并发连接测试下，随着线程数的增长，前期基本上是线性增长，后期增长乏力。<a href="https://github.com/chenshuo/muduo">muduo</a>库这方面表现尤其明显</li>
+</ol>
+
+<p><img src="https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/multi-thread-evpp-vs-muduo.png" alt="" /></p>
+
+<p>[Buffer]:<a href="https://github.com/Qihoo360/evpp/blob/master/evpp/buffer.h">https://github.com/Qihoo360/evpp/blob/master/evpp/buffer.h</a></p>
 
                     </div>
 
