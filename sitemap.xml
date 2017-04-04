@@ -8,6 +8,11 @@
   </url>
   
   <url>
+    <loc>http://blog.codeg.cn/post/blog/2017-04-04-the-throughput-benchmark-test-of-evpp-vs-asio/</loc>
+    <lastmod>2017-03-14T18:13:00+00:00</lastmod>
+  </url>
+  
+  <url>
     <loc>http://blog.codeg.cn/post/blog/2017-03-14-the-throughput-benchmark-test-of-evpp-vs-muduo/</loc>
     <lastmod>2017-03-14T18:13:00+00:00</lastmod>
   </url>

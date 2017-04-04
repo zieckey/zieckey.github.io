@@ -11,6 +11,142 @@
     <atom:link href="http://blog.codeg.cn/post/feed/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
+      <title>evpp与asio吞吐量对比</title>
+      <link>http://blog.codeg.cn/post/blog/2017-04-04-the-throughput-benchmark-test-of-evpp-vs-asio/</link>
+      <pubDate>Tue, 14 Mar 2017 18:13:00 +0000</pubDate>
+      
+      <guid>http://blog.codeg.cn/post/blog/2017-04-04-the-throughput-benchmark-test-of-evpp-vs-asio/</guid>
+      <description>
+
+&lt;h3 id=&#34;简介:d59a8ce4788658b1cefbf683fbce157a&#34;&gt;简介&lt;/h3&gt;
+
+&lt;p&gt;&lt;a href=&#34;http://www.boost.org/&#34;&gt;Boost.Asio&lt;/a&gt;是用于网络和低层IO编程的跨平台C++库,为开发者提供了C++环境下稳定的异步编程模型。也是业内公认的优秀的C++网络库代表。一般来讲，其他的网络库的性能如果不能与&lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt;做一下全面的对比和评测，就不能令人信服。&lt;/p&gt;
+
+&lt;p&gt;本次测试是参考陈硕的博客文章&lt;a href=&#34;http://blog.csdn.net/Solstice/article/details/5863411&#34;&gt;muduo 与 boost asio 吞吐量对比&lt;/a&gt;，该文章的结论是：&lt;a href=&#34;https://github.com/chenshuo/muduo&#34;&gt;muduo&lt;/a&gt;吞吐量平均比&lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt;高 &lt;strong&gt;15%&lt;/strong&gt; 以上。&lt;/p&gt;
+
+&lt;p&gt;我们之前做的&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;与[moduo]吞吐量测试性能报告显示，&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;与[moduo]吞吐量基本相当，各自都没有明显的优势。因此我们希望&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;在与&lt;a href=&#34;http://www.boost.org/&#34;&gt;boost&lt;/a&gt;的性能对比测试中能够占优。&lt;/p&gt;
+
+&lt;h3 id=&#34;测试对象:d59a8ce4788658b1cefbf683fbce157a&#34;&gt;测试对象&lt;/h3&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/Qihoo360/evpp/archive/v0.2.4.zip&#34;&gt;evpp-v0.2.4&lt;/a&gt; based on libevent-2.0.21&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.boost.org/&#34;&gt;asio-1.10.8&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&#34;测试环境:d59a8ce4788658b1cefbf683fbce157a&#34;&gt;测试环境&lt;/h3&gt;
+
+&lt;ol&gt;
+&lt;li&gt;Linux CentOS 6.2, 2.6.32-220.7.1.el6.x86_64&lt;/li&gt;
+&lt;li&gt;Intel&amp;reg; Xeon&amp;reg; CPU E5-2630 v2 @ 2.60GHz&lt;/li&gt;
+&lt;li&gt;gcc version 4.8.2 20140120 (Red Hat 4.8.2-15) (GCC)&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&#34;测试方法:d59a8ce4788658b1cefbf683fbce157a&#34;&gt;测试方法&lt;/h3&gt;
+
+&lt;p&gt;依据 &lt;a href=&#34;http://www.boost.org/&#34;&gt;boost.asio&lt;/a&gt; 性能测试 &lt;a href=&#34;http://think-async.com/Asio/LinuxPerformanceImprovements&#34;&gt;http://think-async.com/Asio/LinuxPerformanceImprovements&lt;/a&gt; 的办法，用 ping pong 协议来测试吞吐量。&lt;/p&gt;
+
+&lt;p&gt;简单地说，ping pong 协议是客户端和服务器都实现 echo 协议。当 TCP 连接建立时，客户端向服务器发送一些数据，服务器会 echo 回这些数据，然后客户端再 echo 回服务器。这些数据就会像乒乓球一样在客户端和服务器之间来回传送，直到有一方断开连接为止。这是用来测试吞吐量的常用办法。&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;的测试代码在软件包内的路径为&lt;code&gt;benchmark/throughput/evpp&lt;/code&gt;，代码如&lt;a href=&#34;https://github.com/Qihoo360/evpp/tree/master/benchmark/throughput/evpp&#34;&gt;https://github.com/Qihoo360/evpp/tree/master/benchmark/throughput/evpp&lt;/a&gt;所示。并使用 &lt;code&gt;tools&lt;/code&gt;目录下的&lt;code&gt;benchmark-build.sh&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt;的测试代码直接使用陈硕&lt;a href=&#34;https://github.com/chenshuo/recipes&#34;&gt;recipes&lt;/a&gt;的实现，具体代码在这里&lt;a href=&#34;https://github.com/chenshuo/recipes/tree/master/pingpong/asio&#34;&gt;https://github.com/chenshuo/recipes/tree/master/pingpong/asio&lt;/a&gt;。&lt;/p&gt;
+
+&lt;p&gt;我们做了下面两项测试：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;单线程测试，测试并发连接数为 1/10/100/1000/10000 时，消息大小分别为 4096 8192 81920 409600 时的吞吐量&lt;/li&gt;
+&lt;li&gt;多线程测试，并发连接数为 100 或 1000，服务器和客户端的线程数同时设为 2/3/4/6/8，ping pong 消息的大小为 4096 bytes。测试用的 shell 脚本可从&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;的源码包中找到。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&#34;测试结果数据:d59a8ce4788658b1cefbf683fbce157a&#34;&gt;测试结果数据&lt;/h3&gt;
+
+&lt;p&gt;最终测试结论如下：&lt;/p&gt;
+
+&lt;p&gt;在吞吐量方面的性能总体来说，&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;比&lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt;整体上明显更快，吞吐量高出大约20%~50%&lt;/p&gt;
+
+&lt;h5 id=&#34;单线程测试数据:d59a8ce4788658b1cefbf683fbce157a&#34;&gt;单线程测试数据&lt;/h5&gt;
+
+&lt;p&gt;横轴是并发数。纵轴是吞吐量，越大越好。&lt;/p&gt;
+
+&lt;p&gt;图表中的&lt;code&gt;evpp-1024&lt;/code&gt;表示消息大小为1024字节，其他以此类推，例如&lt;code&gt;evpp-4096&lt;/code&gt;表示消息大小为4096字节。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-from-chenshuo-recipes-1thread.png&#34; alt=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-from-chenshuo-recipes-1thread.png&#34; /&gt;&lt;/p&gt;
+
+&lt;h5 id=&#34;多线程测试数据:d59a8ce4788658b1cefbf683fbce157a&#34;&gt;多线程测试数据&lt;/h5&gt;
+
+&lt;p&gt;横轴是线程个数。纵轴是吞吐量，越大越好。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/multi-thread-evpp-vs-asio-from-chenshuo-recipes.png&#34; alt=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/multi-thread-evpp-vs-asio-from-chenshuo-recipes.png&#34; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;分析:d59a8ce4788658b1cefbf683fbce157a&#34;&gt;分析&lt;/h3&gt;
+
+&lt;p&gt;我们有些怀疑上述的测试数据中&lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt;的性能太过差，这当不起&lt;a href=&#34;http://www.boost.org/&#34;&gt;boost&lt;/a&gt;的大名。另外陈硕的博客&lt;a href=&#34;http://blog.csdn.net/Solstice/article/details/5863411&#34;&gt;muduo 与 boost asio 吞吐量对比&lt;/a&gt;中也提到一些想法：&lt;code&gt;猜测其主要原因是测试代码只使用了一个 io_service，如果改用“io_service per CPU”的话，性能应该有所提高&lt;/code&gt;。于是我们找到公司内对&lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt;非常熟悉的大牛胡大师操刀写了一个全新的测试程序，具体代码请见 &lt;a href=&#34;https://github.com/huyuguang/asio_benchmark&#34;&gt;https://github.com/huyuguang/asio_benchmark&lt;/a&gt;。 版本号：commits &lt;code&gt;21fc1357d59644400e72a164627c1be5327fbe3d&lt;/code&gt;，并用&lt;code&gt;client2/server2&lt;/code&gt;测试用例。 测试的脚本用 &lt;a href=&#34;https://github.com/Qihoo360/evpp/blob/master/benchmark/throughput/asio/single_thread.sh&#34;&gt;single_thread.sh&lt;/a&gt; 和 &lt;a href=&#34;https://github.com/Qihoo360/evpp/blob/master/benchmark/throughput/asio/multiple_thread.sh&#34;&gt;multiple_thread.sh&lt;/a&gt;。&lt;/p&gt;
+
+&lt;p&gt;新的一轮测试下来，我们发现&lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt;的性能上来的，与[evpp] [moduo]等库相当。&lt;/p&gt;
+
+&lt;p&gt;测试结论&lt;/p&gt;
+
+&lt;h4 id=&#34;单线程场景:d59a8ce4788658b1cefbf683fbce157a&#34;&gt;单线程场景&lt;/h4&gt;
+
+&lt;ol&gt;
+&lt;li&gt;并发数为10000的测试中，&lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt;占优，平均比&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;高出 &lt;strong&gt;5%~10%&lt;/strong&gt; 左右&lt;/li&gt;
+&lt;li&gt;在并发数为1，10，100，1000这四种场景下的测试中，&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;性能更好，平均比&lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt;高出 &lt;strong&gt;10%~20%&lt;/strong&gt; 左右&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;详情请见下面图表,横轴是并发数。纵轴是吞吐量，越大越好。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-1024.png&#34; alt=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-1024.png&#34; /&gt;
+&lt;img src=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-2048.png&#34; alt=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-2048.png&#34; /&gt;
+&lt;img src=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-4096.png&#34; alt=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-4096.png&#34; /&gt;
+&lt;img src=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-8192.png&#34; alt=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-8192.png&#34; /&gt;
+&lt;img src=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-16384.png&#34; alt=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-16384.png&#34; /&gt;
+&lt;img src=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-81920.png&#34; alt=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-81920.png&#34; /&gt;&lt;/p&gt;
+
+&lt;h4 id=&#34;多线程场景:d59a8ce4788658b1cefbf683fbce157a&#34;&gt;多线程场景&lt;/h4&gt;
+
+&lt;ol&gt;
+&lt;li&gt;在并发数为1000时，&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;和&lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt;分阶段领先，各擅胜场&lt;/li&gt;
+&lt;li&gt;在并发数100时，&lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt;比&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;整体更占优势，吞吐量高出 &lt;strong&gt;10%&lt;/strong&gt; 左右&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;详情请见下面图表,横轴是线程个数。纵轴是吞吐量，越大越好。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-multi-thread-100connection-16384.png&#34; alt=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-multi-thread-100connection-16384.png&#34; /&gt;
+&lt;img src=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-multi-thread-1000connection-16384.png&#34; alt=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-multi-thread-1000connection-16384.png&#34; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;进一步分析:d59a8ce4788658b1cefbf683fbce157a&#34;&gt;进一步分析&lt;/h3&gt;
+
+&lt;p&gt;在陈硕的测试中，&lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt;的那个程序没有发挥出应有的性能，绝对与测试程序本身有关，而不是说&lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt;性能差，这从第二次测试结果可以看出来。&lt;/p&gt;
+
+&lt;p&gt;在第二次测试中的多线程并发数为100的场景下，&lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt;性能比&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;高出 &lt;strong&gt;10%&lt;/strong&gt; 左右，一开始以为是&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;本身的性能在该场景下差一点，但后来仔细分析了胡大师写的这个测试代码 &lt;a href=&#34;https://github.com/huyuguang/asio_benchmark&#34;&gt;https://github.com/huyuguang/asio_benchmark&lt;/a&gt; 发现，这种ping pong测试中，正好能利用&lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt;的&lt;code&gt;Proactor&lt;/code&gt;的优势，他几乎没有内存分配，每次只读固定大小的数据然后发送出去，然后用通用的BUFFER来进行下一次读取操作。而&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;是&lt;code&gt;Reactor&lt;/code&gt;模式的网络库，其读取数据很可能不是固定的大小，这就涉及到了一些&lt;code&gt;evpp::Buffer&lt;/code&gt;内部的内存重分配问题，导致过多的内存分配、释放、拷贝等动作。&lt;/p&gt;
+
+&lt;p&gt;因此，我们准备再做一轮测试，具体方法是模拟现实应用场景下消息长度不可能固定不变的，每个消息包括两部分，前面是HEADER，后面是BODY，HEADER中有BODY的长度，然后让BODY长度从1增长到100k大小，最后看看两者之间的性能对比数据。&lt;/p&gt;
+
+&lt;h3 id=&#34;all-benchmark-reports:d59a8ce4788658b1cefbf683fbce157a&#34;&gt;All benchmark reports&lt;/h3&gt;
+
+&lt;p&gt;&lt;a href=&#34;benchmark_ioevent_performance_vs_asio.md&#34;&gt;The IO Event performance benchmark against Boost.Asio&lt;/a&gt; : &lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt; is higher than &lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt; about &lt;strong&gt;20%~50%&lt;/strong&gt; in this case&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;benchmark_ping_pong_spend_time_vs_asio.md&#34;&gt;The ping-pong benchmark against Boost.Asio&lt;/a&gt; : &lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt; is higher than &lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt; about &lt;strong&gt;5%~20%&lt;/strong&gt; in this case&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;benchmark_throughput_vs_libevent.md&#34;&gt;The throughput benchmark against libevent2&lt;/a&gt; : &lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt; is higher than &lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent&lt;/a&gt; about &lt;strong&gt;17%~130%&lt;/strong&gt; in this case&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;benchmark_lockfree_vs_mutex.md&#34;&gt;The performance benchmark of &lt;code&gt;queue with std::mutex&lt;/code&gt; against &lt;code&gt;boost::lockfree::queue&lt;/code&gt;&lt;/a&gt; : &lt;code&gt;boost::lockfree::queue&lt;/code&gt; is better, the average is higher than &lt;code&gt;queue with std::mutex&lt;/code&gt; about &lt;strong&gt;75%~150%&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;benchmark_throughput_vs_asio.md&#34;&gt;The throughput benchmark against Boost.Asio&lt;/a&gt; : &lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt; and &lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt; have the similar performance in this case&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;benchmark_throughput_vs_asio_cn.md&#34;&gt;The throughput benchmark against Boost.Asio(中文)&lt;/a&gt; : &lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt; and &lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt; have the similar performance in this case&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;benchmark_throughput_vs_muduo_cn.md&#34;&gt;The throughput benchmark against muduo(中文)&lt;/a&gt; : &lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt; and &lt;a href=&#34;https://github.com/chenshuo/muduo&#34;&gt;muduo&lt;/a&gt; have the similar performance in this case&lt;/p&gt;
+
+&lt;h3 id=&#34;最后:d59a8ce4788658b1cefbf683fbce157a&#34;&gt;最后&lt;/h3&gt;
+
+&lt;p&gt;报告中的图表是使用&lt;a href=&#34;https://github.com/zieckey/gochart/&#34;&gt;gochart&lt;/a&gt;绘制的。&lt;/p&gt;
+
+&lt;p&gt;非常感谢您的阅读。如果您有任何疑问，请随时在&lt;a href=&#34;https://github.com/Qihoo360/evpp/issues&#34;&gt;issue&lt;/a&gt;跟我们讨论。谢谢。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
       <title>evpp与muduo吞吐量对比</title>
       <link>http://blog.codeg.cn/post/blog/2017-03-14-the-throughput-benchmark-test-of-evpp-vs-muduo/</link>
       <pubDate>Tue, 14 Mar 2017 18:13:00 +0000</pubDate>
@@ -71,7 +207,7 @@
 
 &lt;p&gt;测试中，单个消息较大时，&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;比&lt;a href=&#34;https://github.com/chenshuo/muduo&#34;&gt;muduo&lt;/a&gt;整体上更快的结论，我们认为是与&lt;code&gt;Buffer&lt;/code&gt;类的设计实现有关。&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;的&lt;code&gt;Buffer&lt;/code&gt;类是自己人肉实现的内存管理，而&lt;a href=&#34;https://github.com/chenshuo/muduo&#34;&gt;muduo&lt;/a&gt;的&lt;code&gt;Buffer&lt;/code&gt;类的底层是用&lt;code&gt;std::vector&amp;lt;char&amp;gt;&lt;/code&gt;实现的，我们推测&lt;a href=&#34;https://github.com/chenshuo/muduo&#34;&gt;muduo&lt;/a&gt;的这个实现性能方面稍差。本次吞吐量测试中，主要的开销是网络IO事件的触发回调和数据读写，当消息size不太大时，网络IO的事件触发耗费CPU更多；当消息size较大时，数据的读写和拷贝占用更多CPU。当然这只是一个推测，后面如果有时间或大家感兴趣，可以自行验证两个库的&lt;code&gt;Buffer&lt;/code&gt;类的操作性能。&lt;/p&gt;
 
-&lt;p&gt;这个测试结果进一步推断，&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;比&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent2&lt;/a&gt;更快（因为&lt;a href=&#34;https://github.com/chenshuo/muduo&#34;&gt;muduo&lt;/a&gt;吞吐量平均比&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent2&lt;/a&gt;高 &lt;strong&gt;18%&lt;/strong&gt; 以上），表面上看不符合逻辑，因为&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;的底层就是&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent2&lt;/a&gt;，但仔细分析发现，&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;只是用了&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent2&lt;/a&gt;核心的事件循环，并没有用&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent2&lt;/a&gt;中的&lt;code&gt;evbuffer&lt;/code&gt;相关类和函数来读写网络数据，而是借鉴&lt;a href=&#34;https://github.com/chenshuo/muduo&#34;&gt;muduo&lt;/a&gt;和&lt;a href=&#34;https://golang.org&#34;&gt;Golang&lt;/a&gt;实现了自己独立的[Buffer]类来读写网络数据。&lt;/p&gt;
+&lt;p&gt;这个测试结果进一步推断，&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;比&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent2&lt;/a&gt;更快（因为&lt;a href=&#34;https://github.com/chenshuo/muduo&#34;&gt;muduo&lt;/a&gt;吞吐量平均比&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent2&lt;/a&gt;高 &lt;strong&gt;18%&lt;/strong&gt; 以上），表面上看不符合逻辑，因为&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;的底层就是&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent2&lt;/a&gt;，但仔细分析发现，&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;只是用了&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent2&lt;/a&gt;核心的事件循环，并没有用&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent2&lt;/a&gt;中的&lt;code&gt;evbuffer&lt;/code&gt;相关类和函数来读写网络数据，而是借鉴&lt;a href=&#34;https://github.com/chenshuo/muduo&#34;&gt;muduo&lt;/a&gt;和&lt;a href=&#34;https://golang.org&#34;&gt;Golang&lt;/a&gt;实现了自己独立的&lt;a href=&#34;https://github.com/Qihoo360/evpp/blob/master/evpp/buffer.h&#34;&gt;Buffer&lt;/a&gt;类来读写网络数据。&lt;/p&gt;
 
 &lt;p&gt;下面是具体的测试数据和图表。&lt;/p&gt;
 
@@ -190,8 +326,6 @@
 &lt;/ol&gt;
 
 &lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/multi-thread-evpp-vs-muduo.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
-
-&lt;p&gt;[Buffer]:&lt;a href=&#34;https://github.com/Qihoo360/evpp/blob/master/evpp/buffer.h&#34;&gt;https://github.com/Qihoo360/evpp/blob/master/evpp/buffer.h&lt;/a&gt;&lt;/p&gt;
 </description>
     </item>
     
@@ -1917,475 +2051,6 @@ func (ranker *Ranker) AddDoc(docId uint64, fields interface{}) {
 &lt;li&gt;&lt;a href=&#34;https://github.com/huichen/wukong&#34;&gt;悟空搜索引擎项目源码：https://github.com/huichen/wukong&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/huichen/wukong/blob/master/docs/codelab.md&#34;&gt;悟空引擎入门教程&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://ayende.com/blog/171745/code-reading-wukong-full-text-search-engine&#34;&gt;Code reading: Wukong full-text search engine&lt;/a&gt;&lt;/li&gt;
-&lt;/ol&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>应用双缓冲技术完美解决资源数据优雅无损的热加载问题</title>
-      <link>http://blog.codeg.cn/2016/01/27/double-buffering/</link>
-      <pubDate>Wed, 27 Jan 2016 00:00:00 +0000</pubDate>
-      
-      <guid>http://blog.codeg.cn/2016/01/27/double-buffering/</guid>
-      <description>
-
-&lt;h2 id=&#34;简介:dbe09d7cae1f1403ca8285fad9fa9bcc&#34;&gt;简介&lt;/h2&gt;
-
-&lt;p&gt;在一个网络服务器不间断运行过程中，有一些资源数据需要实时更新，例如需要及时更新一份白名单列表，怎么做才能做到优雅无损的更新到服务的进程空间内？这里我们提出一种叫“双缓冲”的技术来解决这种问题。&lt;/p&gt;
-
-&lt;p&gt;这里的双缓冲技术是借鉴了计算机屏幕绘图领域的概念。双缓冲技术绘图即在内存中创建一个与屏幕绘图区域一致的对象，先将图形绘制到内存中的这个对象上，再一次性将这个对象上的图形拷贝到屏幕上，这样能大大加快绘图的速度。&lt;/p&gt;
-
-&lt;h3 id=&#34;问题抽象:dbe09d7cae1f1403ca8285fad9fa9bcc&#34;&gt;问题抽象&lt;/h3&gt;
-
-&lt;p&gt;假设我们有一个查询服务，为了方便描述，我们将数据加密传输等一些不必要的细节都省去后，请求报文可以抽象成两个参数：一个是id，用来唯一标识一台设备（例如手机或电脑）；另一个查询主体query。服务端业务逻辑是通过query查询数据库/NoSQL等数据引擎然后返回相应的数据，同时记录一条请求日志。&lt;/p&gt;
-
-&lt;p&gt;用Golang来实现这个逻辑如下：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;package main
-
-import (
-	&amp;quot;net/http&amp;quot;
-	&amp;quot;log&amp;quot;
-	&amp;quot;os&amp;quot;
-	&amp;quot;fmt&amp;quot;
-)
-
-func Query(r *http.Request) string {
-	id := r.FormValue(&amp;quot;id&amp;quot;)
-	query := r.FormValue(&amp;quot;query&amp;quot;)
-
-	//参数合法性检查
-
-	//具体的业务逻辑，查询数据库/NoSQL等数据引擎，然后做逻辑计算，然后合并结果
-	//这里简单抽象，直接返回欢迎语
-	result := fmt.Sprintf(&amp;quot;hello, %v&amp;quot;, id)
-
-	// 记录一条查询日志，用于离线统计和分析
-	log.Printf(&amp;quot;&amp;lt;id=%v&amp;gt;&amp;lt;query=%v&amp;gt;&amp;lt;result=%v&amp;gt;&amp;lt;ip=%v&amp;gt;&amp;quot;, id, query, result, r.RemoteAddr)
-
-	return result
-}
-
-func Handler(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	result := Query(r)
-	w.Write([]byte(result))
-}
-
-func main() {
-	http.HandleFunc(&amp;quot;/q&amp;quot;, Handler)
-	hostname, _ := os.Hostname()
-	log.Printf(&amp;quot;start http://%s:8091/q&amp;quot;, hostname)
-	log.Fatal(http.ListenAndServe(&amp;quot;:8091&amp;quot;, nil))
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;服务上线一段时间后，通过日志分析发现有一些id发起的请求异常，每天的请求量远远高于其他id，我们有理由怀疑这些请求是竞争对手在抓我们的数据。这个时候就开始进入攻防阶段了。&lt;/p&gt;
-
-&lt;p&gt;有几种攻防策略可供选择：&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;直接封IP，这种策略有可能会误杀一些正常用户。&lt;/li&gt;
-&lt;li&gt;将id加入黑名单&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;假设我们将策略1放到前端接入服务处(例如Nginx)进行拦截，策略2在我们自己的业务逻辑中实现，即在Query函数中加入对id的判断即可。现在的完整代码如下：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;package main
-
-import (
-	&amp;quot;net/http&amp;quot;
-	&amp;quot;log&amp;quot;
-	&amp;quot;os&amp;quot;
-	&amp;quot;fmt&amp;quot;
-	&amp;quot;io/ioutil&amp;quot;
-	&amp;quot;bytes&amp;quot;
-	&amp;quot;strings&amp;quot;
-	&amp;quot;io&amp;quot;
-)
-
-var blackIDs map[string]int
-func LoadBlackIDs(filepath string) error {
-	// 加载黑名单列表文件，每行一个
-	b, err := ioutil.ReadFile(filepath)
-	if err != nil {
-		return err
-	}
-	r := bytes.NewBuffer(b)
-	for {
-		id, err := r.ReadString(&#39;\n&#39;)
-		if err == io.EOF || err == nil {
-			id = strings.TrimSpace(id)
-			if len(id) &amp;gt; 0 {
-				blackIDs[id] = 1
-			}
-		}
-
-		if err != nil {
-			break
-		}
-	}
-
-	return nil
-}
-
-func IsBlackID(id string) bool {
-	_, exist := blackIDs[id]
-	return exist
-}
-
-func Query(r *http.Request) (string, error) {
-	id := r.FormValue(&amp;quot;id&amp;quot;)
-	query := r.FormValue(&amp;quot;query&amp;quot;)
-
-	//参数合法性检查
-
-	if IsBlackID(id) {
-		return &amp;quot;ERROR&amp;quot;, fmt.Errorf(&amp;quot;ERROR id&amp;quot;)
-	}
-
-	//具体的业务逻辑，查询数据库/NoSQL等数据引擎，然后做逻辑计算，然后合并结果
-	//这里简单抽象，直接返回欢迎语
-	result := fmt.Sprintf(&amp;quot;hello, %v&amp;quot;, id)
-
-	// 记录一条查询日志，用于离线统计和分析
-	log.Printf(&amp;quot;&amp;lt;id=%v&amp;gt;&amp;lt;query=%v&amp;gt;&amp;lt;result=%v&amp;gt;&amp;lt;ip=%v&amp;gt;&amp;quot;, id, query, result, r.RemoteAddr)
-
-	return result, nil
-}
-
-func Handler(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	result, err := Query(r)
-	if err == nil {
-		w.Write([]byte(result))
-	} else {
-		w.WriteHeader(403)
-		w.Write([]byte(result))
-	}
-}
-
-func main() {
-	blackIDs = make(map[string]int)
-	if len(os.Args) == 2 {
-		err := LoadBlackIDs(os.Args[1])
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	http.HandleFunc(&amp;quot;/q&amp;quot;, Handler)
-	hostname, _ := os.Hostname()
-	log.Printf(&amp;quot;start http://%s:8091/q&amp;quot;, hostname)
-	log.Fatal(http.ListenAndServe(&amp;quot;:8091&amp;quot;, nil))
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;经过上述努力，终于将一些异常请求屏蔽掉了，一看时间都凌晨了，恩，好好回家碎个叫，累死哥了。&lt;/p&gt;
-
-&lt;h3 id=&#34;解决思路:dbe09d7cae1f1403ca8285fad9fa9bcc&#34;&gt;解决思路&lt;/h3&gt;
-
-&lt;p&gt;又过了一些日子，产品妹子还是找过来了，说我们的最新数据又被竞争对手抓走了，肿么回事？
-我们只能做一个离线流程将恶意id实时过滤出来，然后及时反馈到在线服务中去，
-一开始想到可以通过重启进程的方式来加载这份black_id.txt，这就要求我们的程序对reload要做到足够优雅，
-例如不能丢请求、reload过程中要足够平滑，短时间做到这一点还有些困难。另外，整个程序reload过程所消耗的CPU/IO资源较多，例如一些不需更新的资源也需要reload。
-如果能做到按需加载就更好了，即：哪个资源有变化，我们就只加载那个资源。
-然后我们就想到了本文所提到的双缓冲技术。&lt;/p&gt;
-
-&lt;p&gt;这里的双缓冲技术是指对black_id.txt文件的加载过程是在后台独立加载，等加载完毕之后，再与当前正在使用的对象直接交换一下，即可完成新文件的加载。
-这里有几个细节需要讨论一下：&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;black_id.txt在内存中是一个map结构，有人说，等有更新时，直接将增量更新进map即可，这就需要对该map结构上锁，且所有用到的地方都加锁，锁粒度有点粗&lt;/li&gt;
-&lt;li&gt;一个简单直接的办法是对black_id.txt整体重新生成一个新的map结构，使用的时候直接拿到这个map的指针替换掉原来的指针即可&lt;/li&gt;
-&lt;li&gt;新老替换后，老的资源什么释放？在Golang中，一般情况下可以通过其自身的GC来释放即可。但有时候，有一些资源是需要我们自己主动释放的，GC这一点做不到，例如通过CGO方式嵌入进来的C扩展对象的释放工作。这里我们通过引用计数技术来解决。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h3 id=&#34;双缓冲技术golang实现:dbe09d7cae1f1403ca8285fad9fa9bcc&#34;&gt;双缓冲技术Golang实现&lt;/h3&gt;
-
-&lt;p&gt;直接上代码。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;import (
-	&amp;quot;sync&amp;quot;
-	&amp;quot;io/ioutil&amp;quot;
-	&amp;quot;crypto/md5&amp;quot;
-	&amp;quot;fmt&amp;quot;
-	&amp;quot;time&amp;quot;
-	&amp;quot;sync/atomic&amp;quot;
-)
-
-type DoubleBufferingTarget interface {
-	Initialize(conf string) bool // 初始化，继承类可以在此做一些初始化的工作
-	Close() // 继承类如果在Initialize函数中申请了一些资源，可以在这里将这些资源进行回收
-}
-
-type DoubleBufferingTargetCreator func() DoubleBufferingTarget
-
-type DoubleBufferingTargetRef struct {
-	Target DoubleBufferingTarget
-	ref    *int32
-}
-
-type DoubleBuffering struct {
-	creator         DoubleBufferingTargetCreator
-
-	mutex           sync.Mutex
-	refTarget       DoubleBufferingTargetRef
-
-	reloadTimestamp int64
-	md5h            string
-}
-
-
-func newDoubleBuffering(f DoubleBufferingTargetCreator) *DoubleBuffering {
-	d := new(DoubleBuffering)
-	d.creator = f
-	d.reloadTimestamp = 0
-	return d
-}
-
-func (d *DoubleBuffering) reload(conf string) bool {
-	t := d.creator()
-	if t.Initialize(conf) == false {
-		return false
-	}
-
-	content, err := ioutil.ReadFile(conf)
-	if err != nil {
-		content = []byte(conf)
-	}
-	d.md5h = fmt.Sprint(&amp;quot;%x&amp;quot;, md5.Sum(content))
-	d.reloadTimestamp = time.Now().Unix()
-
-	d.mutex.Lock()
-	defer d.mutex.Unlock()
-	d.refTarget.Release() // 将老对象释放掉
-
-	d.refTarget.Target = t
-	d.refTarget.ref = new(int32)
-	*d.refTarget.ref = 1 // 初始设置为1，由DoubleBuffering代为管理
-
-	return true
-}
-
-// ReloadTimestamp return the latest timestamp when the DoubleBuffering reloaded at the last time
-func (d *DoubleBuffering) ReloadTimestamp() int64 {
-	return d.reloadTimestamp
-}
-
-// LatestConfMD5 return the latest config&#39;s md5
-func (d *DoubleBuffering) LatestConfMD5() string {
-	return d.md5h
-}
-
-// Get return the target this DoubleBuffering manipulated.
-// You should call DoubleBufferingTargetRef.Release() function after you have used it.
-func (d *DoubleBuffering) Get() DoubleBufferingTargetRef {
-	d.mutex.Lock()
-	defer d.mutex.Unlock()
-	atomic.AddInt32(d.refTarget.ref, 1)
-	return d.refTarget
-}
-
-func (d DoubleBufferingTargetRef) Release() {
-	if d.ref != nil &amp;amp;&amp;amp; atomic.AddInt32(d.ref, -1) == 0 {
-		d.Target.Close()
-	}
-}
-
-func (d DoubleBufferingTargetRef) Ref() int32 {
-	if d.ref != nil {
-		return *d.ref
-	}
-
-	return 0
-}
-
-type DoubleBufferingMap map[string/*name*/]*DoubleBuffering
-type DoubleBufferingManager struct {
-	targets DoubleBufferingMap
-	mutex sync.Mutex
-}
-
-func NewDoubleBufferingManager() *DoubleBufferingManager {
-	m := new(DoubleBufferingManager)
-	m.targets = make(DoubleBufferingMap)
-	return m
-}
-
-func (m *DoubleBufferingManager) Add(name string, conf string, f DoubleBufferingTargetCreator) bool {
-	d := newDoubleBuffering(f)
-	if d.reload(conf) {
-		m.targets[name] = d
-		return true
-	}
-
-	return false
-}
-
-func (m *DoubleBufferingManager) Get(name string) *DoubleBuffering {
-	m.mutex.Lock()
-	defer m.mutex.Unlock()
-	if t, ok := m.targets[name]; ok {
-		return t
-	}
-
-	//panic(&amp;quot;cannot find this kind of DoubleBuffering&amp;quot;)
-	return nil
-}
-
-func (m *DoubleBufferingManager) Reload(name, conf string) bool {
-	d := m.Get(name)
-	if d == nil {
-		return false
-	}
-
-	return d.reload(conf)
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3 id=&#34;使用doublebuffering改造最开始那个抽象问题:dbe09d7cae1f1403ca8285fad9fa9bcc&#34;&gt;使用DoubleBuffering改造最开始那个抽象问题&lt;/h3&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;package main
-
-import (
-	&amp;quot;net/http&amp;quot;
-	&amp;quot;log&amp;quot;
-	&amp;quot;os&amp;quot;
-	&amp;quot;fmt&amp;quot;
-	&amp;quot;io/ioutil&amp;quot;
-	&amp;quot;bytes&amp;quot;
-	&amp;quot;strings&amp;quot;
-	&amp;quot;io&amp;quot;
-)
-
-type BlackIDDict struct {
-	blackIDs map[string]int
-}
-
-func NewBlackIDDict() DoubleBufferingTarget {
-	d := &amp;amp;BlackIDDict{
-		blackIDs: make(map[string]int),
-	}
-	return d
-}
-
-var dbm *DoubleBufferingManager
-
-func (d *BlackIDDict) Initialize(conf string) bool {
-	filepath := conf
-
-	// 加载黑名单列表文件，每行一个
-	b, err := ioutil.ReadFile(filepath)
-	if err != nil {
-		return false
-	}
-	r := bytes.NewBuffer(b)
-	for {
-		id, err := r.ReadString(&#39;\n&#39;)
-		if err == io.EOF || err == nil {
-			id = strings.TrimSpace(id)
-			if len(id) &amp;gt; 0 {
-				d.blackIDs[id] = 1
-			}
-		}
-
-		if err != nil {
-			break
-		}
-	}
-
-	return true
-}
-
-func (d *BlackIDDict) Close() {
-	// 在这里做一些资源释放工作
-	// 当前这个例子没有资源需要我们手工释放
-}
-
-func (d *BlackIDDict) IsBlackID(id string) bool {
-	_, exist := d.blackIDs[id]
-	return exist
-}
-
-func Query(r *http.Request) (string, error) {
-	id := r.FormValue(&amp;quot;id&amp;quot;)
-	query := r.FormValue(&amp;quot;query&amp;quot;)
-
-	//TODO 参数合法性检查
-
-	d := dbm.Get(&amp;quot;black_id&amp;quot;)
-	tg := d.Get()
-	defer tg.Release()
-	dict := tg.Target.(*BlackIDDict)  // 转换为具体的Dict对象
-	if dict == nil {
-		return &amp;quot;&amp;quot;, fmt.Errorf(&amp;quot;ERROR, Convert DoubleBufferingTarget to Dict failed&amp;quot;)
-	}
-
-	if dict.IsBlackID(id) {
-		return &amp;quot;ERROR&amp;quot;, fmt.Errorf(&amp;quot;ERROR id&amp;quot;)
-	}
-
-	//具体的业务逻辑，查询数据库/NoSQL等数据引擎，然后做逻辑计算，然后合并结果
-	//这里简单抽象，直接返回欢迎语
-	result := fmt.Sprintf(&amp;quot;hello, %v&amp;quot;, id)
-
-	// 记录一条查询日志，用于离线统计和分析
-	log.Printf(&amp;quot;&amp;lt;id=%v&amp;gt;&amp;lt;query=%v&amp;gt;&amp;lt;result=%v&amp;gt;&amp;lt;ip=%v&amp;gt;&amp;quot;, id, query, result, r.RemoteAddr)
-
-	return result, nil
-}
-
-func Handler(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	result, err := Query(r)
-	if err == nil {
-		w.Write([]byte(result))
-	} else {
-		w.WriteHeader(403)
-		w.Write([]byte(result))
-	}
-}
-
-func Reload(w http.ResponseWriter, r *http.Request) {
-	// 这里简化处理，直接重新加载black_id。如果有多个，可以从url参数中获取资源名称
-	if dbm.Reload(&amp;quot;black_id&amp;quot;, os.Args[1]) {
-		w.Write([]byte(&amp;quot;OK&amp;quot;))
-	} else {
-		w.Write([]byte(&amp;quot;FAILED&amp;quot;))
-	}
-}
-
-func main() {
-	if len(os.Args) != 2 {
-		panic(&amp;quot;Not specify black_id.txt&amp;quot;)
-	}
-
-	dbm = NewDoubleBufferingManager()
-	rc := dbm.Add(&amp;quot;black_id&amp;quot;, os.Args[1], NewBlackIDDict)
-	if rc == false {
-		panic(&amp;quot;black_id initialize failed&amp;quot;)
-	}
-
-	http.HandleFunc(&amp;quot;/q&amp;quot;, Handler)
-	http.HandleFunc(&amp;quot;/admin/reload&amp;quot;, Reload) // 管理接口，用于重新加载black_id.txt。如果有多个这种资源，可以增加一些参数来说区分不同的资源
-	hostname, _ := os.Hostname()
-	log.Printf(&amp;quot;start http://%s:8091/q&amp;quot;, hostname)
-	log.Fatal(http.ListenAndServe(&amp;quot;:8091&amp;quot;, nil))
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;程序启动之后，使用black_id.txt里面的id请求时，都会返回403，如果有新增的black_id，我们也加入到black_id.txt文件中，然后调用 &lt;code&gt;/admin/reload&lt;/code&gt; 接口使之生效即可。&lt;/p&gt;
-
-&lt;h3 id=&#34;c-版本实现:dbe09d7cae1f1403ca8285fad9fa9bcc&#34;&gt;C++版本实现&lt;/h3&gt;
-
-&lt;p&gt;//TODO&lt;/p&gt;
-
-&lt;h2 id=&#34;参考文献:dbe09d7cae1f1403ca8285fad9fa9bcc&#34;&gt;参考文献&lt;/h2&gt;
-
-&lt;ol&gt;
-&lt;li&gt;&lt;a href=&#34;http://baike.haosou.com/doc/302938-320692.html&#34;&gt;双缓冲技术介绍&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/zieckey/dbuf&#34;&gt;Golang实现的示例源码在这里 https://github.com/zieckey/dbuf&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;
 </description>
     </item>

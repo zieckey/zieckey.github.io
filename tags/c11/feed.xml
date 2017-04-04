@@ -11,6 +11,142 @@
     <atom:link href="http://blog.codeg.cn/tags/c11/feed/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
+      <title>evpp与asio吞吐量对比</title>
+      <link>http://blog.codeg.cn/post/blog/2017-04-04-the-throughput-benchmark-test-of-evpp-vs-asio/</link>
+      <pubDate>Tue, 14 Mar 2017 18:13:00 +0000</pubDate>
+      
+      <guid>http://blog.codeg.cn/post/blog/2017-04-04-the-throughput-benchmark-test-of-evpp-vs-asio/</guid>
+      <description>
+
+&lt;h3 id=&#34;简介:d59a8ce4788658b1cefbf683fbce157a&#34;&gt;简介&lt;/h3&gt;
+
+&lt;p&gt;&lt;a href=&#34;http://www.boost.org/&#34;&gt;Boost.Asio&lt;/a&gt;是用于网络和低层IO编程的跨平台C++库,为开发者提供了C++环境下稳定的异步编程模型。也是业内公认的优秀的C++网络库代表。一般来讲，其他的网络库的性能如果不能与&lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt;做一下全面的对比和评测，就不能令人信服。&lt;/p&gt;
+
+&lt;p&gt;本次测试是参考陈硕的博客文章&lt;a href=&#34;http://blog.csdn.net/Solstice/article/details/5863411&#34;&gt;muduo 与 boost asio 吞吐量对比&lt;/a&gt;，该文章的结论是：&lt;a href=&#34;https://github.com/chenshuo/muduo&#34;&gt;muduo&lt;/a&gt;吞吐量平均比&lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt;高 &lt;strong&gt;15%&lt;/strong&gt; 以上。&lt;/p&gt;
+
+&lt;p&gt;我们之前做的&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;与[moduo]吞吐量测试性能报告显示，&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;与[moduo]吞吐量基本相当，各自都没有明显的优势。因此我们希望&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;在与&lt;a href=&#34;http://www.boost.org/&#34;&gt;boost&lt;/a&gt;的性能对比测试中能够占优。&lt;/p&gt;
+
+&lt;h3 id=&#34;测试对象:d59a8ce4788658b1cefbf683fbce157a&#34;&gt;测试对象&lt;/h3&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/Qihoo360/evpp/archive/v0.2.4.zip&#34;&gt;evpp-v0.2.4&lt;/a&gt; based on libevent-2.0.21&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.boost.org/&#34;&gt;asio-1.10.8&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&#34;测试环境:d59a8ce4788658b1cefbf683fbce157a&#34;&gt;测试环境&lt;/h3&gt;
+
+&lt;ol&gt;
+&lt;li&gt;Linux CentOS 6.2, 2.6.32-220.7.1.el6.x86_64&lt;/li&gt;
+&lt;li&gt;Intel&amp;reg; Xeon&amp;reg; CPU E5-2630 v2 @ 2.60GHz&lt;/li&gt;
+&lt;li&gt;gcc version 4.8.2 20140120 (Red Hat 4.8.2-15) (GCC)&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&#34;测试方法:d59a8ce4788658b1cefbf683fbce157a&#34;&gt;测试方法&lt;/h3&gt;
+
+&lt;p&gt;依据 &lt;a href=&#34;http://www.boost.org/&#34;&gt;boost.asio&lt;/a&gt; 性能测试 &lt;a href=&#34;http://think-async.com/Asio/LinuxPerformanceImprovements&#34;&gt;http://think-async.com/Asio/LinuxPerformanceImprovements&lt;/a&gt; 的办法，用 ping pong 协议来测试吞吐量。&lt;/p&gt;
+
+&lt;p&gt;简单地说，ping pong 协议是客户端和服务器都实现 echo 协议。当 TCP 连接建立时，客户端向服务器发送一些数据，服务器会 echo 回这些数据，然后客户端再 echo 回服务器。这些数据就会像乒乓球一样在客户端和服务器之间来回传送，直到有一方断开连接为止。这是用来测试吞吐量的常用办法。&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;的测试代码在软件包内的路径为&lt;code&gt;benchmark/throughput/evpp&lt;/code&gt;，代码如&lt;a href=&#34;https://github.com/Qihoo360/evpp/tree/master/benchmark/throughput/evpp&#34;&gt;https://github.com/Qihoo360/evpp/tree/master/benchmark/throughput/evpp&lt;/a&gt;所示。并使用 &lt;code&gt;tools&lt;/code&gt;目录下的&lt;code&gt;benchmark-build.sh&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt;的测试代码直接使用陈硕&lt;a href=&#34;https://github.com/chenshuo/recipes&#34;&gt;recipes&lt;/a&gt;的实现，具体代码在这里&lt;a href=&#34;https://github.com/chenshuo/recipes/tree/master/pingpong/asio&#34;&gt;https://github.com/chenshuo/recipes/tree/master/pingpong/asio&lt;/a&gt;。&lt;/p&gt;
+
+&lt;p&gt;我们做了下面两项测试：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;单线程测试，测试并发连接数为 1/10/100/1000/10000 时，消息大小分别为 4096 8192 81920 409600 时的吞吐量&lt;/li&gt;
+&lt;li&gt;多线程测试，并发连接数为 100 或 1000，服务器和客户端的线程数同时设为 2/3/4/6/8，ping pong 消息的大小为 4096 bytes。测试用的 shell 脚本可从&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;的源码包中找到。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&#34;测试结果数据:d59a8ce4788658b1cefbf683fbce157a&#34;&gt;测试结果数据&lt;/h3&gt;
+
+&lt;p&gt;最终测试结论如下：&lt;/p&gt;
+
+&lt;p&gt;在吞吐量方面的性能总体来说，&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;比&lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt;整体上明显更快，吞吐量高出大约20%~50%&lt;/p&gt;
+
+&lt;h5 id=&#34;单线程测试数据:d59a8ce4788658b1cefbf683fbce157a&#34;&gt;单线程测试数据&lt;/h5&gt;
+
+&lt;p&gt;横轴是并发数。纵轴是吞吐量，越大越好。&lt;/p&gt;
+
+&lt;p&gt;图表中的&lt;code&gt;evpp-1024&lt;/code&gt;表示消息大小为1024字节，其他以此类推，例如&lt;code&gt;evpp-4096&lt;/code&gt;表示消息大小为4096字节。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-from-chenshuo-recipes-1thread.png&#34; alt=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-from-chenshuo-recipes-1thread.png&#34; /&gt;&lt;/p&gt;
+
+&lt;h5 id=&#34;多线程测试数据:d59a8ce4788658b1cefbf683fbce157a&#34;&gt;多线程测试数据&lt;/h5&gt;
+
+&lt;p&gt;横轴是线程个数。纵轴是吞吐量，越大越好。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/multi-thread-evpp-vs-asio-from-chenshuo-recipes.png&#34; alt=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/multi-thread-evpp-vs-asio-from-chenshuo-recipes.png&#34; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;分析:d59a8ce4788658b1cefbf683fbce157a&#34;&gt;分析&lt;/h3&gt;
+
+&lt;p&gt;我们有些怀疑上述的测试数据中&lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt;的性能太过差，这当不起&lt;a href=&#34;http://www.boost.org/&#34;&gt;boost&lt;/a&gt;的大名。另外陈硕的博客&lt;a href=&#34;http://blog.csdn.net/Solstice/article/details/5863411&#34;&gt;muduo 与 boost asio 吞吐量对比&lt;/a&gt;中也提到一些想法：&lt;code&gt;猜测其主要原因是测试代码只使用了一个 io_service，如果改用“io_service per CPU”的话，性能应该有所提高&lt;/code&gt;。于是我们找到公司内对&lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt;非常熟悉的大牛胡大师操刀写了一个全新的测试程序，具体代码请见 &lt;a href=&#34;https://github.com/huyuguang/asio_benchmark&#34;&gt;https://github.com/huyuguang/asio_benchmark&lt;/a&gt;。 版本号：commits &lt;code&gt;21fc1357d59644400e72a164627c1be5327fbe3d&lt;/code&gt;，并用&lt;code&gt;client2/server2&lt;/code&gt;测试用例。 测试的脚本用 &lt;a href=&#34;https://github.com/Qihoo360/evpp/blob/master/benchmark/throughput/asio/single_thread.sh&#34;&gt;single_thread.sh&lt;/a&gt; 和 &lt;a href=&#34;https://github.com/Qihoo360/evpp/blob/master/benchmark/throughput/asio/multiple_thread.sh&#34;&gt;multiple_thread.sh&lt;/a&gt;。&lt;/p&gt;
+
+&lt;p&gt;新的一轮测试下来，我们发现&lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt;的性能上来的，与[evpp] [moduo]等库相当。&lt;/p&gt;
+
+&lt;p&gt;测试结论&lt;/p&gt;
+
+&lt;h4 id=&#34;单线程场景:d59a8ce4788658b1cefbf683fbce157a&#34;&gt;单线程场景&lt;/h4&gt;
+
+&lt;ol&gt;
+&lt;li&gt;并发数为10000的测试中，&lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt;占优，平均比&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;高出 &lt;strong&gt;5%~10%&lt;/strong&gt; 左右&lt;/li&gt;
+&lt;li&gt;在并发数为1，10，100，1000这四种场景下的测试中，&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;性能更好，平均比&lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt;高出 &lt;strong&gt;10%~20%&lt;/strong&gt; 左右&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;详情请见下面图表,横轴是并发数。纵轴是吞吐量，越大越好。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-1024.png&#34; alt=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-1024.png&#34; /&gt;
+&lt;img src=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-2048.png&#34; alt=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-2048.png&#34; /&gt;
+&lt;img src=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-4096.png&#34; alt=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-4096.png&#34; /&gt;
+&lt;img src=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-8192.png&#34; alt=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-8192.png&#34; /&gt;
+&lt;img src=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-16384.png&#34; alt=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-16384.png&#34; /&gt;
+&lt;img src=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-81920.png&#34; alt=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-81920.png&#34; /&gt;&lt;/p&gt;
+
+&lt;h4 id=&#34;多线程场景:d59a8ce4788658b1cefbf683fbce157a&#34;&gt;多线程场景&lt;/h4&gt;
+
+&lt;ol&gt;
+&lt;li&gt;在并发数为1000时，&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;和&lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt;分阶段领先，各擅胜场&lt;/li&gt;
+&lt;li&gt;在并发数100时，&lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt;比&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;整体更占优势，吞吐量高出 &lt;strong&gt;10%&lt;/strong&gt; 左右&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;详情请见下面图表,横轴是线程个数。纵轴是吞吐量，越大越好。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-multi-thread-100connection-16384.png&#34; alt=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-multi-thread-100connection-16384.png&#34; /&gt;
+&lt;img src=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-multi-thread-1000connection-16384.png&#34; alt=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-multi-thread-1000connection-16384.png&#34; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;进一步分析:d59a8ce4788658b1cefbf683fbce157a&#34;&gt;进一步分析&lt;/h3&gt;
+
+&lt;p&gt;在陈硕的测试中，&lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt;的那个程序没有发挥出应有的性能，绝对与测试程序本身有关，而不是说&lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt;性能差，这从第二次测试结果可以看出来。&lt;/p&gt;
+
+&lt;p&gt;在第二次测试中的多线程并发数为100的场景下，&lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt;性能比&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;高出 &lt;strong&gt;10%&lt;/strong&gt; 左右，一开始以为是&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;本身的性能在该场景下差一点，但后来仔细分析了胡大师写的这个测试代码 &lt;a href=&#34;https://github.com/huyuguang/asio_benchmark&#34;&gt;https://github.com/huyuguang/asio_benchmark&lt;/a&gt; 发现，这种ping pong测试中，正好能利用&lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt;的&lt;code&gt;Proactor&lt;/code&gt;的优势，他几乎没有内存分配，每次只读固定大小的数据然后发送出去，然后用通用的BUFFER来进行下一次读取操作。而&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;是&lt;code&gt;Reactor&lt;/code&gt;模式的网络库，其读取数据很可能不是固定的大小，这就涉及到了一些&lt;code&gt;evpp::Buffer&lt;/code&gt;内部的内存重分配问题，导致过多的内存分配、释放、拷贝等动作。&lt;/p&gt;
+
+&lt;p&gt;因此，我们准备再做一轮测试，具体方法是模拟现实应用场景下消息长度不可能固定不变的，每个消息包括两部分，前面是HEADER，后面是BODY，HEADER中有BODY的长度，然后让BODY长度从1增长到100k大小，最后看看两者之间的性能对比数据。&lt;/p&gt;
+
+&lt;h3 id=&#34;all-benchmark-reports:d59a8ce4788658b1cefbf683fbce157a&#34;&gt;All benchmark reports&lt;/h3&gt;
+
+&lt;p&gt;&lt;a href=&#34;benchmark_ioevent_performance_vs_asio.md&#34;&gt;The IO Event performance benchmark against Boost.Asio&lt;/a&gt; : &lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt; is higher than &lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt; about &lt;strong&gt;20%~50%&lt;/strong&gt; in this case&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;benchmark_ping_pong_spend_time_vs_asio.md&#34;&gt;The ping-pong benchmark against Boost.Asio&lt;/a&gt; : &lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt; is higher than &lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt; about &lt;strong&gt;5%~20%&lt;/strong&gt; in this case&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;benchmark_throughput_vs_libevent.md&#34;&gt;The throughput benchmark against libevent2&lt;/a&gt; : &lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt; is higher than &lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent&lt;/a&gt; about &lt;strong&gt;17%~130%&lt;/strong&gt; in this case&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;benchmark_lockfree_vs_mutex.md&#34;&gt;The performance benchmark of &lt;code&gt;queue with std::mutex&lt;/code&gt; against &lt;code&gt;boost::lockfree::queue&lt;/code&gt;&lt;/a&gt; : &lt;code&gt;boost::lockfree::queue&lt;/code&gt; is better, the average is higher than &lt;code&gt;queue with std::mutex&lt;/code&gt; about &lt;strong&gt;75%~150%&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;benchmark_throughput_vs_asio.md&#34;&gt;The throughput benchmark against Boost.Asio&lt;/a&gt; : &lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt; and &lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt; have the similar performance in this case&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;benchmark_throughput_vs_asio_cn.md&#34;&gt;The throughput benchmark against Boost.Asio(中文)&lt;/a&gt; : &lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt; and &lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt; have the similar performance in this case&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;benchmark_throughput_vs_muduo_cn.md&#34;&gt;The throughput benchmark against muduo(中文)&lt;/a&gt; : &lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt; and &lt;a href=&#34;https://github.com/chenshuo/muduo&#34;&gt;muduo&lt;/a&gt; have the similar performance in this case&lt;/p&gt;
+
+&lt;h3 id=&#34;最后:d59a8ce4788658b1cefbf683fbce157a&#34;&gt;最后&lt;/h3&gt;
+
+&lt;p&gt;报告中的图表是使用&lt;a href=&#34;https://github.com/zieckey/gochart/&#34;&gt;gochart&lt;/a&gt;绘制的。&lt;/p&gt;
+
+&lt;p&gt;非常感谢您的阅读。如果您有任何疑问，请随时在&lt;a href=&#34;https://github.com/Qihoo360/evpp/issues&#34;&gt;issue&lt;/a&gt;跟我们讨论。谢谢。&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
       <title>evpp与muduo吞吐量对比</title>
       <link>http://blog.codeg.cn/post/blog/2017-03-14-the-throughput-benchmark-test-of-evpp-vs-muduo/</link>
       <pubDate>Tue, 14 Mar 2017 18:13:00 +0000</pubDate>
@@ -71,7 +207,7 @@
 
 &lt;p&gt;测试中，单个消息较大时，&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;比&lt;a href=&#34;https://github.com/chenshuo/muduo&#34;&gt;muduo&lt;/a&gt;整体上更快的结论，我们认为是与&lt;code&gt;Buffer&lt;/code&gt;类的设计实现有关。&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;的&lt;code&gt;Buffer&lt;/code&gt;类是自己人肉实现的内存管理，而&lt;a href=&#34;https://github.com/chenshuo/muduo&#34;&gt;muduo&lt;/a&gt;的&lt;code&gt;Buffer&lt;/code&gt;类的底层是用&lt;code&gt;std::vector&amp;lt;char&amp;gt;&lt;/code&gt;实现的，我们推测&lt;a href=&#34;https://github.com/chenshuo/muduo&#34;&gt;muduo&lt;/a&gt;的这个实现性能方面稍差。本次吞吐量测试中，主要的开销是网络IO事件的触发回调和数据读写，当消息size不太大时，网络IO的事件触发耗费CPU更多；当消息size较大时，数据的读写和拷贝占用更多CPU。当然这只是一个推测，后面如果有时间或大家感兴趣，可以自行验证两个库的&lt;code&gt;Buffer&lt;/code&gt;类的操作性能。&lt;/p&gt;
 
-&lt;p&gt;这个测试结果进一步推断，&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;比&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent2&lt;/a&gt;更快（因为&lt;a href=&#34;https://github.com/chenshuo/muduo&#34;&gt;muduo&lt;/a&gt;吞吐量平均比&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent2&lt;/a&gt;高 &lt;strong&gt;18%&lt;/strong&gt; 以上），表面上看不符合逻辑，因为&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;的底层就是&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent2&lt;/a&gt;，但仔细分析发现，&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;只是用了&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent2&lt;/a&gt;核心的事件循环，并没有用&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent2&lt;/a&gt;中的&lt;code&gt;evbuffer&lt;/code&gt;相关类和函数来读写网络数据，而是借鉴&lt;a href=&#34;https://github.com/chenshuo/muduo&#34;&gt;muduo&lt;/a&gt;和&lt;a href=&#34;https://golang.org&#34;&gt;Golang&lt;/a&gt;实现了自己独立的[Buffer]类来读写网络数据。&lt;/p&gt;
+&lt;p&gt;这个测试结果进一步推断，&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;比&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent2&lt;/a&gt;更快（因为&lt;a href=&#34;https://github.com/chenshuo/muduo&#34;&gt;muduo&lt;/a&gt;吞吐量平均比&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent2&lt;/a&gt;高 &lt;strong&gt;18%&lt;/strong&gt; 以上），表面上看不符合逻辑，因为&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;的底层就是&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent2&lt;/a&gt;，但仔细分析发现，&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;只是用了&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent2&lt;/a&gt;核心的事件循环，并没有用&lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent2&lt;/a&gt;中的&lt;code&gt;evbuffer&lt;/code&gt;相关类和函数来读写网络数据，而是借鉴&lt;a href=&#34;https://github.com/chenshuo/muduo&#34;&gt;muduo&lt;/a&gt;和&lt;a href=&#34;https://golang.org&#34;&gt;Golang&lt;/a&gt;实现了自己独立的&lt;a href=&#34;https://github.com/Qihoo360/evpp/blob/master/evpp/buffer.h&#34;&gt;Buffer&lt;/a&gt;类来读写网络数据。&lt;/p&gt;
 
 &lt;p&gt;下面是具体的测试数据和图表。&lt;/p&gt;
 
@@ -190,8 +326,6 @@
 &lt;/ol&gt;
 
 &lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/multi-thread-evpp-vs-muduo.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
-
-&lt;p&gt;[Buffer]:&lt;a href=&#34;https://github.com/Qihoo360/evpp/blob/master/evpp/buffer.h&#34;&gt;https://github.com/Qihoo360/evpp/blob/master/evpp/buffer.h&lt;/a&gt;&lt;/p&gt;
 </description>
     </item>
     
