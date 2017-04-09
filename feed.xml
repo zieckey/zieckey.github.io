@@ -7,13 +7,170 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
     <copyright>Copyright (c) 2015. All rights reserved.</copyright>
-    <lastBuildDate>Tue, 14 Mar 2017 18:13:00 +0000</lastBuildDate>
+    <lastBuildDate>Sun, 09 Apr 2017 10:11:01 +0000</lastBuildDate>
     <atom:link href="http://blog.codeg.cn/feed/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>基于evpp的EventLoop实现来对无锁队列boost::lockfree::queue和moodycamel::ConcurrentQueue做一个性能测试对比</title>
+      <link>http://blog.codeg.cn/post/blog/2017-04-09-the-benchmark-of-lockfree/</link>
+      <pubDate>Sun, 09 Apr 2017 10:11:01 +0000</pubDate>
+      
+      <guid>http://blog.codeg.cn/post/blog/2017-04-09-the-benchmark-of-lockfree/</guid>
+      <description>
+
+&lt;p&gt;&lt;a href=&#34;https://github.com/Qihoo360/evpp/blob/master/docs/benchmark_lockfree_vs_mutex_cn.md&#34;&gt;English version : The performance benchmark of &lt;code&gt;queue with std::mutex&lt;/code&gt; against &lt;code&gt;boost::lockfree::queue&lt;/code&gt; and &lt;code&gt;moodycamel::ConcurrentQueue&lt;/code&gt;&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;brief:90274e2ef0997796a55625dfa35ad61a&#34;&gt;Brief&lt;/h3&gt;
+
+&lt;p&gt;我们使用&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;https://github.com/Qihoo360/evpp&lt;/a&gt;项目中的&lt;code&gt;EventLoop::QueueInLoop(...)&lt;/code&gt;函数来做这个性能测试。我们通过该函数能够将一个仿函数执行体从一个线程调度到另一个线程中执行。这是一个典型的生产者和消费者问题。&lt;/p&gt;
+
+&lt;p&gt;我们用一个队列来保存这种仿函数执行体。多个生产者线程向这个队列写入仿函数执行体，一个消费者线程从队列中取出仿函数执行体来执行。为了保证队列的线程安全问题，我们可以使用一个锁来保护这个队列，或者使用无锁队列机制来解决安全问题。&lt;code&gt;EventLoop::QueueInLoop(...)&lt;/code&gt;函数通过通定义实现了三种不同模式的跨线程交换数据的队列。&lt;/p&gt;
+
+&lt;h3 id=&#34;测试对象:90274e2ef0997796a55625dfa35ad61a&#34;&gt;测试对象&lt;/h3&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/Qihoo360/evpp/archive/v0.3.2.zip&#34;&gt;evpp-v0.3.2&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;EventLoop::QueueInLoop(...)&lt;/code&gt;函数内的队列的三种实现方式：
+
+&lt;ul&gt;
+&lt;li&gt;带锁的队列用&lt;code&gt;std::vector&lt;/code&gt;和&lt;code&gt;std::mutex&lt;/code&gt;来实现，具体的 gcc 版本为 4.8.2&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.boost.org/&#34;&gt;boost::lockfree::queue from boost-1.53&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/cameron314/concurrentqueue&#34;&gt;moodycamel::ConcurrentQueue&lt;/a&gt; with commit c54341183f8674c575913a65ef7c651ecce47243&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&#34;测试环境:90274e2ef0997796a55625dfa35ad61a&#34;&gt;测试环境&lt;/h3&gt;
+
+&lt;ol&gt;
+&lt;li&gt;Linux CentOS 6.2, 2.6.32-220.7.1.el6.x86_64&lt;/li&gt;
+&lt;li&gt;Intel&amp;reg; Xeon&amp;reg; CPU E5-2630 v2 @ 2.60GHz&lt;/li&gt;
+&lt;li&gt;gcc version 4.8.2 20140120 (Red Hat 4.8.2-15) (GCC)&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&#34;测试方法:90274e2ef0997796a55625dfa35ad61a&#34;&gt;测试方法&lt;/h3&gt;
+
+&lt;p&gt;测试代码请参考&lt;a href=&#34;https://github.com/Qihoo360/evpp/blob/master/benchmark/post_task/post_task6.cc&#34;&gt;https://github.com/Qihoo360/evpp/blob/master/benchmark/post_task/post_task6.cc&lt;/a&gt;. 在一个消费者线程中运行一个&lt;code&gt;EventLoop&lt;/code&gt;对象&lt;code&gt;loop_&lt;/code&gt;，多个生产者线程不停的调用&lt;code&gt;loop_-&amp;gt;QueueInLoop(...)&lt;/code&gt;方法将仿函数执行体放入到消费者的队列中让其消费（执行）。每个生产者线程放入一定总数（由运行参数指定）的仿函数执行体之后就停下来，等消费者线程完全消费完所有的仿函数执行体之后，程序退出，并记录开始和结束时间。&lt;/p&gt;
+
+&lt;p&gt;为了便于大家阅读，现将相关代码的核心部分摘录如下。&lt;/p&gt;
+
+&lt;p&gt;event_loop.h中定义了队列：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-C++&#34;&gt;    std::shared_ptr&amp;lt;PipeEventWatcher&amp;gt; watcher_;
+#ifdef H_HAVE_BOOST
+    boost::lockfree::queue&amp;lt;Functor*&amp;gt;* pending_functors_;
+#elif defined(H_HAVE_CAMERON314_CONCURRENTQUEUE)
+    moodycamel::ConcurrentQueue&amp;lt;Functor&amp;gt;* pending_functors_;
+#else
+    std::mutex mutex_;
+    std::vector&amp;lt;Functor&amp;gt;* pending_functors_; // @Guarded By mutex_
+#endif
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;event_loop.cc中定义了&lt;code&gt;QueueInLoop(...)&lt;/code&gt;的具体实现：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-C++&#34;&gt;void Init() {
+    watcher_-&amp;gt;Watch(std::bind(&amp;amp;EventLoop::DoPendingFunctors, this));
+}
+
+void EventLoop::QueueInLoop(const Functor&amp;amp; cb) {
+    {
+#ifdef H_HAVE_BOOST
+        auto f = new Functor(cb);
+        while (!pending_functors_-&amp;gt;push(f)) {
+        }
+#elif defined(H_HAVE_CAMERON314_CONCURRENTQUEUE)
+        while (!pending_functors_-&amp;gt;enqueue(cb)) {
+        }
+#else
+        std::lock_guard&amp;lt;std::mutex&amp;gt; lock(mutex_);
+        pending_functors_-&amp;gt;emplace_back(cb);
+#endif
+    }
+
+    watcher_-&amp;gt;Notify();
+}
+
+void EventLoop::DoPendingFunctors() {
+#ifdef H_HAVE_BOOST
+    Functor* f = nullptr;
+    while (pending_functors_-&amp;gt;pop(f)) {
+        (*f)();
+        delete f;
+    }
+#elif defined(H_HAVE_CAMERON314_CONCURRENTQUEUE)
+    Functor f;
+    while (pending_functors_-&amp;gt;try_dequeue(f)) {
+        f();
+        --pending_functor_count_;
+    }
+#else
+    std::vector&amp;lt;Functor&amp;gt; functors;
+    {
+        std::lock_guard&amp;lt;std::mutex&amp;gt; lock(mutex_);
+        notified_.store(false);
+        pending_functors_-&amp;gt;swap(functors);
+    }
+    for (size_t i = 0; i &amp;lt; functors.size(); ++i) {
+        functors[i]();
+    }
+#endif
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;我们进行了两种测试：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;一个生产者线程投递1000000个仿函数执行体到消费者线程中执行，统计总耗时。然后同样的方法我们反复测试10次&lt;/li&gt;
+&lt;li&gt;生产者线程分别是2/4/6/8/12/16/20，每个线程投递1000000个仿函数执行体到消费者线程中执行，并统计总共耗时&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&#34;测试结论:90274e2ef0997796a55625dfa35ad61a&#34;&gt;测试结论&lt;/h3&gt;
+
+&lt;ol&gt;
+&lt;li&gt;当我们只有生产者和消费者都只有一个时，大多数测试结果表明&lt;code&gt;moodycamel::ConcurrentQueue&lt;/code&gt;的性能是最好的，大概比&lt;code&gt;queue with std::mutex&lt;/code&gt;高出&lt;strong&gt;10%~50%&lt;/strong&gt;左右的性能。&lt;code&gt;boost::lockfree::queue&lt;/code&gt;比&lt;code&gt;queue with std::mutex&lt;/code&gt;的性能只能高出一点点。由于我们的实现中，必须要求能够使用多生产者的写入，所以并没有测试boost中专门的单生产者单消费者的无锁队列&lt;code&gt;boost::lockfree::spsc_queue&lt;/code&gt;，在这种场景下，boost稍稍有些吃亏，但并不影响整体测试结果及结论。&lt;/li&gt;
+&lt;li&gt;当我们有多个生产者线程和一个消费者线程时，&lt;code&gt;boost::lockfree::queue&lt;/code&gt;的性能比&lt;code&gt;queue with std::mutex&lt;/code&gt;高出&lt;strong&gt;75%~150%&lt;/strong&gt;左右。 &lt;code&gt;moodycamel::ConcurrentQueue&lt;/code&gt;的性能最好，大概比&lt;code&gt;boost::lockfree::queue&lt;/code&gt;高出&lt;strong&gt;25%~100%&lt;/strong&gt;，比&lt;code&gt;queue with std::mutex&lt;/code&gt;高出&lt;strong&gt;100%~500%&lt;/strong&gt;。当生产者线程越多，也就是锁冲突概率越大时，&lt;code&gt;moodycamel::ConcurrentQueue&lt;/code&gt;的性能优势体现得更加明显。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;因此，上述对比测试结论，就我们的&lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt;项目中的&lt;code&gt;EventLoop&lt;/code&gt;的实现方式，我们推荐使用&lt;code&gt;moodycamel::ConcurrentQueue&lt;/code&gt;来实现跨线程的数据交换。&lt;/p&gt;
+
+&lt;p&gt;更详细的测试数据，请参考下面的两个图表。&lt;/p&gt;
+
+&lt;p&gt;纵轴是执行耗时，越低性能越高。&lt;/p&gt;
+
+&lt;p&gt;图1，生产者和消费者都只有一个，横轴是测试的批次：
+&lt;img src=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/post_task/boost_lockfree-vs-mutex-1v1.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;图2，生产者线程有多个，横轴是生产者线程的个数，分别是2/4/6/8/12/16/20：
+&lt;img src=&#34;https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/post_task/boost_lockfree-vs-mutex.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;其他的性能测试报告:90274e2ef0997796a55625dfa35ad61a&#34;&gt;其他的性能测试报告&lt;/h3&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://github.com/Qihoo360/evpp/blob/master/docs/benchmark_ioevent_performance_vs_asio.md&#34;&gt;The IO Event performance benchmark against Boost.Asio&lt;/a&gt; : &lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt; is higher than &lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt; about &lt;strong&gt;20%~50%&lt;/strong&gt; in this case&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://github.com/Qihoo360/evpp/blob/master/docs/benchmark_ping_pong_spend_time_vs_asio.md&#34;&gt;The ping-pong benchmark against Boost.Asio&lt;/a&gt; : &lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt; is higher than &lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt; about &lt;strong&gt;5%~20%&lt;/strong&gt; in this case&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://github.com/Qihoo360/evpp/blob/master/docs/benchmark_throughput_vs_libevent.md&#34;&gt;The throughput benchmark against libevent2&lt;/a&gt; : &lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt; is higher than &lt;a href=&#34;https://github.com/libevent/libevent&#34;&gt;libevent&lt;/a&gt; about &lt;strong&gt;17%~130%&lt;/strong&gt; in this case&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://github.com/Qihoo360/evpp/blob/master/docs/benchmark_lockfree_vs_mutex.md&#34;&gt;The performance benchmark of &lt;code&gt;queue with std::mutex&lt;/code&gt; against &lt;code&gt;boost::lockfree::queue&lt;/code&gt; and &lt;code&gt;moodycamel::ConcurrentQueue&lt;/code&gt;&lt;/a&gt; : &lt;code&gt;moodycamel::ConcurrentQueue&lt;/code&gt; is the best, the average is higher than &lt;code&gt;boost::lockfree::queue&lt;/code&gt; about &lt;strong&gt;25%~100%&lt;/strong&gt; and higher than &lt;code&gt;queue with std::mutex&lt;/code&gt; about &lt;strong&gt;100%~500%&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://github.com/Qihoo360/evpp/blob/master/docs/benchmark_throughput_vs_asio.md&#34;&gt;The throughput benchmark against Boost.Asio&lt;/a&gt; : &lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt; and &lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt; have the similar performance in this case&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://github.com/Qihoo360/evpp/blob/master/docs/benchmark_throughput_vs_asio_cn.md&#34;&gt;The throughput benchmark against Boost.Asio(中文)&lt;/a&gt; : &lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt; and &lt;a href=&#34;http://www.boost.org/&#34;&gt;asio&lt;/a&gt; have the similar performance in this case&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://github.com/Qihoo360/evpp/blob/master/docs/benchmark_throughput_vs_muduo_cn.md&#34;&gt;The throughput benchmark against muduo(中文)&lt;/a&gt; : &lt;a href=&#34;https://github.com/Qihoo360/evpp&#34;&gt;evpp&lt;/a&gt; and &lt;a href=&#34;https://github.com/chenshuo/muduo&#34;&gt;muduo&lt;/a&gt; have the similar performance in this case&lt;/p&gt;
+
+&lt;h3 id=&#34;最后:90274e2ef0997796a55625dfa35ad61a&#34;&gt;最后&lt;/h3&gt;
+
+&lt;p&gt;报告中的图表是使用&lt;a href=&#34;https://github.com/zieckey/gochart/&#34;&gt;gochart&lt;/a&gt;绘制的。&lt;/p&gt;
+
+&lt;p&gt;非常感谢您的阅读。如果您有任何疑问，请随时在&lt;a href=&#34;https://github.com/Qihoo360/evpp/issues&#34;&gt;issue&lt;/a&gt;跟我们讨论。谢谢。&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>evpp与asio吞吐量对比</title>
       <link>http://blog.codeg.cn/post/blog/2017-04-04-the-throughput-benchmark-test-of-evpp-vs-asio/</link>
-      <pubDate>Tue, 14 Mar 2017 18:13:00 +0000</pubDate>
+      <pubDate>Tue, 04 Apr 2017 18:13:00 +0000</pubDate>
       
       <guid>http://blog.codeg.cn/post/blog/2017-04-04-the-throughput-benchmark-test-of-evpp-vs-asio/</guid>
       <description>
@@ -1589,468 +1746,6 @@ EOF
 &lt;li&gt;&lt;a href=&#34;http://docs.grafana.org/datasources/influxdb/&#34;&gt;grafana官方文档&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://docs.influxdata.com/influxdb/v0.9/introduction/getting_started/&#34;&gt;influxdb官方文档&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;http://download.csdn.net/detail/shuijinglei1988/9113655&#34;&gt;Grafana的入门级使用-自制教程-结合InfluxDB使用&lt;/a&gt;&lt;/li&gt;
-&lt;/ol&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>源码阅读-悟空搜索引擎</title>
-      <link>http://blog.codeg.cn/2016/02/02/wukong-source-code-reading/</link>
-      <pubDate>Tue, 02 Feb 2016 00:00:00 +0000</pubDate>
-      
-      <guid>http://blog.codeg.cn/2016/02/02/wukong-source-code-reading/</guid>
-      <description>
-
-&lt;h2 id=&#34;一个最简单的例子:89e0d5dad305327940f268393030b521&#34;&gt;一个最简单的例子&lt;/h2&gt;
-
-&lt;p&gt;我们还是从一个最简单的示例代码开始：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;package main
-
-import (
-	&amp;quot;github.com/huichen/wukong/engine&amp;quot;
-	&amp;quot;github.com/huichen/wukong/types&amp;quot;
-	&amp;quot;log&amp;quot;
-)
-
-var (
-// searcher是协程安全的
-	searcher = engine.Engine{}
-)
-
-func main() {
-	// 初始化
-	searcher.Init(types.EngineInitOptions{
-		SegmenterDictionaries: &amp;quot;./data/dictionary.txt&amp;quot;})
-	defer searcher.Close()
-
-	// 将文档加入索引
-	searcher.IndexDocument(0, types.DocumentIndexData{Content: &amp;quot;此次百度收购将成中国互联网最大并购&amp;quot;})
-	searcher.IndexDocument(1, types.DocumentIndexData{Content: &amp;quot;百度宣布拟全资收购91无线业务&amp;quot;})
-	searcher.IndexDocument(2, types.DocumentIndexData{Content: &amp;quot;百度是中国最大的搜索引擎&amp;quot;})
-
-	// 等待索引刷新完毕
-	searcher.FlushIndex()
-
-	// 搜索输出格式见types.SearchResponse结构体
-	res := searcher.Search(types.SearchRequest{Text:&amp;quot;百度中国&amp;quot;})
-	log.Printf(&amp;quot;num=%d &amp;quot;, res.NumDocs)
-	for _, d := range res.Docs {
-		log.Printf(&amp;quot;docId=%d&amp;quot;, d.DocId)
-		log.Print(&amp;quot;\tscore:&amp;quot;, d.Scores)
-		log.Print(&amp;quot;\tTokenLocations:&amp;quot;, d.TokenLocations)
-		log.Print(&amp;quot;\tTokenSnippetLocations:&amp;quot;, d.TokenSnippetLocations)
-	}
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;悟空搜索引擎不是一个完整的搜索引擎，我们可以把它当做一个搜索引擎基础库来使用。上面的示例代码是一个最简单的例子，展示了如何使用这个库，非常简单，三步即可完成：&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;初始化引擎： &lt;code&gt;searcher.Init&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;将文档加入索引列表中： &lt;code&gt;searcher.IndexDocument&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;执行搜索任务：&lt;code&gt;searcher.Search&lt;/code&gt;&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h2 id=&#34;悟空搜索引擎内部整体框架图:89e0d5dad305327940f268393030b521&#34;&gt;悟空搜索引擎内部整体框架图&lt;/h2&gt;
-
-&lt;p&gt;引擎中处理用户请求、分词、索引和排序分别由不同的协程（goroutines）完成。&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;主协程，用于收发用户请求&lt;/li&gt;
-&lt;li&gt;分词器（segmenter）协程，负责分词&lt;/li&gt;
-&lt;li&gt;索引器（indexer）协程，负责建立和查找索引表&lt;/li&gt;
-&lt;li&gt;排序器（ranker）协程，负责对文档评分排序&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;&lt;img src=&#34;http://blog.codeg.cn/images/githubpages/wukong-framework.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
-
-&lt;h2 id=&#34;引擎初始化过程:89e0d5dad305327940f268393030b521&#34;&gt;引擎初始化过程&lt;/h2&gt;
-
-&lt;p&gt;从上面最简单的那个例子可以看出，我们所有的操作都是基于&lt;code&gt;searcher&lt;/code&gt;对象（engine.Engine类型），初始化引擎、将文档加入索引列表中、Flush索引列表、执行搜索任务。下面我们详细分析一下初始化过程：&lt;/p&gt;
-
-&lt;h4 id=&#34;加载分词词典:89e0d5dad305327940f268393030b521&#34;&gt;加载分词词典&lt;/h4&gt;
-
-&lt;p&gt;有一个参数&lt;code&gt;NotUsingSegmenter&lt;/code&gt;可以控制是否加载分词词典。小小吐槽一下：这里没有使用正语义，导致我脑袋需要非非转换，(⊙o⊙)… ，我相信如果使用&lt;code&gt;UsingSegmenter&lt;/code&gt;参数的话，应该更好理解一点。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;	if !options.NotUsingSegmenter {
-		// 载入分词器词典
-		engine.segmenter.LoadDictionary(options.SegmenterDictionaries)
-
-		// 初始化停用词
-		engine.stopTokens.Init(options.StopTokenFile)
-	}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;分词词典的内部加载过程，可以详细参考 &lt;code&gt;https://github.com/huichen/sego&lt;/code&gt; 这个项目，这个可以单独来分析，在这里就不在展开说了。&lt;/p&gt;
-
-&lt;h4 id=&#34;初始化索引器和排序器:89e0d5dad305327940f268393030b521&#34;&gt;初始化索引器和排序器&lt;/h4&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;	for shard := 0; shard &amp;lt; options.NumShards; shard++ {
-		engine.indexers = append(engine.indexers, core.Indexer{})
-		engine.indexers[shard].Init(*options.IndexerInitOptions)
-
-		engine.rankers = append(engine.rankers, core.Ranker{})
-		engine.rankers[shard].Init()
-	}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;&lt;code&gt;options.NumShards&lt;/code&gt; 参数可以设置&lt;code&gt;shard&lt;/code&gt;(分片，项目作者称之为裂分)个数，根据&lt;code&gt;shard&lt;/code&gt;个数来初始化索引器(Indexer)、排序器(Rander)的个数。这里是为了方便并行处理，每一个&lt;code&gt;shard&lt;/code&gt;都有一个索引器(Indexer)和排序器(Rander)，并提前初始化好。&lt;/p&gt;
-
-&lt;h4 id=&#34;初始化分词器通道:89e0d5dad305327940f268393030b521&#34;&gt;初始化分词器通道&lt;/h4&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;	engine.segmenterChannel = make(
-		chan segmenterRequest, options.NumSegmenterThreads)
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h4 id=&#34;初始化索引器通道:89e0d5dad305327940f268393030b521&#34;&gt;初始化索引器通道&lt;/h4&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;	engine.indexerAddDocumentChannels = make(
-		[]chan indexerAddDocumentRequest, options.NumShards)
-	engine.indexerRemoveDocChannels = make(
-		[]chan indexerRemoveDocRequest, options.NumShards)
-	engine.indexerLookupChannels = make(
-		[]chan indexerLookupRequest, options.NumShards)
-	for shard := 0; shard &amp;lt; options.NumShards; shard++ {
-		engine.indexerAddDocumentChannels[shard] = make(
-			chan indexerAddDocumentRequest,
-			options.IndexerBufferLength)
-		engine.indexerRemoveDocChannels[shard] = make(
-			chan indexerRemoveDocRequest,
-			options.IndexerBufferLength)
-		engine.indexerLookupChannels[shard] = make(
-			chan indexerLookupRequest,
-			options.IndexerBufferLength)
-	}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;从这里可以看出索引器(Indexer)有三个功能：将一个文档添加到索引中、将一个文档从索引中移除、从索引中查找一个文档。每一个&lt;code&gt;shard&lt;/code&gt;都有独立的&lt;code&gt;channel&lt;/code&gt;，互不冲突。&lt;/p&gt;
-
-&lt;h4 id=&#34;初始化排序器通道:89e0d5dad305327940f268393030b521&#34;&gt;初始化排序器通道&lt;/h4&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;	engine.rankerAddDocChannels = make(
-		[]chan rankerAddDocRequest, options.NumShards)
-	engine.rankerRankChannels = make(
-		[]chan rankerRankRequest, options.NumShards)
-	engine.rankerRemoveDocChannels = make(
-		[]chan rankerRemoveDocRequest, options.NumShards)
-	for shard := 0; shard &amp;lt; options.NumShards; shard++ {
-		engine.rankerAddDocChannels[shard] = make(
-			chan rankerAddDocRequest,
-			options.RankerBufferLength)
-		engine.rankerRankChannels[shard] = make(
-			chan rankerRankRequest,
-			options.RankerBufferLength)
-		engine.rankerRemoveDocChannels[shard] = make(
-			chan rankerRemoveDocRequest,
-			options.RankerBufferLength)
-	}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;与上面类似，从这里可以看出排序器(Rander)有三个功能：将一个文档添加到排序器中、在排序器中进行排序、将一个文档从排序器中移除。每一个&lt;code&gt;shard&lt;/code&gt;都有独立的&lt;code&gt;channel&lt;/code&gt;，互不冲突。&lt;/p&gt;
-
-&lt;h4 id=&#34;初始化持久化存储通道:89e0d5dad305327940f268393030b521&#34;&gt;初始化持久化存储通道&lt;/h4&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;	if engine.initOptions.UsePersistentStorage {
-		engine.persistentStorageIndexDocumentChannels =
-			make([]chan persistentStorageIndexDocumentRequest,
-				engine.initOptions.PersistentStorageShards)
-		for shard := 0; shard &amp;lt; engine.initOptions.PersistentStorageShards; shard++ {
-			engine.persistentStorageIndexDocumentChannels[shard] = make(
-				chan persistentStorageIndexDocumentRequest)
-		}
-		engine.persistentStorageInitChannel = make(
-			chan bool, engine.initOptions.PersistentStorageShards)
-	}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;注意：&lt;code&gt;PersistentStorageShards&lt;/code&gt;持久化存储的分片数目是独立参数控制的。&lt;/p&gt;
-
-&lt;h4 id=&#34;启动各个功能协程goroutine:89e0d5dad305327940f268393030b521&#34;&gt;启动各个功能协程goroutine&lt;/h4&gt;
-
-&lt;ol&gt;
-&lt;li&gt;启动分词器协程&lt;/li&gt;
-&lt;li&gt;启动索引器和排序器协程&lt;/li&gt;
-&lt;li&gt;启动持久化存储工作协程&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;至此，所有初始化工作完毕。&lt;/p&gt;
-
-&lt;h2 id=&#34;索引过程分析:89e0d5dad305327940f268393030b521&#34;&gt;索引过程分析&lt;/h2&gt;
-
-&lt;p&gt;下面我们来分析索引过程。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;// 将文档加入索引
-//
-// 输入参数：
-// 	docId	标识文档编号，必须唯一
-//	data	见DocumentIndexData注释
-//
-// 注意：
-//      1. 这个函数是线程安全的，请尽可能并发调用以提高索引速度
-// 	2. 这个函数调用是非同步的，也就是说在函数返回时有可能文档还没有加入索引中，因此
-//         如果立刻调用Search可能无法查询到这个文档。强制刷新索引请调用FlushIndex函数。
-func (engine *Engine) IndexDocument(docId uint64, data types.DocumentIndexData) {
-	engine.internalIndexDocument(docId, data)
-
-	hash := murmur.Murmur3([]byte(fmt.Sprint(&amp;quot;%d&amp;quot;, docId))) % uint32(engine.initOptions.PersistentStorageShards)
-	if engine.initOptions.UsePersistentStorage {
-		engine.persistentStorageIndexDocumentChannels[hash] &amp;lt;- persistentStorageIndexDocumentRequest{docId: docId, data: data}
-	}
-}
-
-func (engine *Engine) internalIndexDocument(docId uint64, data types.DocumentIndexData) {
-	if !engine.initialized {
-		log.Fatal(&amp;quot;必须先初始化引擎&amp;quot;)
-	}
-
-	atomic.AddUint64(&amp;amp;engine.numIndexingRequests, 1)
-	hash := murmur.Murmur3([]byte(fmt.Sprint(&amp;quot;%d%s&amp;quot;, docId, data.Content)))
-	engine.segmenterChannel &amp;lt;- segmenterRequest{
-		docId: docId, hash: hash, data: data}
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;这里需要注意的是，docId参数需要调用者从外部传入，而不是在内部自己创建，这给搜索引擎的实现者更大的自由。
-将文档交给分词器处理，然后根据murmur3计算的hash值模&lt;code&gt;PersistentStorageShards&lt;/code&gt;，选择合适的&lt;code&gt;shard&lt;/code&gt;写入持久化存储中。&lt;/p&gt;
-
-&lt;h3 id=&#34;索引过程分析-分词协程处理过程:89e0d5dad305327940f268393030b521&#34;&gt;索引过程分析：分词协程处理过程&lt;/h3&gt;
-
-&lt;p&gt;分词器协程的逻辑代码在这里：&lt;code&gt;segmenter_worker.go:func (engine *Engine) segmenterWorker()&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;分词器协程的逻辑是一个死循环，不停的从&lt;code&gt;channel engine.segmenterChannel&lt;/code&gt;中读取数据，针对每一次读取的数据：&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;计算&lt;code&gt;shard&lt;/code&gt;号&lt;/li&gt;
-&lt;li&gt;将文档分词&lt;/li&gt;
-&lt;li&gt;根据分词结果，构造&lt;code&gt;indexerAddDocumentRequest&lt;/code&gt; 和 &lt;code&gt;rankerAddDocRequest&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;将&lt;code&gt;indexerAddDocumentRequest&lt;/code&gt;投递到&lt;code&gt;channel engine.indexerAddDocumentChannels[shard]&lt;/code&gt;中&lt;/li&gt;
-&lt;li&gt;将&lt;code&gt;rankerAddDocRequest&lt;/code&gt;投递到&lt;code&gt;channel engine.rankerAddDocChannels[shard]&lt;/code&gt;中&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;补充一句：这里&lt;code&gt;shard&lt;/code&gt;号的计算过程如下：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;// 从文本hash得到要分配到的shard
-func (engine *Engine) getShard(hash uint32) int {
-	return int(hash - hash/uint32(engine.initOptions.NumShards)*uint32(engine.initOptions.NumShards))
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;为什么不是直接取模呢？&lt;/p&gt;
-
-&lt;h3 id=&#34;索引过程分析-索引器协程处理过程:89e0d5dad305327940f268393030b521&#34;&gt;索引过程分析：索引器协程处理过程&lt;/h3&gt;
-
-&lt;p&gt;首先介绍一下倒排索引表，这是搜索引擎的核心数据结构。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;// 索引器
-type Indexer struct {
-	// 从搜索键到文档列表的反向索引
-	// 加了读写锁以保证读写安全
-	tableLock struct {
-		sync.RWMutex
-		table map[string]*KeywordIndices
-		docs  map[uint64]bool
-	}
-
-	initOptions types.IndexerInitOptions
-	initialized bool
-
-	// 这实际上是总文档数的一个近似
-	numDocuments uint64
-
-	// 所有被索引文本的总关键词数
-	totalTokenLength float32
-
-	// 每个文档的关键词长度
-	docTokenLengths map[uint64]float32
-}
-
-// 反向索引表的一行，收集了一个搜索键出现的所有文档，按照DocId从小到大排序。
-type KeywordIndices struct {
-	// 下面的切片是否为空，取决于初始化时IndexType的值
-	docIds      []uint64  // 全部类型都有
-	frequencies []float32 // IndexType == FrequenciesIndex
-	locations   [][]int   // IndexType == LocationsIndex
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;&lt;code&gt;table map[string]*KeywordIndices&lt;/code&gt;这个是核心：一个关键词，对应一个&lt;code&gt;KeywordIndices&lt;/code&gt;结构。该结构的&lt;code&gt;docIds&lt;/code&gt;字段记录了所有包含这个关键词的文档id。
-如果 IndexType == FrequenciesIndex ，则同时记录这个关键词在该文档中出现次数。
-如果 IndexType == LocationsIndex ，则同时记录这个关键词在该文档中出现的所有位置的起始偏移。&lt;/p&gt;
-
-&lt;p&gt;下面是索引的主函数代码：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;func (engine *Engine) indexerAddDocumentWorker(shard int) {
-	for {
-		request := &amp;lt;-engine.indexerAddDocumentChannels[shard]
-		engine.indexers[shard].AddDocument(request.document)
-		atomic.AddUint64(&amp;amp;engine.numTokenIndexAdded,
-			uint64(len(request.document.Keywords)))
-		atomic.AddUint64(&amp;amp;engine.numDocumentsIndexed, 1)
-	}
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;其主要逻辑又封装在&lt;code&gt;func (indexer *Indexer) AddDocument(document *types.DocumentIndex)&lt;/code&gt;函数中实现。其逻辑如下：&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;将倒排索引表加锁&lt;/li&gt;
-&lt;li&gt;更新文档关键词的长度加在一起的总和&lt;/li&gt;
-&lt;li&gt;查找关键词在倒排索引表中是否存在&lt;/li&gt;
-&lt;li&gt;如果不存在，则直接加入到&lt;code&gt;table map[string]*KeywordIndices&lt;/code&gt;中&lt;/li&gt;
-&lt;li&gt;如果存在&lt;code&gt;KeywordIndices&lt;/code&gt;，则使用二分查找该关键词对应的docId是否已经在&lt;code&gt;KeywordIndices.docIds&lt;/code&gt;中存在。分两种情况：
-1) docId存在，则更新原有的数据结构。
-2) docId不存在，则插入到&lt;code&gt;KeywordIndices.docIds&lt;/code&gt;数组中，同时保持升序排列。&lt;/li&gt;
-&lt;li&gt;更新索引过的文章总数&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h3 id=&#34;索引过程分析-排序器协程处理过程:89e0d5dad305327940f268393030b521&#34;&gt;索引过程分析：排序器协程处理过程&lt;/h3&gt;
-
-&lt;p&gt;在新索引文档的过程，排序器的主逻辑如下：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;func (engine *Engine) rankerAddDocWorker(shard int) {
-	for {
-		request := &amp;lt;-engine.rankerAddDocChannels[shard]
-		engine.rankers[shard].AddDoc(request.docId, request.fields)
-	}
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;进而调用下面的函数&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;// 给某个文档添加评分字段
-func (ranker *Ranker) AddDoc(docId uint64, fields interface{}) {
-	if ranker.initialized == false {
-		log.Fatal(&amp;quot;排序器尚未初始化&amp;quot;)
-	}
-
-	ranker.lock.Lock()
-	ranker.lock.fields[docId] = fields
-	ranker.lock.docs[docId] = true
-	ranker.lock.Unlock()
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;上述函数非常简单，只是将应用层自定义的数据加入到ranker中。&lt;/p&gt;
-
-&lt;p&gt;至此索引过程就完成了。简单来讲就是下面两个过程：&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;将文档分词，得到一堆关键词&lt;/li&gt;
-&lt;li&gt;将 关键词-&amp;gt;docId 的对应关系加入到全局的map中(实际上是分了多个shard)&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h2 id=&#34;搜索过程分析:89e0d5dad305327940f268393030b521&#34;&gt;搜索过程分析&lt;/h2&gt;
-
-&lt;p&gt;下面我们来分析一下搜索的过程。首先构造一个&lt;code&gt;SearchRequest&lt;/code&gt;对象。一般情况下只需提供&lt;code&gt;SearchRequest.Text&lt;/code&gt;即可。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;type SearchRequest struct {
-	// 搜索的短语（必须是UTF-8格式），会被分词
-	// 当值为空字符串时关键词会从下面的Tokens读入
-	Text string
-
-	// 关键词（必须是UTF-8格式），当Text不为空时优先使用Text
-	// 通常你不需要自己指定关键词，除非你运行自己的分词程序
-	Tokens []string
-
-	// 文档标签（必须是UTF-8格式），标签不存在文档文本中，但也属于搜索键的一种
-	Labels []string
-
-	// 当不为nil时，仅从这些DocIds包含的键中搜索（忽略值）
-	DocIds map[uint64]bool
-
-	// 排序选项
-	RankOptions *RankOptions
-
-	// 超时，单位毫秒（千分之一秒）。此值小于等于零时不设超时。
-	// 搜索超时的情况下仍有可能返回部分排序结果。
-	Timeout int
-
-	// 设为true时仅统计搜索到的文档个数，不返回具体的文档
-	CountDocsOnly bool
-
-	// 不排序，对于可在引擎外部（比如客户端）排序情况适用
-	// 对返回文档很多的情况打开此选项可以有效节省时间
-	Orderless bool
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;从本文一开始那段示例代码的搜索语句读起：&lt;code&gt;searcher.Search(types.SearchRequest{Text:&amp;quot;百度中国&amp;quot;})&lt;/code&gt;。进入到 Search 函数内部，其逻辑如下：&lt;/p&gt;
-
-&lt;h3 id=&#34;设置一些搜索选项:89e0d5dad305327940f268393030b521&#34;&gt;设置一些搜索选项&lt;/h3&gt;
-
-&lt;p&gt;例如排序选项&lt;code&gt;RankOptions&lt;/code&gt;, 分数计算条件&lt;code&gt;ScoringCriteria&lt;/code&gt;等等&lt;/p&gt;
-
-&lt;h3 id=&#34;将搜索词进行分词:89e0d5dad305327940f268393030b521&#34;&gt;将搜索词进行分词&lt;/h3&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;	// 收集关键词
-	tokens := []string{}
-	if request.Text != &amp;quot;&amp;quot; {
-		querySegments := engine.segmenter.Segment([]byte(request.Text))
-		for _, s := range querySegments {
-			token := s.Token().Text()
-			if !engine.stopTokens.IsStopToken(token) {
-				tokens = append(tokens, s.Token().Text())
-			}
-		}
-	} else {
-		for _, t := range request.Tokens {
-			tokens = append(tokens, t)
-		}
-	}
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;这里的&amp;rdquo;百度中国&amp;rdquo;会分词得到两个词：&lt;code&gt;百度&lt;/code&gt; 和&lt;code&gt;中国&lt;/code&gt;&lt;/p&gt;
-
-&lt;h3 id=&#34;向索引器发送查找请求:89e0d5dad305327940f268393030b521&#34;&gt;向索引器发送查找请求&lt;/h3&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;	// 建立排序器返回的通信通道
-	rankerReturnChannel := make(
-		chan rankerReturnRequest, engine.initOptions.NumShards)
-
-	// 生成查找请求
-	lookupRequest := indexerLookupRequest{
-		countDocsOnly:       request.CountDocsOnly,
-		tokens:              tokens,
-		labels:              request.Labels,
-		docIds:              request.DocIds,
-		options:             rankOptions,
-		rankerReturnChannel: rankerReturnChannel,
-		orderless:           request.Orderless,
-	}
-
-	// 向索引器发送查找请求
-	for shard := 0; shard &amp;lt; engine.initOptions.NumShards; shard++ {
-		engine.indexerLookupChannels[shard] &amp;lt;- lookupRequest
-	}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;这里是否可以进行优化？ 1) 只向特定的shard分发请求，避免无谓的indexer查找过程。2) &lt;code&gt;rankerReturnChannel&lt;/code&gt;是否不用每次都创建新的？&lt;/p&gt;
-
-&lt;h3 id=&#34;读取索引器的返回结果然后排序:89e0d5dad305327940f268393030b521&#34;&gt;读取索引器的返回结果然后排序&lt;/h3&gt;
-
-&lt;p&gt;上面已经建立了结果的返回通道&lt;code&gt;rankerReturnChannel&lt;/code&gt;，直接从个&lt;code&gt;channel&lt;/code&gt;中读取返回数据，并加入到数组&lt;code&gt;rankOutput&lt;/code&gt;中。
-注意，如果设置了超时，就在超时之前能读取多少就读多少。
-然后调用排序算法进行排序。排序算法直接调用Golang自带的&lt;code&gt;sort&lt;/code&gt;包的排序算法。&lt;/p&gt;
-
-&lt;p&gt;下面我们深入到索引器，看看索引器是如何进行搜索的。其核心代码在这里&lt;code&gt;func (engine *Engine) indexerLookupWorker(shard int)&lt;/code&gt;，它的主逻辑是一个死循环，不断的从&lt;code&gt;engine.indexerLookupChannels[shard]&lt;/code&gt;读取搜索请求。&lt;/p&gt;
-
-&lt;p&gt;针对每一个搜索请求，会将请求分发到索引器去，调用&lt;code&gt;func (indexer *Indexer) Lookup(tokens []string, labels []string, docIds map[uint64]bool, countDocsOnly bool) (docs []types.IndexedDocument, numDocs int)&lt;/code&gt;方法。其主要逻辑如下：&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;将分词和标签合并在一起进行搜索&lt;/li&gt;
-&lt;li&gt;合并搜索到的docId，并进行初步排序，将docId大的排在前面(实际上是认为docId越大，时间越近，时效性越好)&lt;/li&gt;
-&lt;li&gt;然后进行排序，BM25算法&lt;/li&gt;
-&lt;li&gt;最后返回数据&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h2 id=&#34;参考文献:89e0d5dad305327940f268393030b521&#34;&gt;参考文献&lt;/h2&gt;
-
-&lt;ol&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/huichen/wukong&#34;&gt;悟空搜索引擎项目源码：https://github.com/huichen/wukong&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/huichen/wukong/blob/master/docs/codelab.md&#34;&gt;悟空引擎入门教程&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://ayende.com/blog/171745/code-reading-wukong-full-text-search-engine&#34;&gt;Code reading: Wukong full-text search engine&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;
 </description>
     </item>
