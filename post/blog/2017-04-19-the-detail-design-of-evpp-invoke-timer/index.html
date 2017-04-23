@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html class="no-js">
+<head>
+    <base href="http://blog.codeg.cn/">
+    <script>
+    document._writeOriginal = document.write;
+    document.write = function(str) {
+        if (str.indexOf('livereload.js') > -1) {
+            document._writeOriginal(str);
+        } else {
+            document._writeOriginal('<!-- Be Hijack!! -->');
+        }
+    }
+
+    </script>
+    <title>evpp设计细节系列(1)：利用 enable_shared_from_this 实现一个自管理的定时器 - CodeG Blog</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+<meta name="description" content="0. 前言 https://github.com/Qihoo360/evpp是一个高性能的Reactor模式的现代化的C&#43;&#43;11版本的高性能网络库">
+<meta name="author" content="zieckey">
+<meta name="publisher" content="zieckey">
+<meta name="generator" content="http://gohugo.io/"/>
+
+<meta itemprop="name" content="evpp设计细节系列(1)：利用 enable_shared_from_this 实现一个自管理的定时器 - CodeG Blog">
+<meta itemprop="description" content="0. 前言 https://github.com/Qihoo360/evpp是一个高性能的Reactor模式的现代化的C&#43;&#43;11版本的高性能网络库">
+<meta itemprop="image" content="http://blog.codeg.cn/public/codeg.jpg">
+
+<meta property="og:title" content="evpp设计细节系列(1)：利用 enable_shared_from_this 实现一个自管理的定时器 - CodeG Blog" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://blog.codeg.cn/post/blog/2017-04-19-the-detail-design-of-evpp-invoke-timer/" />
+<meta property="og:image" content="http://blog.codeg.cn/public/codeg.jpg" />
+<meta property="og:description" content="0. 前言 https://github.com/Qihoo360/evpp是一个高性能的Reactor模式的现代化的C&#43;&#43;11版本的高性能网络库">
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@zieckey">
+<meta name="twitter:title" content="evpp设计细节系列(1)：利用 enable_shared_from_this 实现一个自管理的定时器 - CodeG Blog">
+<meta name="twitter:description" content="0. 前言 https://github.com/Qihoo360/evpp是一个高性能的Reactor模式的现代化的C&#43;&#43;11版本的高性能网络库">
+<meta name="twitter:creator" content="@zieckey">
+<meta name="twitter:image" content="http://blog.codeg.cn/public/codeg.jpg">
+
+    <script>document.documentElement.className = document.documentElement.className.replace("no-js", "js");</script>
+    <link rel="canonical" href="http://blog.codeg.cn/post/blog/2017-04-19-the-detail-design-of-evpp-invoke-timer/">
+    <link rel='shortlink' href="http://blog.codeg.cn/post/blog/2017-04-19-the-detail-design-of-evpp-invoke-timer/"/>
+    <link rel="shortcut icon" href="http://blog.codeg.cn/public/favicon.ico"/>
+    
+<link rel="stylesheet" id="human-style-css" href="http://blog.codeg.cn/wp-content/themes/hueman/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css2" href="http://blog.codeg.cn/wp-content/themes/hueman-child/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="responsive-css" href="http://blog.codeg.cn/wp-content/themes/hueman/responsive.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="font-awesome-css" href="http://blog.codeg.cn/wp-content/themes/hueman/fonts/font-awesome.min.css" type="text/css" media="all"/>
+<link rel="stylesheet" href="http://blog.codeg.cn/public/highlight/styles/github.css">
+<script src="http://blog.codeg.cn/public/highlight/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<link rel="stylesheet" id="human-style-css3" href="http://blog.codeg.cn/wp-content/themes/hueman-child/user.css" type="text/css" media="all"/>
+<link rel="stylesheet" href="public/font/hack/css/hack.min.css">
+
+<script type="text/javascript" src="assets/js/jquery-2.1.1.min.js"></script>
+<script type="text/javascript" src="wp-content/themes/hueman/js/jquery.jplayer.min.js"></script>
+<script type="text/javascript" src="wp-content/themes/hueman/js/scripts.js"></script>
+<script type="text/javascript" src="assets/picturefill/picturefill.min.js"></script>
+<script type="text/javascript" src="assets/js/jquery.matchHeight-min.js"></script>
+<script type="text/javascript" async defer src="assets/js/myblog.js"></script>
+
+
+    
+    <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?16a8034e97e7943d9bd7f7310a59a7d8";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+    </script>
+
+
+    
+    <script src="http://s4.cnzz.com/z_stat.php?id=1253999623&web_id=1253999623" language="JavaScript"></script>
+</head>
+
+<body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome">
+<div id="wrapper">
+  <header id="header">
+
+  <nav class="nav-container group" id="nav-topbar">
+    <div class="nav-toggle"><i class="fa fa-bars"></i></div>
+    <div class="nav-text"></div>
+    <div class="nav-wrap container">
+      <a rel="nofollow" href="http://blog.codeg.cn/" class="nav-cs-icon">
+        <img width="40" height="40" src="http://blog.codeg.cn/public/codeg.jpg" alt="codeg" title="Home">
+      </a>
+      <ul id="menu-default-menu" class="nav container-inner group">
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="http://blog.codeg.cn/">首页</a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="http://blog.codeg.cn/post/">技术文章</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="http://blog.codeg.cn/about/">关于我</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="http://blog.codeg.cn/feed.xml" type="application/rss+xml" target="_blank">订阅</a>
+        </li>
+        <li class="menu-item menu-item-type-post_type menu-item-text">
+        聪明的解释器
+        </li>
+      </ul>
+    </div>
+
+    <div class="container">
+      <div class="container-inner">
+        <div class="toggle-search"><i class="fa fa-search"></i></div>
+        <div class="search-expand">
+          <div class="search-expand-inner">
+            <form method="get" class="searchform themeform" action="https://www.so.com/s">
+              <div>
+                <input type="text" class="search" name="q" placeholder="Press enter to start searching">
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+    
+
+  </nav>
+  
+
+  <div class="container group">
+    <div class="container-inner">
+
+      <div class="group pad">
+
+        <div class="group pad">
+          <h1 class="site-title">
+            <a rel="nofollow" href="http://blog.codeg.cn/" rel="home">
+              <img style="border-radius: 50%;width:72px;height:72px;margin:0 auto;" alt="codeg" src="http://blog.codeg.cn/public/codeg.jpg"></img>
+              CodeG Blog
+            </a>
+          </h1>
+          <p class="site-description"> 思路决定出路，态度决定高度。 </p>
+        </div>
+
+      </div>
+    </div>
+    
+  </div>
+  
+
+</header>
+
+
+
+  <div class="container" id="page">
+    <div class="container-inner">
+      <div class="main">
+        <div class="main-inner group">
+          <section class="content">
+            <div class="page-title pad group">
+              <ul class="meta-single group">
+                
+                <li class="category">
+                  <a href="http://blog.codeg.cn/categories/blog/" rel="category tag">blog</a>
+                </li>
+                
+              </ul>
+            </div>
+
+            <div class="pad group">
+
+              <article
+                  class="post type-post status-publish format-standard has-post-thumbnail hentry category-australien tag-bondi-beach tag-city2surf tag-sydney">
+                <div class="post-inner group">
+
+                  <h1 class="post-title">evpp设计细节系列(1)：利用 enable_shared_from_this 实现一个自管理的定时器</h1>
+
+                  <p class="post-byline">
+                    By <a target="_blank" href="http://blog.codeg.cn/">zieckey</a> · 2017年04月19日 · 4117 Words ·
+                    ~9min reading time |
+                    <a href="https://github.com/zieckey/blog/edit/master/content/post/blog/2017-04-19-the-detail-design-of-evpp-invoke-timer.md"
+                       target="_blank">编辑这个页面</a>
+                    | Tags:
+                    
+                    <a rel="tag" href="http://blog.codeg.cn/tags/c11">C&#43;&#43;11</a>
+                    
+                    <a rel="tag" href="http://blog.codeg.cn/tags/evpp">evpp</a>
+                    
+                    <a rel="tag" href="http://blog.codeg.cn/tags/enable_shared_from_this">enable_shared_from_this</a>
+                    
+                    <a rel="tag" href="http://blog.codeg.cn/tags/shared_ptr">shared_ptr</a>
+                    
+                  </p>
+
+                  <div class="clear"></div>
+
+                  <div class="entry">
+
+                    <div style="border: 1px dashed #e0e0e0; padding: 10px 10px 10px 10px; background-color: #fffeee; background-repeat: no-repeat; background-attachment: scroll; background-position: 1% 50%; -moz-background-size: auto auto; -moz-background-clip: -moz-initial; -moz-background-origin: -moz-initial; -moz-background-inline-policy: -moz-initial;">
+                      
+                      
+                      
+                      
+                      <div>
+                        
+                        
+                        
+                        
+                        本文 <a target="_blank" href="http://blog.codeg.cn/post/blog/2017-04-19-the-detail-design-of-evpp-invoke-timer/">http://blog.codeg.cn/post/blog/2017-04-19-the-detail-design-of-evpp-invoke-timer/</a> 是作者<a target="_blank" href="http://blog.codeg.cn/">zieckey</a>在研究和学习相关内容时所做的笔记，欢迎广大朋友指正和交流！
+                        版权所有，欢迎转载和分享，但请保留此段声明。 </p>
+                      </div>
+
+                    </div>
+
+                    <div class="entry-inner">
+                      
+
+<h1 id="0-前言:4fb79b78c21aac4725aa913c264ba1ad">0. 前言</h1>
+
+<p><a href="https://github.com/Qihoo360/evpp">https://github.com/Qihoo360/evpp</a>是一个高性能的Reactor模式的现代化的C++11版本的高性能网络库。该项目中有一个<code>InvokeTimer</code>对象，接口头文件详细代码请参见<a href="https://github.com/Qihoo360/evpp/blob/master/evpp/invoke_timer.h">https://github.com/Qihoo360/evpp/blob/master/evpp/invoke_timer.h</a>。它是一个能自我管理的定时器类，可以将一个仿函数绑定到该定时器上，然后让该定时器自己管理并在预期的一段时间后执行该仿函数。</p>
+
+<p>现在我们复盘一下这个功能的实现细节和演化过程。</p>
+
+<h1 id="1-基础代码:4fb79b78c21aac4725aa913c264ba1ad">1. 基础代码</h1>
+
+<p>定时器原型声明可能是下面的样子：</p>
+
+<pre><code class="language-C++">class InvokeTimer {
+public:
+    InvokeTimer(struct event_base* evloop, double timeout_ms, const std::function&lt;void()&gt;&amp; f);
+    ~InvokeTimer();
+    void Start();
+};
+</code></pre>
+
+<p>这个是最基本的接口，可以设置一个仿函数，并设置一个过期时间，然后绑定到一个<code>event_base</code>对象上，然后就可以期待过了一个预期的时间后，我们设置的仿函数被调用了。</p>
+
+<p>为了便于说明后续的多个版本的实现，我们先将基础的不变的代码说明一下。</p>
+
+<p>基础代码，我们采用<a href="https://github.com/Qihoo360/evpp">evpp</a>项目中的<code>TimerEventWatcher</code>，详细实现在这里<a href="https://github.com/Qihoo360/evpp/blob/master/evpp/event_watcher.h">event_watcher.h</a>和<a href="https://github.com/Qihoo360/evpp/blob/master/evpp/event_watcher.cc">event_watcher.cc</a>。它是一个时间定时器观察者对象，可以观察一个时间事件。</p>
+
+<p>头文件<code>event_watcher.h</code>定义如下：</p>
+
+<pre><code class="language-C++">#pragma once
+
+#include &lt;functional&gt;
+
+struct event;
+struct event_base;
+
+namespace recipes {
+
+class EventWatcher {
+public:
+    typedef std::function&lt;void()&gt; Handler;
+    virtual ~EventWatcher();
+    bool Init();
+    void Cancel();
+
+    void SetCancelCallback(const Handler&amp; cb);
+    void ClearHandler() { handler_ = Handler(); }
+protected:
+    EventWatcher(struct event_base* evbase, const Handler&amp; handler);
+    bool Watch(double timeout_ms);
+    void Close();
+    void FreeEvent();
+
+    virtual bool DoInit() = 0;
+    virtual void DoClose() {}
+
+protected:
+    struct event* event_;
+    struct event_base* evbase_;
+    bool attached_;
+    Handler handler_;
+    Handler cancel_callback_;
+};
+
+class TimerEventWatcher : public EventWatcher {
+public:
+    TimerEventWatcher(struct event_base* evbase, const Handler&amp; handler, double timeout_ms);
+
+    bool AsyncWait();
+
+private:
+    virtual bool DoInit();
+    static void HandlerFn(int fd, short which, void* v);
+private:
+    double timeout_ms_;
+};
+
+}
+
+</code></pre>
+
+<p>实现文件<code>event_watcher.cc</code>如下：</p>
+
+<pre><code class="language-C++">#include &lt;string.h&gt;
+#include &lt;assert.h&gt;
+
+#include &lt;event2/event.h&gt;
+#include &lt;event2/event_struct.h&gt;
+#include &lt;event2/event_compat.h&gt;
+
+#include &lt;iostream&gt;
+
+#include &quot;event_watcher.h&quot;
+
+namespace recipes {
+
+EventWatcher::EventWatcher(struct event_base* evbase, const Handler&amp; handler)
+    : evbase_(evbase), attached_(false), handler_(handler) {
+    event_ = new event;
+    memset(event_, 0, sizeof(struct event));
+}
+
+EventWatcher::~EventWatcher() {
+    FreeEvent();
+    Close();
+}
+
+bool EventWatcher::Init() {
+    if (!DoInit()) {
+        goto failed;
+    }
+
+    ::event_base_set(evbase_, event_);
+    return true;
+
+failed:
+    Close();
+    return false;
+}
+
+
+void EventWatcher::Close() {
+    DoClose();
+}
+
+bool EventWatcher::Watch(double timeout_ms) {
+    struct timeval tv;
+    struct timeval* timeoutval = nullptr;
+    if (timeout_ms &gt; 0) {
+        tv.tv_sec = long(timeout_ms / 1000);
+        tv.tv_usec = long(timeout_ms * 1000.0) % 1000;
+        timeoutval = &amp;tv;
+    }
+
+    if (attached_) {
+        // When InvokerTimer::periodic_ == true, EventWatcher::Watch will be called many times
+        // so we need to remove it from event_base before we add it into event_base
+        if (event_del(event_) != 0) {
+            std::cerr &lt;&lt; &quot;event_del failed. fd=&quot; &lt;&lt; this-&gt;event_-&gt;ev_fd &lt;&lt; &quot; event_=&quot; &lt;&lt; event_ &lt;&lt; std::endl;
+            // TODO how to deal with it when failed?
+        }
+        attached_ = false;
+    }
+
+    assert(!attached_);
+    if (event_add(event_, timeoutval) != 0) {
+        std::cerr &lt;&lt; &quot;event_add failed. fd=&quot; &lt;&lt; this-&gt;event_-&gt;ev_fd &lt;&lt; &quot; event_=&quot; &lt;&lt; event_ &lt;&lt; std::endl;
+        return false;
+    }
+    attached_ = true;
+    return true;
+}
+
+void EventWatcher::FreeEvent() {
+    if (event_) {
+        if (attached_) {
+            event_del(event_);
+            attached_ = false;
+        }
+
+        delete (event_);
+        event_ = nullptr;
+    }
+}
+
+void EventWatcher::Cancel() {
+    assert(event_);
+    FreeEvent();
+
+    if (cancel_callback_) {
+        cancel_callback_();
+        cancel_callback_ = Handler();
+    }
+}
+
+void EventWatcher::SetCancelCallback(const Handler&amp; cb) {
+    cancel_callback_ = cb;
+}
+
+
+TimerEventWatcher::TimerEventWatcher(struct event_base* evbase,
+                                     const Handler&amp; handler,
+                                     double timeout_ms)
+    : EventWatcher(evbase, handler)
+    , timeout_ms_(timeout_ms) {}
+
+bool TimerEventWatcher::DoInit() {
+    ::event_set(event_, -1, 0, TimerEventWatcher::HandlerFn, this);
+    return true;
+}
+
+void TimerEventWatcher::HandlerFn(int /*fd*/, short /*which*/, void* v) {
+    TimerEventWatcher* h = (TimerEventWatcher*)v;
+    h-&gt;handler_();
+}
+
+bool TimerEventWatcher::AsyncWait() {
+    return Watch(timeout_ms_);
+}
+
+}
+
+</code></pre>
+
+<h1 id="2-一个最基本的实现-basic-01:4fb79b78c21aac4725aa913c264ba1ad">2. 一个最基本的实现：basic-01</h1>
+
+<p>我们先尝试实现一个能满足最基本需求的定时器。</p>
+
+<pre><code class="language-C++">
+// 头文件
+#include &lt;memory&gt;
+#include &lt;functional&gt;
+
+struct event_base;
+
+namespace recipes {
+
+class TimerEventWatcher;
+class InvokeTimer;
+
+class InvokeTimer {
+public:
+    typedef std::function&lt;void()&gt; Functor;
+
+    InvokeTimer(struct event_base* evloop, double timeout_ms, const Functor&amp; f);
+    ~InvokeTimer();
+
+    void Start();
+
+private:
+    void OnTimerTriggered();
+
+private:
+    struct event_base* loop_;
+    double timeout_ms_;
+    Functor functor_;
+    std::shared_ptr&lt;TimerEventWatcher&gt; timer_;
+};
+
+}
+
+
+
+// 实现文件
+#include &quot;invoke_timer.h&quot;
+#include &quot;event_watcher.h&quot;
+
+#include &lt;thread&gt;
+#include &lt;iostream&gt;
+
+namespace recipes {
+
+InvokeTimer::InvokeTimer(struct event_base* evloop, double timeout_ms, const Functor&amp; f)
+    : loop_(evloop), timeout_ms_(timeout_ms), functor_(f) {
+    std::cout &lt;&lt; &quot;InvokeTimer::InvokeTimer tid=&quot; &lt;&lt; std::this_thread::get_id() &lt;&lt; &quot; this=&quot; &lt;&lt; this &lt;&lt; std::endl;
+}
+
+InvokeTimer::~InvokeTimer() {
+    std::cout &lt;&lt; &quot;InvokeTimer::~InvokeTimer tid=&quot; &lt;&lt; std::this_thread::get_id() &lt;&lt; &quot; this=&quot; &lt;&lt; this &lt;&lt; std::endl;
+}
+
+void InvokeTimer::Start() {
+    std::cout &lt;&lt; &quot;InvokeTimer::Start tid=&quot; &lt;&lt; std::this_thread::get_id() &lt;&lt; &quot; this=&quot; &lt;&lt; this &lt;&lt; std::endl;
+    timer_.reset(new TimerEventWatcher(loop_, std::bind(&amp;InvokeTimer::OnTimerTriggered, this), timeout_ms_));
+    timer_-&gt;Init();
+    timer_-&gt;AsyncWait();
+    std::cout &lt;&lt; &quot;InvokeTimer::Start(AsyncWait) tid=&quot; &lt;&lt; std::this_thread::get_id() &lt;&lt; &quot; timer=&quot; &lt;&lt; timer_.get() &lt;&lt; &quot; this=&quot; &lt;&lt; this &lt;&lt; &quot; timeout(ms)=&quot; &lt;&lt; timeout_ms_ &lt;&lt; std::endl;
+}
+
+void InvokeTimer::OnTimerTriggered() {
+    std::cout &lt;&lt; &quot;InvokeTimer::OnTimerTriggered tid=&quot; &lt;&lt; std::this_thread::get_id() &lt;&lt; &quot; this=&quot; &lt;&lt; this &lt;&lt; std::endl;
+    functor_();
+    functor_ = Functor();
+}
+
+}
+
+
+</code></pre>
+
+<p>测试main.cc</p>
+
+<pre><code class="language-C++">#include &quot;invoke_timer.h&quot;
+#include &quot;event_watcher.h&quot;
+#include &quot;winmain-inl.h&quot;
+
+#include &lt;event2/event.h&gt;
+
+void Print() {
+    std::cout &lt;&lt; __FUNCTION__ &lt;&lt; &quot; hello world.&quot; &lt;&lt; std::endl;
+}
+
+int main() {
+    struct event_base* base = event_base_new();
+    auto timer = new recipes::InvokeTimer(base, 1000.0, &amp;Print);
+    timer-&gt;Start();
+    event_base_dispatch(base);
+    event_base_free(base);
+    delete timer;
+    return 0;
+}
+</code></pre>
+
+<p>我们先创建一个<code>event_base</code>对象，随后创建一个<code>InvokeTimer</code>对象，随后让timer启动起来，即将timer注册到<code>event_base</code>对象中，最后运行<code>event_base_dispatch(base)</code>。</p>
+
+<p>下面编译运行，结果是符合预期的：当timer的时间到期后，能顺利触发回调。</p>
+
+<pre><code class="language-shell">$ ls -l
+total 80
+-rw-rw-r-- 1 weizili weizili  2729 Apr 15 20:39 event_watcher.cc
+-rw-rw-r-- 1 weizili weizili   996 Apr 15 20:39 event_watcher.h
+-rw-rw-r-- 1 weizili weizili  1204 Apr 14 10:55 invoke_timer.cc
+-rw-rw-r-- 1 weizili weizili   805 Apr 14 10:55 invoke_timer.h
+-rw-rw-r-- 1 weizili weizili   374 Apr 14 10:55 main.cc
+$ g++ -std=c++11 event_watcher.cc invoke_timer.cc main.cc -levent
+$ ./a.out
+InvokeTimer::InvokeTimer tid=139965845526336 this=0x7ffd2790f780
+InvokeTimer::Start tid=139965845526336 this=0x7ffd2790f780
+InvokeTimer::Start(AsyncWait) tid=139965845526336 timer=0x14504c0 this=0x7ffd2790f780 timeout(ms)=1000
+InvokeTimer::OnTimerTriggered tid=139965845526336 this=0x7ffd2790f780
+Print hello world.
+InvokeTimer::~InvokeTimer tid=139965845526336 this=0x7ffd2790f780
+</code></pre>
+
+<p>这个实现方式，<code>InvokeTimer</code>对象生命周期的管理是一个问题，它需要调用者自己管理。</p>
+
+<h1 id="3-能够实现最基本自我管理-basic-02:4fb79b78c21aac4725aa913c264ba1ad">3. 能够实现最基本自我管理：basic-02</h1>
+
+<p>为了实现<code>InvokeTimer</code>对象生命周期的自我管理，其实就是调用者不需要关心<code>InvokeTimer</code>对象的生命周期问题。可以设想一下，假如<code>InvokeTimer</code>对象创建后，当定时时间一到，我们就调用其绑定的毁掉回函，然后<code>InvokeTimer</code>对象自我销毁，是不是就可以实现自我管理了呢？嗯，这个可行。请看下面代码。</p>
+
+<pre><code class="language-C++">
+// 头文件
+
+#include &lt;memory&gt;
+#include &lt;functional&gt;
+
+struct event_base;
+
+namespace recipes {
+
+class TimerEventWatcher;
+class InvokeTimer;
+
+class InvokeTimer {
+public:
+    typedef std::function&lt;void()&gt; Functor;
+
+    static InvokeTimer* Create(struct event_base* evloop,
+                                 double timeout_ms,
+                                 const Functor&amp; f);
+
+    ~InvokeTimer();
+
+    void Start();
+
+private:
+    InvokeTimer(struct event_base* evloop, double timeout_ms, const Functor&amp; f);
+    void OnTimerTriggered();
+
+private:
+    struct event_base* loop_;
+    double timeout_ms_;
+    Functor functor_;
+    std::shared_ptr&lt;TimerEventWatcher&gt; timer_;
+};
+
+}
+
+
+// 实现文件
+
+#include &quot;invoke_timer.h&quot;
+#include &quot;event_watcher.h&quot;
+
+#include &lt;thread&gt;
+#include &lt;iostream&gt;
+
+namespace recipes {
+
+InvokeTimer::InvokeTimer(struct event_base* evloop, double timeout_ms, const Functor&amp; f)
+    : loop_(evloop), timeout_ms_(timeout_ms), functor_(f) {
+    std::cout &lt;&lt; &quot;InvokeTimer::InvokeTimer tid=&quot; &lt;&lt; std::this_thread::get_id() &lt;&lt; &quot; this=&quot; &lt;&lt; this &lt;&lt; std::endl;
+}
+
+InvokeTimer* InvokeTimer::Create(struct event_base* evloop, double timeout_ms, const Functor&amp; f) {
+    return new InvokeTimer(evloop, timeout_ms, f);
+}
+
+InvokeTimer::~InvokeTimer() {
+    std::cout &lt;&lt; &quot;InvokeTimer::~InvokeTimer tid=&quot; &lt;&lt; std::this_thread::get_id() &lt;&lt; &quot; this=&quot; &lt;&lt; this &lt;&lt; std::endl;
+}
+
+void InvokeTimer::Start() {
+    std::cout &lt;&lt; &quot;InvokeTimer::Start tid=&quot; &lt;&lt; std::this_thread::get_id() &lt;&lt; &quot; this=&quot; &lt;&lt; this &lt;&lt; std::endl;
+    timer_.reset(new TimerEventWatcher(loop_, std::bind(&amp;InvokeTimer::OnTimerTriggered, this), timeout_ms_));
+    timer_-&gt;Init();
+    timer_-&gt;AsyncWait();
+    std::cout &lt;&lt; &quot;InvokeTimer::Start(AsyncWait) tid=&quot; &lt;&lt; std::this_thread::get_id() &lt;&lt; &quot; timer=&quot; &lt;&lt; timer_.get() &lt;&lt; &quot; this=&quot; &lt;&lt; this &lt;&lt; &quot; timeout(ms)=&quot; &lt;&lt; timeout_ms_ &lt;&lt; std::endl;
+}
+
+void InvokeTimer::OnTimerTriggered() {
+    std::cout &lt;&lt; &quot;InvokeTimer::OnTimerTriggered tid=&quot; &lt;&lt; std::this_thread::get_id() &lt;&lt; &quot; this=&quot; &lt;&lt; this &lt;&lt; std::endl;
+    functor_();
+    functor_ = Functor();
+    delete this;
+}
+
+}
+
+</code></pre>
+
+<p>请注意，上述实现中，为了实现自我销毁，我们必须调用 <strong>delete</strong> ，这就注定了<code>InvokeTimer</code>对象必须在堆上创建，因此我们隐藏了它的构造函数，然后用一个静态的 <strong>Create</strong> 成员来创建<code>InvokeTimer</code>对象的实例。</p>
+
+<p>相应的，<code>main.cc</code>也做了一点点修改代码如下：</p>
+
+<pre><code class="language-C++">#include &quot;invoke_timer.h&quot;
+#include &quot;event_watcher.h&quot;
+#include &quot;winmain-inl.h&quot;
+
+#include &lt;event2/event.h&gt;
+
+void Print() {
+    std::cout &lt;&lt; __FUNCTION__ &lt;&lt; &quot; hello world.&quot; &lt;&lt; std::endl;
+}
+
+int main() {
+    struct event_base* base = event_base_new();
+    auto timer = recipes::InvokeTimer::Create(base, 1000.0, &amp;Print);
+    timer-&gt;Start(); // 启动完成后，就不用关注该对象了
+    event_base_dispatch(base);
+    event_base_free(base);
+    return 0;
+}
+</code></pre>
+
+<p>这个实现，就不需要上层调用者手工<code>delete</code>这个<code>InvokeTimer</code>对象的实例，从而达到<code>InvokeTimer</code>对象自我管理的目的。</p>
+
+<p>下面编译运行，结果是符合预期的：当timer时间到期后，能顺利触发回调，并且<code>InvokeTimer</code>对象也自动析构了。</p>
+
+<pre><code class="language-shell">$ ls -l
+total 80
+-rw-rw-r-- 1 weizili weizili  2729 Apr 15 20:39 event_watcher.cc
+-rw-rw-r-- 1 weizili weizili   996 Apr 15 20:39 event_watcher.h
+-rw-rw-r-- 1 weizili weizili  1204 Apr 14 10:55 invoke_timer.cc
+-rw-rw-r-- 1 weizili weizili   805 Apr 14 10:55 invoke_timer.h
+-rw-rw-r-- 1 weizili weizili   374 Apr 14 10:55 main.cc
+$ g++ -std=c++11 event_watcher.cc invoke_timer.cc main.cc -levent
+$ ./a.out
+InvokeTimer::InvokeTimer tid=139965845526336 this=0x7ffd2790f780
+InvokeTimer::Start tid=139965845526336 this=0x7ffd2790f780
+InvokeTimer::Start(AsyncWait) tid=139965845526336 timer=0x14504c0 this=0x7ffd2790f780 timeout(ms)=1000
+InvokeTimer::OnTimerTriggered tid=139965845526336 this=0x7ffd2790f780
+Print hello world.
+InvokeTimer::~InvokeTimer tid=139965845526336 this=0x7ffd2790f780
+</code></pre>
+
+<h1 id="4-如果要取消一个定时器怎么办-cancel-03:4fb79b78c21aac4725aa913c264ba1ad">4. 如果要取消一个定时器怎么办：cancel-03</h1>
+
+<p>上面第2种实现方式，实现了定时器的自我管理，调用者不需要关心定时器的生命周期的管理问题。接下来，新的需求又来了，上层调用者说，在对外发起一个请求时，可以设置一个定时器来处理超时问题，但如果请求及时的回来了，我们得及时取消该定时器啊，这又如何处理呢？</p>
+
+<p>这就相当于要把上层调用者还得一直保留<code>InvokeTimer</code>对象的实例，以便在需要的时候，提前取消掉该定时器。上层调用者保留这个指针，就会带来一定的风险，例如误用，当<code>InvokeTimer</code>对象已经自动析构了，该该指针还继续存在于上层调用者那里。</p>
+
+<p>于是乎，智能指针<code>shared_ptr</code>出场了，我们希望上层调用者看到的对象是以<code>shared_ptr&lt;InvokeTimer&gt;</code>形式存在的，无论上层调用者是否保留这个<code>shared_ptr&lt;InvokeTimer&gt;</code>对象，<code>InvokeTimer</code>对象都能自我管理，也就是说，当上层调用者不保留<code>shared_ptr&lt;InvokeTimer&gt;</code>对象时，<code>InvokeTimer</code>对象要能自我管理。</p>
+
+<p>这里就必须让<code>InvokeTimer</code>对象本身也要保存一份<code>shared_ptr&lt;InvokeTimer&gt;</code>对象。为了实现这一技术，我们需要引入<code>enable_shared_from_this</code>。关于<code>enable_shared_from_this</code>的介绍，网络上已经有很多资料了，这里不多累述。我们直接上最终的实现代码：</p>
+
+<pre><code class="language-C++">
+// 头文件
+
+#include &lt;memory&gt;
+#include &lt;functional&gt;
+
+struct event_base;
+
+namespace recipes {
+
+class TimerEventWatcher;
+class InvokeTimer;
+
+typedef std::shared_ptr&lt;InvokeTimer&gt; InvokeTimerPtr;
+
+class InvokeTimer : public std::enable_shared_from_this&lt;InvokeTimer&gt; {
+public:
+    typedef std::function&lt;void()&gt; Functor;
+
+    static InvokeTimerPtr Create(struct event_base* evloop,
+                                 double timeout_ms,
+                                 const Functor&amp; f);
+
+    ~InvokeTimer();
+
+    void Start();
+
+    void Cancel();
+
+    void set_cancel_callback(const Functor&amp; fn) {
+        cancel_callback_ = fn;
+    }
+private:
+    InvokeTimer(struct event_base* evloop, double timeout_ms, const Functor&amp; f);
+    void OnTimerTriggered();
+    void OnCanceled();
+
+private:
+    struct event_base* loop_;
+    double timeout_ms_;
+    Functor functor_;
+    Functor cancel_callback_;
+    std::shared_ptr&lt;TimerEventWatcher&gt; timer_;
+    std::shared_ptr&lt;InvokeTimer&gt; self_; // Hold myself
+};
+
+}
+
+
+// 实现文件
+
+#include &quot;invoke_timer.h&quot;
+#include &quot;event_watcher.h&quot;
+
+#include &lt;thread&gt;
+#include &lt;iostream&gt;
+
+namespace recipes {
+
+InvokeTimer::InvokeTimer(struct event_base* evloop, double timeout_ms, const Functor&amp; f)
+    : loop_(evloop), timeout_ms_(timeout_ms), functor_(f) {
+    std::cout &lt;&lt; &quot;InvokeTimer::InvokeTimer tid=&quot; &lt;&lt; std::this_thread::get_id() &lt;&lt; &quot; this=&quot; &lt;&lt; this &lt;&lt; std::endl;
+}
+
+InvokeTimerPtr InvokeTimer::Create(struct event_base* evloop, double timeout_ms, const Functor&amp; f) {
+    InvokeTimerPtr it(new InvokeTimer(evloop, timeout_ms, f));
+    it-&gt;self_ = it;
+    return it;
+}
+
+InvokeTimer::~InvokeTimer() {
+    std::cout &lt;&lt; &quot;InvokeTimer::~InvokeTimer tid=&quot; &lt;&lt; std::this_thread::get_id() &lt;&lt; &quot; this=&quot; &lt;&lt; this &lt;&lt; std::endl;
+}
+
+void InvokeTimer::Start() {
+    std::cout &lt;&lt; &quot;InvokeTimer::Start tid=&quot; &lt;&lt; std::this_thread::get_id() &lt;&lt; &quot; this=&quot; &lt;&lt; this &lt;&lt; &quot; refcount=&quot; &lt;&lt; self_.use_count() &lt;&lt; std::endl;
+    timer_.reset(new TimerEventWatcher(loop_, std::bind(&amp;InvokeTimer::OnTimerTriggered, shared_from_this()), timeout_ms_));
+    timer_-&gt;SetCancelCallback(std::bind(&amp;InvokeTimer::OnCanceled, shared_from_this()));
+    timer_-&gt;Init();
+    timer_-&gt;AsyncWait();
+    std::cout &lt;&lt; &quot;InvokeTimer::Start(AsyncWait) tid=&quot; &lt;&lt; std::this_thread::get_id() &lt;&lt; &quot; timer=&quot; &lt;&lt; timer_.get() &lt;&lt; &quot; this=&quot; &lt;&lt; this &lt;&lt; &quot; refcount=&quot; &lt;&lt; self_.use_count() &lt;&lt; &quot; periodic=&quot; &lt;&lt; periodic_ &lt;&lt; &quot; timeout(ms)=&quot; &lt;&lt; timeout_ms_ &lt;&lt; std::endl;
+}
+
+void InvokeTimer::Cancel() {
+    if (timer_) {
+        timer_-&gt;Cancel();
+    }
+}
+
+void InvokeTimer::OnTimerTriggered() {
+    std::cout &lt;&lt; &quot;InvokeTimer::OnTimerTriggered tid=&quot; &lt;&lt; std::this_thread::get_id() &lt;&lt; &quot; this=&quot; &lt;&lt; this &lt;&lt; &quot; use_count=&quot; &lt;&lt; self_.use_count() &lt;&lt; std::endl;
+    functor_();
+    functor_ = Functor();
+    cancel_callback_ = Functor();
+    timer_.reset();
+    self_.reset();
+}
+
+void InvokeTimer::OnCanceled() {
+    std::cout &lt;&lt; &quot;InvokeTimer::OnCanceled tid=&quot; &lt;&lt; std::this_thread::get_id() &lt;&lt; &quot; this=&quot; &lt;&lt; this &lt;&lt; &quot; use_count=&quot; &lt;&lt; self_.use_count() &lt;&lt; std::endl;
+    if (cancel_callback_) {
+        cancel_callback_();
+        cancel_callback_ = Functor();
+    }
+    functor_ = Functor();
+    timer_.reset();
+    self_.reset();
+}
+
+}
+
+
+</code></pre>
+
+<p>相应的，<code>main.cc</code>也做了一点点修改代码如下：</p>
+
+<pre><code class="language-C++">#include &quot;invoke_timer.h&quot;
+#include &quot;event_watcher.h&quot;
+#include &quot;winmain-inl.h&quot;
+
+#include &lt;event2/event.h&gt;
+
+void Print() {
+    std::cout &lt;&lt; __FUNCTION__ &lt;&lt; &quot; hello world.&quot; &lt;&lt; std::endl;
+}
+
+int main() {
+    struct event_base* base = event_base_new();
+    auto timer = recipes::InvokeTimer::Create(base, 1000.0, &amp;Print);
+    timer-&gt;Start(); // 启动完成后，就不用关注该对象了
+    event_base_dispatch(base);
+    event_base_free(base);
+    return 0;
+}
+</code></pre>
+
+<p>这个实现，就不需要上层调用者手工<code>delete</code>这个<code>InvokeTimer</code>对象的实例，从而达到<code>InvokeTimer</code>对象自我管理的目的。</p>
+
+<p>下面编译运行，结果是符合预期的：当timer时间到期后，能顺利触发回调，并且<code>InvokeTimer</code>对象也自动析构了。</p>
+
+<h1 id="5-实现一个周期性的定时器-periodic-04:4fb79b78c21aac4725aa913c264ba1ad">5. 实现一个周期性的定时器：periodic-04</h1>
+
+<p>上述几个实现中，都是一次性的定时器任务。但是如果我们想实现一个周期性的定时器该如何实现呢？例如，我们有一个任务，需要每分钟做一次。</p>
+
+<p>其实，基于上述第三个版本的实现，可以很容易的实现周期性的定时器功能。只需要在回调函数中，继续调用<code>timer-&gt;AsyncWait()</code>即可。详细的修改情况如下。</p>
+
+<p>头文件 invoke_timer.h 改变：</p>
+
+<pre><code class="language-diff">
+@@ -18,7 +18,8 @@ public:
+
+     static InvokeTimerPtr Create(struct event_base* evloop,
+                                  double timeout_ms,
+-                                 const Functor&amp; f);
++                                 const Functor&amp; f,
++                                 bool periodic);
+
+     ~InvokeTimer();
+
+@@ -30,7 +31,7 @@ public:
+         cancel_callback_ = fn;
+     }
+ private:
+-    InvokeTimer(struct event_base* evloop, double timeout_ms, const Functor&amp; f);
++    InvokeTimer(struct event_base* evloop, double timeout_ms, const Functor&amp; f, bool periodic);
+     void OnTimerTriggered();
+     void OnCanceled();
+
+@@ -40,6 +41,7 @@ private:
+     Functor functor_;
+     Functor cancel_callback_;
+     std::shared_ptr&lt;TimerEventWatcher&gt; timer_;
++    bool periodic_;
+     std::shared_ptr&lt;InvokeTimer&gt; self_; // Hold myself
+ };
+</code></pre>
+
+<p>实现文件 invoke_timer.cc 改变：</p>
+
+<pre><code class="language-diff">
+ namespace recipes {
+
+-InvokeTimer::InvokeTimer(struct event_base* evloop, double timeout_ms, const Functor&amp; f)
+-    : loop_(evloop), timeout_ms_(timeout_ms), functor_(f) {
++InvokeTimer::InvokeTimer(struct event_base* evloop, double timeout_ms, const Functor&amp; f, bool periodic)
++    : loop_(evloop), timeout_ms_(timeout_ms), functor_(f), periodic_(periodic) {
+     std::cout &lt;&lt; &quot;InvokeTimer::InvokeTimer tid=&quot; &lt;&lt; std::this_thread::get_id() &lt;&lt; &quot; this=&quot; &lt;&lt; this &lt;&lt; std::endl;
+ }
+
+-InvokeTimerPtr InvokeTimer::Create(struct event_base* evloop, double timeout_ms, const Functor&amp; f) {
+-    InvokeTimerPtr it(new InvokeTimer(evloop, timeout_ms, f));
++InvokeTimerPtr InvokeTimer::Create(struct event_base* evloop, double timeout_ms, const Functor&amp; f, bool periodic) {
++    InvokeTimerPtr it(new InvokeTimer(evloop, timeout_ms, f, periodic));
+     it-&gt;self_ = it;
+     return it;
+ }
+@@ -27,7 +27,7 @@ void InvokeTimer::Start() {
+     timer_-&gt;SetCancelCallback(std::bind(&amp;InvokeTimer::OnCanceled, shared_from_this()));
+     timer_-&gt;Init();
+     timer_-&gt;AsyncWait();
+ }
+
+ void InvokeTimer::Cancel() {
+@@ -39,14 +39,20 @@ void InvokeTimer::Cancel() {
+ void InvokeTimer::OnTimerTriggered() {
+     std::cout &lt;&lt; &quot;InvokeTimer::OnTimerTriggered tid=&quot; &lt;&lt; std::this_thread::get_id() &lt;&lt; &quot; this=&quot; &lt;&lt; this &lt;&lt; &quot; use_count=&quot; &lt;&lt; self_.use_count() &lt;&lt; std::endl;
+     functor_();
+-    functor_ = Functor();
+-    cancel_callback_ = Functor();
+-    timer_.reset();
+-    self_.reset();
++
++    if (periodic_) {
++        timer_-&gt;AsyncWait();
++    } else {
++        functor_ = Functor();
++        cancel_callback_ = Functor();
++        timer_.reset();
++        self_.reset();
++    }
+ }
+
+ void InvokeTimer::OnCanceled() {
+     std::cout &lt;&lt; &quot;InvokeTimer::OnCanceled tid=&quot; &lt;&lt; std::this_thread::get_id() &lt;&lt; &quot; this=&quot; &lt;&lt; this &lt;&lt; &quot; use_count=&quot; &lt;&lt; self_.use_count() &lt;&lt; std::endl;
++    periodic_ = false;
+     if (cancel_callback_) {
+         cancel_callback_();
+         cancel_callback_ = Functor();
+
+</code></pre>
+
+<p>main.cc测试示例代码也有所修改，具体如下：</p>
+
+<pre><code class="language-C++">#include &quot;invoke_timer.h&quot;
+#include &quot;event_watcher.h&quot;
+#include &quot;winmain-inl.h&quot;
+
+#include &lt;event2/event.h&gt;
+
+void Print() {
+    std::cout &lt;&lt; __FUNCTION__ &lt;&lt; &quot; hello world.&quot; &lt;&lt; std::endl;
+}
+
+int main() {
+    struct event_base* base = event_base_new();
+    auto timer = recipes::InvokeTimer::Create(base, 1000.0, &amp;Print, true);
+    timer-&gt;Start();
+    timer.reset();
+    event_base_dispatch(base);
+    event_base_free(base);
+    return 0;
+}
+</code></pre>
+
+<p>该版本是最终的实现版本。相关代码都在[<a href="https://github.com/Qihoo360/evpp/tree/master/examples/recipes/self_control_timer]这里，为了便于演示，其不依赖[evpp]。">https://github.com/Qihoo360/evpp/tree/master/examples/recipes/self_control_timer]这里，为了便于演示，其不依赖[evpp]。</a></p>
+
+<h1 id="6-最后:4fb79b78c21aac4725aa913c264ba1ad">6. 最后</h1>
+
+<p><a href="https://github.com/Qihoo360/evpp">evpp</a>项目官网地址为：<a href="https://github.com/Qihoo360/evpp">https://github.com/Qihoo360/evpp</a>
+本文中的详细代码实现请参考 [<a href="https://github.com/Qihoo360/evpp/tree/master/examples/recipes/self_control_timer">https://github.com/Qihoo360/evpp/tree/master/examples/recipes/self_control_timer</a>]</p>
+
+<h1 id="7-evpp系列文章列表:4fb79b78c21aac4725aa913c264ba1ad">7. evpp系列文章列表</h1>
+
+<p><a href="http://blog.csdn.net/zieckey/article/details/69803011">evpp性能测试（3）: 对无锁队列boost::lockfree::queue和moodycamel::ConcurrentQueue做一个性能对比测试</a>
+<a href="http://blog.csdn.net/zieckey/article/details/69170619">evpp性能测试（2）: 与Boost.Asio进行吞吐量对比测试</a>
+<a href="http://blog.csdn.net/zieckey/article/details/63778715">evpp性能测试（1）: 与muduo进行吞吐量测试</a>
+<a href="http://blog.csdn.net/zieckey/article/details/63760757">发布一个高性能的Reactor模式的C++网络库：evpp</a></p>
+
+<p>[<a href="https://github.com/Qihoo360/evpp/tree/master/examples/recipes/self_control_timer]:https://github.com/Qihoo360/evpp/tree/master/examples/recipes/self_control_timer">https://github.com/Qihoo360/evpp/tree/master/examples/recipes/self_control_timer]:https://github.com/Qihoo360/evpp/tree/master/examples/recipes/self_control_timer</a></p>
+
+                    </div>
+
+                    
+<div class="bdsharebuttonbox">
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网"></a>
+    <a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博"></a>
+</div>
+<script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{},"image":{"viewList":["weixin","tsina","qzone","renren","tqq"],"viewText":"分享到：","viewSize":"24"},"selectShare":{"bdContainerClass":null,"bdSelectMiniList":["weixin","tsina","qzone","renren","tqq"]}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+
+                    
+<div id="uyan_frame"></div>
+<script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=2129919"></script>
+
+                    
+                    <div class="clear"></div>
+                  </div>
+                  
+
+                </div>
+                
+              </article>
+              
+              <div class="clear"></div>
+              
+              
+              
+            </div>
+          </section>
+          <div class="sidebar s1">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>Contact:</p>
+      <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo"
+        href="http://weibo.com/zieckey" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/zieckey" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub"
+        href="https://github.com/zieckey" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+    <li>
+        <a class="social-tooltip" title="On WeChat"
+           href="http://blog.codeg.cn/images/githubpages/logo/wechat.qr.png" target="_blank">
+            <i class="fa fa-wechat"></i>
+        </a>
+    </li>
+</ul>
+
+    </div>
+    
+    
+    
+
+
+    <ul class="post-nav group">
+      <li class="next">
+        
+        <a href="http://blog.codeg.cn/post/blog/2017-04-09-the-benchmark-of-lockfree/" rel="next">
+          <i class="fa fa-chevron-right"></i>
+          <strong>Next post</strong>
+          <span>基于evpp的EventLoop实现来对无锁队列boost::lockfree::queue和moodycamel::ConcurrentQueue做一个性能测试对比</span>
+        </a>
+        
+      </li>
+      <li class="previous">
+        
+      </li>
+    </ul>
+    <div id="search-2" class="widget widget_search"><h3>Search</h3>
+      <form method="get" class="searchform themeform" action="https://www.so.com/s">
+        <div>
+          <input type="text" class="search" name="q" placeholder="Press enter to start searching">
+        </div>
+      </form>
+    </div>
+  </div>
+  
+</div>
+
+          <div class="sidebar s2">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>More</p>
+    </div>
+    <div id="categories-2" class="widget widget_categories"><h3>Categories</h3>
+      <ul>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer id="footer">
+  <section class="container" id="footer-bottom">
+    <div class="container-inner">
+      <a id="back-to-top" href="#"><i class="fa fa-angle-up"></i></a>
+      <div class="pad group">
+        <div class="grid one-half">
+          <div id="copyright">
+            <p>Copyright © 2016. All Rights Reserved. <br>Powered by
+              <a rel="nofollow" href="http://gohugo.io/" target="_blank">Hugo - the static site generator</a>.
+              <a rel="nofollow" href="http://golang.org" target="_blank">#golang</a>.
+            </p>
+          </div>
+          
+        </div>
+        
+        <div class="grid one-half last">
+          <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo"
+        href="http://weibo.com/zieckey" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/zieckey" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub"
+        href="https://github.com/zieckey" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+    <li>
+        <a class="social-tooltip" title="On WeChat"
+           href="http://blog.codeg.cn/images/githubpages/logo/wechat.qr.png" target="_blank">
+            <i class="fa fa-wechat"></i>
+        </a>
+    </li>
+</ul>
+
+        </div>
+      </div>
+
+    </div>
+    
+  </section>
+  
+</footer>
+
+</div>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-10147768-2', 'auto');
+  ga('send', 'pageview');
+
+  $('#messagesbsb').remove();
+
+</script>
+</body>
+</html>
+
