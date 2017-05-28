@@ -343,6 +343,8 @@ Installing package vcpkgdemo:x86-windows...
 Installing package vcpkgdemo:x86-windows... done
 &lt;/code&gt;&lt;/pre&gt;
 
+&lt;p&gt;如果不顺利，有错误发生的话，可以根据错误提示去 &lt;code&gt;D:/git/vcpkg/buildtrees/vcpkgdemo&lt;/code&gt; 找错误日志，并解决。&lt;/p&gt;
+
 &lt;h4 id=&#34;f-将-d-git-vcpkg-ports-vcpkgdemo-整个目录提交到-https-github-com-microsoft-vcpkg-https-github-com-microsoft-vcpkg:d5b1c64b04f5a3ca42b256b2911d82e8&#34;&gt;f) 将&lt;code&gt;D:\git\vcpkg\ports\vcpkgdemo&lt;/code&gt;整个目录提交到&lt;a href=&#34;https://github.com/Microsoft/vcpkg&#34;&gt;https://github.com/Microsoft/vcpkg&lt;/a&gt;&lt;/h4&gt;
 
 &lt;p&gt;为了让这个vcpkg包能够被其世界上任何他人使用，我们必须将port file提交到&lt;a href=&#34;https://github.com/Microsoft/vcpkg&#34;&gt;https://github.com/Microsoft/vcpkg&lt;/a&gt;项目中。&lt;/p&gt;
