@@ -404,9 +404,9 @@ fi
 
 &lt;p&gt;代码调用路径如下：&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;	nsqd.Main()
-	n.waitGroup.Wrap(func() { n.lookupLoop() })
-	func (n *NSQD) lookupLoop() : 91行： case val := &amp;lt;-n.notifyChan:
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;    nsqd.Main()
+    n.waitGroup.Wrap(func() { n.lookupLoop() })
+    func (n *NSQD) lookupLoop() : 91行： case val := &amp;lt;-n.notifyChan:
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;h3 id=&#34;消息分发:d95215f25ddc5c9409dc591338ad4840&#34;&gt;消息分发&lt;/h3&gt;

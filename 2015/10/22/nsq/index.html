@@ -263,9 +263,9 @@
 
 <p>代码调用路径如下：</p>
 
-<pre><code class="language-go">	nsqd.Main()
-	n.waitGroup.Wrap(func() { n.lookupLoop() })
-	func (n *NSQD) lookupLoop() : 91行： case val := &lt;-n.notifyChan:
+<pre><code class="language-go">    nsqd.Main()
+    n.waitGroup.Wrap(func() { n.lookupLoop() })
+    func (n *NSQD) lookupLoop() : 91行： case val := &lt;-n.notifyChan:
 </code></pre>
 
 <h3 id="消息分发:d95215f25ddc5c9409dc591338ad4840">消息分发</h3>
