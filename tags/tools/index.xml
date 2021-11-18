@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Tools on CodeG Blog</title>
-    <link>http://zieckey.github.io/tags/tools/</link>
+    <link>http://blog.codeg.cn/tags/tools/</link>
     <description>Recent content in Tools on CodeG Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 03 Jan 2015 00:00:00 +0000</lastBuildDate><atom:link href="http://zieckey.github.io/tags/tools/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 03 Jan 2015 00:00:00 +0000</lastBuildDate><atom:link href="http://blog.codeg.cn/tags/tools/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>发布一个批量转码工具:gbk2utf8</title>
-      <link>http://zieckey.github.io/2015/01/03/gbk2utf8-by-golang/</link>
+      <link>http://blog.codeg.cn/2015/01/03/gbk2utf8-by-golang/</link>
       <pubDate>Sat, 03 Jan 2015 00:00:00 +0000</pubDate>
       
-      <guid>http://zieckey.github.io/2015/01/03/gbk2utf8-by-golang/</guid>
+      <guid>http://blog.codeg.cn/2015/01/03/gbk2utf8-by-golang/</guid>
       <description>Linux下的iconv是针对单个文件处理，但是转码后的数据直接输出到STDOUT，不方便批量处理。gbk2utf8工具可以针对一个目录以及递归遍历所有子目录下的所有文件进行批量处理，并且直接修改原始文件为UTF-8编码。为了避免错误，会将原始文件备份为*.bak文件。
 当前其实现是直接调用iconv命令实现，后期可以考虑纯粹使用golang实现。另外，如果将来有需要，可以直接将iconv的几个参数如-f -t等也一并实现了，从而形成goiconv，一个通用的批量原地转码工具。
 代码实现其实非常简单，总共不过100来行golang代码，地址请见: https://github.com/zieckey/tools/tree/master/gbk2utf8
@@ -25,10 +25,10 @@
     
     <item>
       <title>发布一个使用简单的绘图工具</title>
-      <link>http://zieckey.github.io/2014/12/27/gochart-info/</link>
+      <link>http://blog.codeg.cn/2014/12/27/gochart-info/</link>
       <pubDate>Sat, 27 Dec 2014 00:00:00 +0000</pubDate>
       
-      <guid>http://zieckey.github.io/2014/12/27/gochart-info/</guid>
+      <guid>http://blog.codeg.cn/2014/12/27/gochart-info/</guid>
       <description>gochart是仿照goplot使用golang和highcharts开源库制作的一个使用起来非常简单的绘制图表的工具，图表风格有曲线图、折线图、面积图、柱状图、饼图等。编译好的gochart只有一个二进制文件，不依赖任何库/网络。
 直接下载二进制 Win7 amd64
 从源码安装 直接只用命令go get -u github.com/zieckey/gochart即可。该命令会自动处理好依赖的开源项目：

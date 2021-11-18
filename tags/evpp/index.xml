@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>evpp on CodeG Blog</title>
-    <link>http://zieckey.github.io/tags/evpp/</link>
+    <link>http://blog.codeg.cn/tags/evpp/</link>
     <description>Recent content in evpp on CodeG Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 28 May 2017 18:11:01 +0000</lastBuildDate><atom:link href="http://zieckey.github.io/tags/evpp/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 28 May 2017 18:11:01 +0000</lastBuildDate><atom:link href="http://blog.codeg.cn/tags/evpp/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>手把手制作一个vcpkg的安装包及port file相关说明</title>
-      <link>http://zieckey.github.io/post/2017-05-28-how-to-build-a-vcpkg/</link>
+      <link>http://blog.codeg.cn/post/2017-05-28-how-to-build-a-vcpkg/</link>
       <pubDate>Sun, 28 May 2017 18:11:01 +0000</pubDate>
       
-      <guid>http://zieckey.github.io/post/2017-05-28-how-to-build-a-vcpkg/</guid>
+      <guid>http://blog.codeg.cn/post/2017-05-28-how-to-build-a-vcpkg/</guid>
       <description>0. 前言 Windows平台的程序包的依赖管理一直以来都是个大难题。之前有NuGet，现在有vcpkg。 本文的重点是先介绍一下vcpkg的特性，然后以一个实际例子说明，说明如何创建一个vcpkg安装包。
 1. vcpkg简介 vcpkg是为了在windows平台能够方便获取一个C或者C++库。当前还处于预览版状态。不过已经有很多常见的库了，例如：
  openssl boost zlib glog libevent curl  等等，很多知名的C/C++库都已经提供vcpkg安装包。
@@ -24,10 +24,10 @@ D:\git\vcpkg&amp;gt;.\vcpkg --help Commands: vcpkg search [pat] Search for packa
     
     <item>
       <title>evpp设计细节系列(1)：利用 enable_shared_from_this 实现一个自管理的定时器</title>
-      <link>http://zieckey.github.io/post/2017-04-19-the-detail-design-of-evpp-invoke-timer/</link>
+      <link>http://blog.codeg.cn/post/2017-04-19-the-detail-design-of-evpp-invoke-timer/</link>
       <pubDate>Wed, 19 Apr 2017 10:11:01 +0000</pubDate>
       
-      <guid>http://zieckey.github.io/post/2017-04-19-the-detail-design-of-evpp-invoke-timer/</guid>
+      <guid>http://blog.codeg.cn/post/2017-04-19-the-detail-design-of-evpp-invoke-timer/</guid>
       <description>0. 前言 https://github.com/Qihoo360/evpp是一个高性能的Reactor模式的现代化的C++11版本的高性能网络库。该项目中有一个InvokeTimer对象，接口头文件详细代码请参见https://github.com/Qihoo360/evpp/blob/master/evpp/invoke_timer.h。它是一个能自我管理的定时器类，可以将一个仿函数绑定到该定时器上，然后让该定时器自己管理并在预期的一段时间后执行该仿函数。
 现在我们复盘一下这个功能的实现细节和演化过程。
 1. 基础代码 定时器原型声明可能是下面的样子：
@@ -40,10 +40,10 @@ class InvokeTimer { public: InvokeTimer(struct event_base* evloop, double timeou
     
     <item>
       <title>基于evpp的EventLoop实现来对无锁队列boost::lockfree::queue和moodycamel::ConcurrentQueue做一个性能测试对比</title>
-      <link>http://zieckey.github.io/post/2017-04-09-the-benchmark-of-lockfree/</link>
+      <link>http://blog.codeg.cn/post/2017-04-09-the-benchmark-of-lockfree/</link>
       <pubDate>Sun, 09 Apr 2017 10:11:01 +0000</pubDate>
       
-      <guid>http://zieckey.github.io/post/2017-04-09-the-benchmark-of-lockfree/</guid>
+      <guid>http://blog.codeg.cn/post/2017-04-09-the-benchmark-of-lockfree/</guid>
       <description>English version : The performance benchmark of queue with std::mutex against boost::lockfree::queue and moodycamel::ConcurrentQueue
 Brief 我们使用https://github.com/Qihoo360/evpp项目中的EventLoop::QueueInLoop(...)函数来做这个性能测试。我们通过该函数能够将一个仿函数执行体从一个线程调度到另一个线程中执行。这是一个典型的生产者和消费者问题。
 我们用一个队列来保存这种仿函数执行体。多个生产者线程向这个队列写入仿函数执行体，一个消费者线程从队列中取出仿函数执行体来执行。为了保证队列的线程安全问题，我们可以使用一个锁来保护这个队列，或者使用无锁队列机制来解决安全问题。EventLoop::QueueInLoop(...)函数通过通定义实现了三种不同模式的跨线程交换数据的队列。
@@ -55,10 +55,10 @@ std::shared_ptr&amp;lt;PipeEventWatcher&amp;gt; watcher_; #ifdef H_HAVE_BOOST  b
     
     <item>
       <title>evpp与asio吞吐量对比</title>
-      <link>http://zieckey.github.io/post/2017-04-04-the-throughput-benchmark-test-of-evpp-vs-asio/</link>
+      <link>http://blog.codeg.cn/post/2017-04-04-the-throughput-benchmark-test-of-evpp-vs-asio/</link>
       <pubDate>Tue, 04 Apr 2017 18:13:00 +0000</pubDate>
       
-      <guid>http://zieckey.github.io/post/2017-04-04-the-throughput-benchmark-test-of-evpp-vs-asio/</guid>
+      <guid>http://blog.codeg.cn/post/2017-04-04-the-throughput-benchmark-test-of-evpp-vs-asio/</guid>
       <description>简介 Boost.Asio是用于网络和低层IO编程的跨平台C++库,为开发者提供了C++环境下稳定的异步编程模型。也是业内公认的优秀的C++网络库代表。一般来讲，其他的网络库的性能如果不能与asio做一下全面的对比和评测，就不能令人信服。
 本次测试是参考陈硕的博客文章muduo 与 boost asio 吞吐量对比，该文章的结论是：muduo吞吐量平均比asio高 15% 以上。
 我们之前做的evpp与[moduo]吞吐量测试性能报告显示，evpp与[moduo]吞吐量基本相当，各自都没有明显的优势。因此我们希望evpp在与boost的性能对比测试中能够占优。
@@ -72,10 +72,10 @@ asio的测试代码直接使用陈硕recipes的实现，具体代码在这里htt
     
     <item>
       <title>evpp与muduo吞吐量对比</title>
-      <link>http://zieckey.github.io/post/2017-03-14-the-throughput-benchmark-test-of-evpp-vs-muduo/</link>
+      <link>http://blog.codeg.cn/post/2017-03-14-the-throughput-benchmark-test-of-evpp-vs-muduo/</link>
       <pubDate>Tue, 14 Mar 2017 18:13:00 +0000</pubDate>
       
-      <guid>http://zieckey.github.io/post/2017-03-14-the-throughput-benchmark-test-of-evpp-vs-muduo/</guid>
+      <guid>http://blog.codeg.cn/post/2017-03-14-the-throughput-benchmark-test-of-evpp-vs-muduo/</guid>
       <description>简介 muduo是最近几年中国开源界里产生的优秀作品。它是由业内大牛陈硕实现的。详细介绍，请参考其博客介绍http://blog.csdn.net/solstice/article/details/5848547。
 本次测试是参考陈硕的博客文章muduo与libevent2吞吐量对比，该文章的结论是：muduo吞吐量平均比libevent2高 18% 以上。
 由于evpp本身是基于libevent2实现的，因此我们希望将evpp和muduo放到一起做一次全面的性能测试。本文是关于这两个库在吞吐量方面的测试。
@@ -89,10 +89,10 @@ evpp的测试代码在软件包内的路径为benchmark/throughput/evpp，代码
     
     <item>
       <title>发布一个高性能的Reactor模式的C&#43;&#43;网络库：evpp</title>
-      <link>http://zieckey.github.io/post/2017-03-13-release-a-high-performance-c&#43;&#43;11-network-library/</link>
+      <link>http://blog.codeg.cn/post/2017-03-13-release-a-high-performance-c&#43;&#43;11-network-library/</link>
       <pubDate>Mon, 13 Mar 2017 18:13:00 +0000</pubDate>
       
-      <guid>http://zieckey.github.io/post/2017-03-13-release-a-high-performance-c&#43;&#43;11-network-library/</guid>
+      <guid>http://blog.codeg.cn/post/2017-03-13-release-a-high-performance-c&#43;&#43;11-network-library/</guid>
       <description>简介 evpp是一个基于libevent开发的现代化的支持C++11特性的高性能网络库，自带TCP/UDP/HTTP等协议的异步非阻塞式的服务器和客户端库。
 特性  现代版的C++11接口 非阻塞异步接口都是C++11的functional/bind形式的回调仿函数（不是libevent中的C风格的函数指针） 非阻塞纯异步多线程TCP服务器/客户端 非阻塞纯异步多线程HTTP服务器/客户端 非阻塞纯异步多线程UDP服务器 支持多进程模式 优秀的跨平台特性和高性能（继承自libevent的优点）  除此之外，基于该库之上，还提供两个附带的应用层协议库：
  evmc ：一个纯异步非阻塞式的memcached的C++客户端库，支持membase集群模式。该库已经用于生产环境，每天发起1000多亿次memcache查询请求。详情请见：evmc readme evnsq ： 一个纯异步非阻塞式的NSQ的C++客户端库，支持消费者、生产者、服务发现等特性。该库已经用于生产环境，每天生产200多亿条日志消息。详情请见：evnsq readme  将来还会推出redis的客户端库。

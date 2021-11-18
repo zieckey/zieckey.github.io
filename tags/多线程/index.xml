@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>多线程 on CodeG Blog</title>
-    <link>http://zieckey.github.io/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/</link>
+    <link>http://blog.codeg.cn/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/</link>
     <description>Recent content in 多线程 on CodeG Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 27 Jan 2016 00:00:00 +0000</lastBuildDate><atom:link href="http://zieckey.github.io/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 27 Jan 2016 00:00:00 +0000</lastBuildDate><atom:link href="http://blog.codeg.cn/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>应用双缓冲技术完美解决资源数据优雅无损的热加载问题</title>
-      <link>http://zieckey.github.io/2016/01/27/double-buffering/</link>
+      <link>http://blog.codeg.cn/2016/01/27/double-buffering/</link>
       <pubDate>Wed, 27 Jan 2016 00:00:00 +0000</pubDate>
       
-      <guid>http://zieckey.github.io/2016/01/27/double-buffering/</guid>
+      <guid>http://blog.codeg.cn/2016/01/27/double-buffering/</guid>
       <description>简介 在一个网络服务器不间断运行过程中，有一些资源数据需要实时更新，例如需要及时更新一份白名单列表，怎么做才能做到优雅无损的更新到服务的进程空间内？这里我们提出一种叫“双缓冲”的技术来解决这种问题。
 这里的双缓冲技术是借鉴了计算机屏幕绘图领域的概念。双缓冲技术绘图即在内存中创建一个与屏幕绘图区域一致的对象，先将图形绘制到内存中的这个对象上，再一次性将这个对象上的图形拷贝到屏幕上，这样能大大加快绘图的速度。
 问题抽象 假设我们有一个查询服务，为了方便描述，我们将数据加密传输等一些不必要的细节都省去后，请求报文可以抽象成两个参数：一个是id，用来唯一标识一台设备（例如手机或电脑）；另一个查询主体query。服务端业务逻辑是通过query查询数据库/NoSQL等数据引擎然后返回相应的数据，同时记录一条请求日志。

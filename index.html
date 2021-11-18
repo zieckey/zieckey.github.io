@@ -12,10 +12,10 @@
   <meta name="description" content="" />
 
   
-  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/print.css" media="print">
-  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/poole.css">
-  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/syntax.css">
-  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/hyde.css">
+  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cncss/print.css" media="print">
+  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cncss/poole.css">
+  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cncss/syntax.css">
+  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cncss/hyde.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
 
 
@@ -24,7 +24,7 @@
   <link rel="shortcut icon" href="/favicon.png">
 
   
-  <link href="http://zieckey.github.io/index.xml" rel="alternate" type="application/rss+xml" title="CodeG Blog" />
+  <link href="http://blog.codeg.cn/index.xml" rel="alternate" type="application/rss+xml" title="CodeG Blog" />
   
 </head>
 
@@ -32,7 +32,7 @@
   <aside class="sidebar">
   <div class="container sidebar-sticky">
     <div class="sidebar-about">
-      <a href="http://zieckey.github.io/"><h1>CodeG Blog</h1></a>
+      <a href="http://blog.codeg.cn"><h1>CodeG Blog</h1></a>
       <p class="lead">
       An elegant open source and mobile first theme for <a href="http://hugo.spf13.com">hugo</a> made by <a href="http://twitter.com/mdo">@mdo</a>. Originally made for Jekyll.
       </p>
@@ -40,7 +40,7 @@
 
     <nav>
       <ul class="sidebar-nav">
-        <li><a href="http://zieckey.github.io/">Home</a> </li>
+        <li><a href="http://blog.codeg.cn">Home</a> </li>
         
       </ul>
     </nav>
@@ -53,7 +53,7 @@
     <div class="posts">
 <article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/post/2017-05-28-how-to-build-a-vcpkg/">手把手制作一个vcpkg的安装包及port file相关说明</a>
+    <a href="http://blog.codeg.cn/post/2017-05-28-how-to-build-a-vcpkg/">手把手制作一个vcpkg的安装包及port file相关说明</a>
   </h1>
   <time datetime="2017-05-28T18:11:01Z" class="post-date">Sun, May 28, 2017</time>
   0. 前言 Windows平台的程序包的依赖管理一直以来都是个大难题。之前有NuGet，现在有vcpkg。 本文的重点是先介绍一下vcpkg的特性，然后以一个实际例子说明，说明如何创建一个vcpkg安装包。
@@ -70,7 +70,7 @@ D:\git\vcpkg&gt;.\vcpkg --help Commands: vcpkg search [pat] Search for packages 
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/post/2017-04-19-the-detail-design-of-evpp-invoke-timer/">evpp设计细节系列(1)：利用 enable_shared_from_this 实现一个自管理的定时器</a>
+    <a href="http://blog.codeg.cn/post/2017-04-19-the-detail-design-of-evpp-invoke-timer/">evpp设计细节系列(1)：利用 enable_shared_from_this 实现一个自管理的定时器</a>
   </h1>
   <time datetime="2017-04-19T10:11:01Z" class="post-date">Wed, Apr 19, 2017</time>
   0. 前言 https://github.com/Qihoo360/evpp是一个高性能的Reactor模式的现代化的C++11版本的高性能网络库。该项目中有一个InvokeTimer对象，接口头文件详细代码请参见https://github.com/Qihoo360/evpp/blob/master/evpp/invoke_timer.h。它是一个能自我管理的定时器类，可以将一个仿函数绑定到该定时器上，然后让该定时器自己管理并在预期的一段时间后执行该仿函数。
@@ -88,7 +88,7 @@ class InvokeTimer { public: InvokeTimer(struct event_base* evloop, double timeou
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/post/2017-04-09-the-benchmark-of-lockfree/">基于evpp的EventLoop实现来对无锁队列boost::lockfree::queue和moodycamel::ConcurrentQueue做一个性能测试对比</a>
+    <a href="http://blog.codeg.cn/post/2017-04-09-the-benchmark-of-lockfree/">基于evpp的EventLoop实现来对无锁队列boost::lockfree::queue和moodycamel::ConcurrentQueue做一个性能测试对比</a>
   </h1>
   <time datetime="2017-04-09T10:11:01Z" class="post-date">Sun, Apr 9, 2017</time>
   English version : The performance benchmark of queue with std::mutex against boost::lockfree::queue and moodycamel::ConcurrentQueue
@@ -105,7 +105,7 @@ std::shared_ptr&lt;PipeEventWatcher&gt; watcher_; #ifdef H_HAVE_BOOST  boost::lo
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/post/2017-04-04-the-throughput-benchmark-test-of-evpp-vs-asio/">evpp与asio吞吐量对比</a>
+    <a href="http://blog.codeg.cn/post/2017-04-04-the-throughput-benchmark-test-of-evpp-vs-asio/">evpp与asio吞吐量对比</a>
   </h1>
   <time datetime="2017-04-04T18:13:00Z" class="post-date">Tue, Apr 4, 2017</time>
   简介 Boost.Asio是用于网络和低层IO编程的跨平台C++库,为开发者提供了C++环境下稳定的异步编程模型。也是业内公认的优秀的C++网络库代表。一般来讲，其他的网络库的性能如果不能与asio做一下全面的对比和评测，就不能令人信服。
@@ -124,7 +124,7 @@ asio的测试代码直接使用陈硕recipes的实现，具体代码在这里htt
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/post/2017-03-14-the-throughput-benchmark-test-of-evpp-vs-muduo/">evpp与muduo吞吐量对比</a>
+    <a href="http://blog.codeg.cn/post/2017-03-14-the-throughput-benchmark-test-of-evpp-vs-muduo/">evpp与muduo吞吐量对比</a>
   </h1>
   <time datetime="2017-03-14T18:13:00Z" class="post-date">Tue, Mar 14, 2017</time>
   简介 muduo是最近几年中国开源界里产生的优秀作品。它是由业内大牛陈硕实现的。详细介绍，请参考其博客介绍http://blog.csdn.net/solstice/article/details/5848547。
@@ -143,7 +143,7 @@ evpp的测试代码在软件包内的路径为benchmark/throughput/evpp，代码
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/post/2017-03-13-release-a-high-performance-c&#43;&#43;11-network-library/">发布一个高性能的Reactor模式的C&#43;&#43;网络库：evpp</a>
+    <a href="http://blog.codeg.cn/post/2017-03-13-release-a-high-performance-c&#43;&#43;11-network-library/">发布一个高性能的Reactor模式的C&#43;&#43;网络库：evpp</a>
   </h1>
   <time datetime="2017-03-13T18:13:00Z" class="post-date">Mon, Mar 13, 2017</time>
   简介 evpp是一个基于libevent开发的现代化的支持C++11特性的高性能网络库，自带TCP/UDP/HTTP等协议的异步非阻塞式的服务器和客户端库。
@@ -163,7 +163,7 @@ evpp本身是基于libevent实现的，不过evpp只是用了libevent的事件�
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/post/2016-09-06-minio-source-code-reading/">minio源码阅读</a>
+    <a href="http://blog.codeg.cn/post/2016-09-06-minio-source-code-reading/">minio源码阅读</a>
   </h1>
   <time datetime="2016-09-06T11:52:00Z" class="post-date">Tue, Sep 6, 2016</time>
   简介 minio是Go实现的一个完全兼容S3的服务，和大多Go项目一样，干净小巧，没有依赖，编译运行一键搞定，便利之极。
@@ -181,7 +181,7 @@ PutObject：上传一个对象 注册回调函数为bucket.Methods(&quot;PUT&quo
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/post/2016-05-29-a-new-ini-parser-for-golang/">发布一个Golang版本的INI解析器</a>
+    <a href="http://blog.codeg.cn/post/2016-05-29-a-new-ini-parser-for-golang/">发布一个Golang版本的INI解析器</a>
   </h1>
   <time datetime="2016-05-29T13:14:00Z" class="post-date">Sun, May 29, 2016</time>
   goini 这是一个为Golang开发的读取INI格式文件的库，它还能读取类似于INI格式的key/value对数据。
@@ -194,7 +194,7 @@ goini 的设计目标是简单、灵活、高效，有如下特性：
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/post/2016-05-26-trafik-source-code-reading/">Trafik源代码阅读</a>
+    <a href="http://blog.codeg.cn/post/2016-05-26-trafik-source-code-reading/">Trafik源代码阅读</a>
   </h1>
   <time datetime="2016-05-26T07:00:00Z" class="post-date">Thu, May 26, 2016</time>
   Trafik介绍 其官网是这么介绍的：
@@ -208,7 +208,7 @@ Træfɪk is a modern HTTP reverse proxy and load balancer made to deploy microse
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/post/2016-05-26-howto-build-gopcap-on-windows-x64/">如何在win7 64位系统下安装gopcap包及使用</a>
+    <a href="http://blog.codeg.cn/post/2016-05-26-howto-build-gopcap-on-windows-x64/">如何在win7 64位系统下安装gopcap包及使用</a>
   </h1>
   <time datetime="2016-05-25T20:12:01Z" class="post-date">Wed, May 25, 2016</time>
   gopcap是libpcap库的Golang封装，其项目地址在这里 https://github.com/akrennmair/gopcap 。 本文简要介绍一下如何在win7 64位系统平台上使用 gopcap 库。
@@ -222,7 +222,7 @@ Træfɪk is a modern HTTP reverse proxy and load balancer made to deploy microse
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/post/2016-04-20-golang-cgo/">Golang CGO编程之调用返回char*指针及长度的C函数库</a>
+    <a href="http://blog.codeg.cn/post/2016-04-20-golang-cgo/">Golang CGO编程之调用返回char*指针及长度的C函数库</a>
   </h1>
   <time datetime="2016-04-20T21:43:00Z" class="post-date">Wed, Apr 20, 2016</time>
   现代所有主流操作系统几乎都是用C语音实现的，几乎所有高级语言都能调用C语言，例如PHP可以调用C语言写的PHP扩展，Python也可以调用C语言实现的Python扩展。 Golang语言也不例外。
@@ -238,7 +238,7 @@ package main /* #include &lt;stdlib.h&gt; #include &lt;string.h&gt; char* xmallo
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/post/2016-02-24-distrubute-lock-over-etcd/">使用Golang利用ectd实现一个分布式锁</a>
+    <a href="http://blog.codeg.cn/post/2016-02-24-distrubute-lock-over-etcd/">使用Golang利用ectd实现一个分布式锁</a>
   </h1>
   <time datetime="2016-02-24T20:43:00Z" class="post-date">Wed, Feb 24, 2016</time>
   etcd是随着CoreOS项目一起成长起来的，随着Golang和CoreOS等项目在开源社区日益火热， etcd作为一个高可用、强一致性的分布式Key-Value存储系统被越来越多的开发人员关注和使用。
@@ -254,7 +254,7 @@ package etcdsync import ( &#34;fmt&#34; &#34;io&#34; &#34;os&#34; &#34;sync&#34;
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2016/02/19/sharing-golang-package-to-C/">编译Golang包为C语言库文件</a>
+    <a href="http://blog.codeg.cn/2016/02/19/sharing-golang-package-to-C/">编译Golang包为C语言库文件</a>
   </h1>
   <time datetime="2016-02-19T00:00:00Z" class="post-date">Fri, Feb 19, 2016</time>
   Go 1.5发布后，其包含一个特性：可以编译生成C语言动态链接库或静态库。本文给出了示例代码和用法。
@@ -269,7 +269,7 @@ Golang源文件：
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2016/02/14/send-email-for-golang/">Golang发送邮件</a>
+    <a href="http://blog.codeg.cn/2016/02/14/send-email-for-golang/">Golang发送邮件</a>
   </h1>
   <time datetime="2016-02-14T00:00:00Z" class="post-date">Sun, Feb 14, 2016</time>
   本文介绍一个简单的方法使用Go语言发送邮件。直接调用系统自带的mail命令发送邮件。
@@ -284,7 +284,7 @@ import ( &#34;os/exec&#34; &#34;log&#34; &#34;runtime&#34; ) // SendMail sends a
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2016/02/14/golang-remove_if/">Golang版本的remove_if函数实现</a>
+    <a href="http://blog.codeg.cn/2016/02/14/golang-remove_if/">Golang版本的remove_if函数实现</a>
   </h1>
   <time datetime="2016-02-14T00:00:00Z" class="post-date">Sun, Feb 14, 2016</time>
   C++中的std::remove_if函数实现了一个算法，可以将一个容器中的元素按照一定的规则进行删除，但Go语言中却没有类似的函数。代码其实很简单，如下：
@@ -295,7 +295,7 @@ func RemoveIf(s string, f func(rune) bool) string { runes := []rune(s) result :=
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2016/02/05/influxdb-grafana/">使用grafana&#43;influxdb搭建炫酷的实时可视化监控平台</a>
+    <a href="http://blog.codeg.cn/2016/02/05/influxdb-grafana/">使用grafana&#43;influxdb搭建炫酷的实时可视化监控平台</a>
   </h1>
   <time datetime="2016-02-05T00:00:00Z" class="post-date">Fri, Feb 5, 2016</time>
   最近看到一篇介绍influxdb的文章，然后又看到用grafana配合图形展示，就简单试用了一下，确实还不错。但其中也遇到一些低级问题，这篇博文就当一个流水文档吧，便于以后查阅。
@@ -314,7 +314,7 @@ cat &lt;&lt;EOF | sudo tee /etc/yum.repos.d/influxdb.repo [influxdb] name = Infl
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2016/02/02/wukong-source-code-reading/">源码阅读-悟空搜索引擎</a>
+    <a href="http://blog.codeg.cn/2016/02/02/wukong-source-code-reading/">源码阅读-悟空搜索引擎</a>
   </h1>
   <time datetime="2016-02-02T00:00:00Z" class="post-date">Tue, Feb 2, 2016</time>
   一个最简单的例子 我们还是从一个最简单的示例代码开始：
@@ -326,7 +326,7 @@ package main import ( &#34;github.com/huichen/wukong/engine&#34; &#34;github.com
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2016/01/27/double-buffering/">应用双缓冲技术完美解决资源数据优雅无损的热加载问题</a>
+    <a href="http://blog.codeg.cn/2016/01/27/double-buffering/">应用双缓冲技术完美解决资源数据优雅无损的热加载问题</a>
   </h1>
   <time datetime="2016-01-27T00:00:00Z" class="post-date">Wed, Jan 27, 2016</time>
   简介 在一个网络服务器不间断运行过程中，有一些资源数据需要实时更新，例如需要及时更新一份白名单列表，怎么做才能做到优雅无损的更新到服务的进程空间内？这里我们提出一种叫“双缓冲”的技术来解决这种问题。
@@ -341,7 +341,7 @@ package main import ( &#34;net/http&#34; &#34;log&#34; &#34;os&#34; &#34;fmt&#34
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2015/12/20/serf/">serf介绍</a>
+    <a href="http://blog.codeg.cn/2015/12/20/serf/">serf介绍</a>
   </h1>
   <time datetime="2015-12-20T00:00:00Z" class="post-date">Sun, Dec 20, 2015</time>
   简介 Serf是一个无中心化的服务调度和服务发现工具。它容错性极好、无中心化设计、没有单点故障。Serf是建立在Gossip协议之上的，Gossip协议就是为无中心化通信而设计的。为了让一个新节点加入Serf集群，只需要知道集群中的任意一个节点即可，一旦新节点加入进来，它将获得集群中所有的成员信息。Gossip协议让Serf的配置和启动变得非常容易。
@@ -358,7 +358,7 @@ $ ./serf agent -bind=133.130.106.57:5001 -rpc-addr=133.130.106.57:7373 -log-leve
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2015/12/15/godotenv/">godotenv介绍</a>
+    <a href="http://blog.codeg.cn/2015/12/15/godotenv/">godotenv介绍</a>
   </h1>
   <time datetime="2015-12-15T00:00:00Z" class="post-date">Tue, Dec 15, 2015</time>
   简介 godotenv是ruby社区的dotenv的Golang移植版本。该库会解析 .env 文件，该文件是一个典型的INI格式的文件，类似于下面：
@@ -369,7 +369,7 @@ SOME_ENV_VAR=somevalue
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2015/10/22/nsq/">nsq介绍及源码阅读</a>
+    <a href="http://blog.codeg.cn/2015/10/22/nsq/">nsq介绍及源码阅读</a>
   </h1>
   <time datetime="2015-10-22T00:00:00Z" class="post-date">Thu, Oct 22, 2015</time>
   简介 nsq客户端逻辑 nsq消费者 主要请参考nsq_tail代码。nsqd的回应消息处理代码为func (c *Conn) readLoop()。
@@ -391,7 +391,7 @@ nsqd.Main() n.waitGroup.Wrap(func() { n.lookupLoop() }) func (n *NSQD) lookupLoo
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2015/10/08/ansible/">ansible简介</a>
+    <a href="http://blog.codeg.cn/2015/10/08/ansible/">ansible简介</a>
   </h1>
   <time datetime="2015-10-08T00:00:00Z" class="post-date">Thu, Oct 8, 2015</time>
   简介 ansible是新出现的自动化运维工具，基于Python开发，集合了众多运维工具（puppet、cfengine、chef、func、fabric）的优点，实现了批量系统配置、批量程序部署、批量运行命令等功能。ansible是基于模块工作的，本身没有批量部署的能力。真正具有批量部署的是ansible所运行的模块，ansible只是提供一种框架。主要包括：
@@ -408,7 +408,7 @@ $ ansible builddev -m shell -a &quot;uname -a&quot; -k SSH password: 10.16.28.17
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2015/09/19/golang-project-source-code-reading/">Golang开源项目源码阅读</a>
+    <a href="http://blog.codeg.cn/2015/09/19/golang-project-source-code-reading/">Golang开源项目源码阅读</a>
   </h1>
   <time datetime="2015-09-19T00:00:00Z" class="post-date">Sat, Sep 19, 2015</time>
   总览 github.com/julienschmidt/httproute httprouter 是一个轻量级的高性能HTTP请求分发器，英文称之为multiplexer，简称mux。
@@ -422,7 +422,7 @@ package main import ( &#34;fmt&#34; &#34;github.com/julienschmidt/httprouter&#34
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2015/06/17/quic-source-code-reading/">QUIC（Quick UDP Internet Connections）源代码阅读</a>
+    <a href="http://blog.codeg.cn/2015/06/17/quic-source-code-reading/">QUIC（Quick UDP Internet Connections）源代码阅读</a>
   </h1>
   <time datetime="2015-06-17T00:00:00Z" class="post-date">Wed, Jun 17, 2015</time>
   类 基础类 base  Pickle：针对二进制数据进行pack和unpack操作 MessagePump：消息泵基类，也就是做消息循环用的 TimeDelta：一个int64整型的封装，单位：微妙  net  IOVector : 对 struct iovec 的封装。提供了 struct iovec 相关的读写操作。 IPEndPoint：代表一个 IP:Port 对 QuicConfig：Quic相关的配置信息类(与加解密不相关) QuicDataReader：对一段内存数据的读取做了封装，比较方便的读取整数、浮点数、字符串等等。 QuicDataWriter：与QuicDataReader相对，能够比较方便的将整数、浮点数、字符串、IOVector等数据写入到一段内存buffer中。 QuicRandom：随机数产生器。 QuicFramerVisitorInterface：关于收到的数据包的处理的函数接口类。 QuicDispatcher::QuicFramerVisitor：从QuicFramerVisitorInterface继承，用于处理QUIC数据包 QuicData：对 &lt;char*,size_t&gt; 这中内存数据的封装。 QuicEncryptedPacket：继承自QuicData，并没有新的接口，只是更明确的表明这是一个Quic加密的报文。 QuicDispatcher：数据包处理类  收到一个数据包会调用 QuicDispatcher::ProcessPacket 进而会调用 QuicFramer::ProcessPacket   QuicTime::Delta：是对 base::TimeDelta 的封装 QuicTime：一个相对的时间点 TimeTicks：滴答时间。  TimeTicks::Now()：返回系统启动到当前时间点的 TimeTicks::UnixEpoch()：返回Unix时间戳   QuicAlarm：定时器的抽象类。 DeleteSessionsAlarm：删除过期session的定时器。 QuicFramer：用于对QUIC数据包的解析和组装。 QuicPacketPublicHeader：Quic Public包头。包括 CID，CID长度, reset标记，version标记, 序列化长度，version等。 QuicPacketHeader：Quic包头。包括 FEC标记、加密算法标记，加密Hash，序列号，是否是FEC_group，FEC_group等。 UDPSocket：UDP socket协议相关类，ReadFrom/SendTo 等等。ReadFrom的最后一个回调函数是会在读取到数据的时候调用。具体调用点为：UDPSocketLibevent::ReadWatcher::OnFileCanReadWithoutBlocking。具体平台的实现类有两个：UDPSocketLibevent/UDPSocketWin UDPServerSocket：从DatagramServerSocket这个接口类继承，并对UDPSocket进行了封装 QuicSimplePerConnectionPacketWriter：与每个连接相关的数据包writer。很多连接可能共享一个QuicServerPacketWriter，因此当需要向某个连接发送数据时，无法区分该连接。这个类实际上就是QuicServerPacketWriter和QuicConnection的一个组合包装。 QuicSimpleServerPacketWriter：用来发送数据的。  相关源文件  quic_flags.h ： 整个项目相关的全局配置信息，是全局变量。   源码阅读 QuicPacketPublicHeader struct QuicPacketPublicHeader { // Universal header.
@@ -433,7 +433,7 @@ package main import ( &#34;fmt&#34; &#34;github.com/julienschmidt/httprouter&#34
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2015/05/08/quic-protocol/">QUIC（Quick UDP Internet Connections）协议简要笔记(翻译)</a>
+    <a href="http://blog.codeg.cn/2015/05/08/quic-protocol/">QUIC（Quick UDP Internet Connections）协议简要笔记(翻译)</a>
   </h1>
   <time datetime="2015-05-08T00:00:00Z" class="post-date">Fri, May 8, 2015</time>
   概述 动机 支持SPDY协议的动机 目标 我们希望开发出一套传输协议以支持下列目标：
@@ -454,7 +454,7 @@ package main import ( &#34;fmt&#34; &#34;github.com/julienschmidt/httprouter&#34
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2015/03/18/golang-how-to-make-a-multipart-http-request/">golang学习之如何构造一个multipart/form格式的HTTP请求</a>
+    <a href="http://blog.codeg.cn/2015/03/18/golang-how-to-make-a-multipart-http-request/">golang学习之如何构造一个multipart/form格式的HTTP请求</a>
   </h1>
   <time datetime="2015-03-18T00:00:00Z" class="post-date">Wed, Mar 18, 2015</time>
   使用PHP里面的curl扩展库可以方便的从一个php array来构造一个multipart/form格式的HTTP请求，但golang里构造起来稍稍麻烦一点，下面我们来介绍具体的构造方法。
@@ -467,7 +467,7 @@ package main import ( &#34;bytes&#34; &#34;fmt&#34; &#34;log&#34; &#34;mime/mult
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2015/02/12/golang-derive-override/">golang学习之继承和重载</a>
+    <a href="http://blog.codeg.cn/2015/02/12/golang-derive-override/">golang学习之继承和重载</a>
   </h1>
   <time datetime="2015-02-12T00:00:00Z" class="post-date">Thu, Feb 12, 2015</time>
   其实golang里是不提倡继承的，也不提倡重载的。但是有些场景下，我们还是想试验一下传统C++或Java语言里的继承和重载能否用在golang里。
@@ -479,7 +479,7 @@ package main import ( &#34;bytes&#34; &#34;fmt&#34; &#34;log&#34; &#34;mime/mult
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2015/02/02/docker-intro/">Docker介绍及初次使用教程</a>
+    <a href="http://blog.codeg.cn/2015/02/02/docker-intro/">Docker介绍及初次使用教程</a>
   </h1>
   <time datetime="2015-02-02T00:00:00Z" class="post-date">Mon, Feb 2, 2015</time>
   介绍 请参考下列文章：
@@ -496,7 +496,7 @@ Status: Downloaded newer image for ubuntu:latest 第一次使用 上一步中命
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2015/01/23/mime-golang-parsing/">golang解析MIME数据格式的代码示例</a>
+    <a href="http://blog.codeg.cn/2015/01/23/mime-golang-parsing/">golang解析MIME数据格式的代码示例</a>
   </h1>
   <time datetime="2015-01-23T00:00:00Z" class="post-date">Fri, Jan 23, 2015</time>
   MIME格式 MIME是multipurpose Internet mail extensions 的缩写。它是一种协议，可使电子邮件除包含一般纯文本以外，还可加上彩色图片、视频、声音或二进位格式的文件。它要求邮件的发送端和接收端必须有解读MIME协议的电子邮件程序。
@@ -512,7 +512,7 @@ MIME格式示例数据 请点击 resources/example.mime.txt
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2015/01/13/linux-system-programming/">多进程编程</a>
+    <a href="http://blog.codeg.cn/2015/01/13/linux-system-programming/">多进程编程</a>
   </h1>
   <time datetime="2015-01-13T00:00:00Z" class="post-date">Tue, Jan 13, 2015</time>
   wait 和 waitpid 当一个进程正常或异常退出时，内核就向其父进程发送SIGCHLD信号。因为子进程退出是一个异步事件，所以该信号也是内核向父进程发送的异步信号。
@@ -528,7 +528,7 @@ wait的函数原型是：
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2015/01/12/go-source-code-reading-ConstantTimeByteEq/">Golang源码阅读——crypto/subtle.ConstantTimeByteEq 深度解析</a>
+    <a href="http://blog.codeg.cn/2015/01/12/go-source-code-reading-ConstantTimeByteEq/">Golang源码阅读——crypto/subtle.ConstantTimeByteEq 深度解析</a>
   </h1>
   <time datetime="2015-01-12T00:00:00Z" class="post-date">Mon, Jan 12, 2015</time>
   根据文档说明，ConstantTimeByteEq返回1，如果 x == y；相反则返回0。为什么一个简单整数比较操作要搞一个单独的函数出来实现？并且其实现代码看起来要不x == y复杂多了？
@@ -543,7 +543,7 @@ x = 01010011 y = 00010011 x ^ y = 01000000  ^(x ^ y)是上述表达式的取反�
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2015/01/07/golang-udp-client/">golang网络编程-udp客户端示例代码</a>
+    <a href="http://blog.codeg.cn/2015/01/07/golang-udp-client/">golang网络编程-udp客户端示例代码</a>
   </h1>
   <time datetime="2015-01-07T00:00:00Z" class="post-date">Wed, Jan 7, 2015</time>
   最简单的一个客户端 编程步骤：
@@ -555,7 +555,7 @@ x = 01010011 y = 00010011 x ^ y = 01000000  ^(x ^ y)是上述表达式的取反�
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2015/01/06/ngx_pool_t/">Nginx源码研究（7）——内存池结构ngx_pool_t</a>
+    <a href="http://blog.codeg.cn/2015/01/06/ngx_pool_t/">Nginx源码研究（7）——内存池结构ngx_pool_t</a>
   </h1>
   <time datetime="2015-01-06T00:00:00Z" class="post-date">Tue, Jan 6, 2015</time>
   简介 本文主要介绍Nginx内存池结构ngx_pool_t这一重要的数据结构的使用方法和具体实现。同时为了方便学习和研究，还从ngx_pool_t抽取了一个完全独立的cg_pool_t结构，不依赖Nginx，也不依赖任何第三方类库，可以直接将源码拿走集成进现有系统中。
@@ -571,7 +571,7 @@ cg_pool_t内存池的源码位置 https://github.com/zieckey/nginx-research/tree
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2015/01/04/ngx_list_t/">Nginx源码研究（5）——单向链表结构ngx_list_t</a>
+    <a href="http://blog.codeg.cn/2015/01/04/ngx_list_t/">Nginx源码研究（5）——单向链表结构ngx_list_t</a>
   </h1>
   <time datetime="2015-01-04T00:00:00Z" class="post-date">Sun, Jan 4, 2015</time>
   简介 本文主要介绍Nginx单向链表结构ngx_list_t这一重要的数据结构的使用方法和具体实现。
@@ -588,7 +588,7 @@ cg_pool_t内存池的源码位置 https://github.com/zieckey/nginx-research/tree
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2015/01/04/ngx_queue_t/">Nginx源码研究（6）——双向链表结构ngx_queue_t</a>
+    <a href="http://blog.codeg.cn/2015/01/04/ngx_queue_t/">Nginx源码研究（6）——双向链表结构ngx_queue_t</a>
   </h1>
   <time datetime="2015-01-04T00:00:00Z" class="post-date">Sun, Jan 4, 2015</time>
   简介 本文主要介绍Nginx双向链表结构ngx_queue_t这一重要的数据结构的使用方法和具体实现。
@@ -608,7 +608,7 @@ ngx_queue_init(&amp;head);  ngx_queue_init()的宏定义如下：
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2015/01/03/ngx_array_t/">Nginx源码研究（3）——Nginx数组ngx_array_t和示例</a>
+    <a href="http://blog.codeg.cn/2015/01/03/ngx_array_t/">Nginx源码研究（3）——Nginx数组ngx_array_t和示例</a>
   </h1>
   <time datetime="2015-01-03T00:00:00Z" class="post-date">Sat, Jan 3, 2015</time>
   本文主要介绍Nginx数组ngx_array_t这一重要的数据结构的使用方法和具体实现。
@@ -622,7 +622,7 @@ ngx_array.h实现和注释如下：
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2015/01/03/ngx_hash_t/">Nginx源码研究（4）——hash结构ngx_hash_t</a>
+    <a href="http://blog.codeg.cn/2015/01/03/ngx_hash_t/">Nginx源码研究（4）——hash结构ngx_hash_t</a>
   </h1>
   <time datetime="2015-01-03T00:00:00Z" class="post-date">Sat, Jan 3, 2015</time>
   简介 本文主要介绍Nginx的hash结构ngx_hash_t这一重要的数据结构的使用方法和具体实现。nginx实现的hash表特点是构建一次, 初始化后无法动态的增删，之后就只用于&lt;k,v&gt;查找。之所以这么设计是为了使用最少的内存同时得到最快的查找速度。
@@ -636,7 +636,7 @@ ngx_array.h实现和注释如下：
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2015/01/03/gbk2utf8-by-golang/">发布一个批量转码工具:gbk2utf8</a>
+    <a href="http://blog.codeg.cn/2015/01/03/gbk2utf8-by-golang/">发布一个批量转码工具:gbk2utf8</a>
   </h1>
   <time datetime="2015-01-03T00:00:00Z" class="post-date">Sat, Jan 3, 2015</time>
   Linux下的iconv是针对单个文件处理，但是转码后的数据直接输出到STDOUT，不方便批量处理。gbk2utf8工具可以针对一个目录以及递归遍历所有子目录下的所有文件进行批量处理，并且直接修改原始文件为UTF-8编码。为了避免错误，会将原始文件备份为*.bak文件。
@@ -650,7 +650,7 @@ ngx_array.h实现和注释如下：
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2015/01/02/nginx-research-readme/">Nginx源码研究（1）——项目介绍</a>
+    <a href="http://blog.codeg.cn/2015/01/02/nginx-research-readme/">Nginx源码研究（1）——项目介绍</a>
   </h1>
   <time datetime="2015-01-02T00:00:00Z" class="post-date">Fri, Jan 2, 2015</time>
   nginx-research 本项目是为了研究Nginx源码而建立的。该项目有以下几点比较不错的优点：
@@ -667,7 +667,7 @@ startup: 2015-01-01 19:26:16 current: 2015-01-01 19:26:57  将Nginx做为C库使
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2015/01/01/c&#43;&#43;11-move/">C&#43;&#43;11中std::move示例</a>
+    <a href="http://blog.codeg.cn/2015/01/01/c&#43;&#43;11-move/">C&#43;&#43;11中std::move示例</a>
   </h1>
   <time datetime="2015-01-01T00:00:00Z" class="post-date">Thu, Jan 1, 2015</time>
   std::move作用：如果其类型支持移动的话，会无条件的将其参数（可能是左值）强制转换为右值引用，从而表示其可以移动，它使得编译器随后能够移动（而不是复制）在参数中传递的值。如果其类型不支持移动，则将进行复制。
@@ -681,7 +681,7 @@ std::move定义 template&lt;class Type&gt; typename remove_reference&lt;Type&gt;
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2014/12/31/compile-nginx-to-static-lib-and-1st-usage/">Nginx源码研究（2）——编译Nginx为静(动)态库以及验证</a>
+    <a href="http://blog.codeg.cn/2014/12/31/compile-nginx-to-static-lib-and-1st-usage/">Nginx源码研究（2）——编译Nginx为静(动)态库以及验证</a>
   </h1>
   <time datetime="2014-12-31T00:00:00Z" class="post-date">Wed, Dec 31, 2014</time>
   最近编码哥又开始阅读和研究Nginx源码，这一过程中做了一些笔记，从而形成本系列文章。
@@ -699,7 +699,7 @@ wget http://nginx.org/download/nginx-$(NGINX_VERSION).tar.gz tar zxvf $(NGINX_RO
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2014/12/30/coveralls-io-configuration-info/">测试覆盖率工具coveralls.io的配置介绍</a>
+    <a href="http://blog.codeg.cn/2014/12/30/coveralls-io-configuration-info/">测试覆盖率工具coveralls.io的配置介绍</a>
   </h1>
   <time datetime="2014-12-30T00:00:00Z" class="post-date">Tue, Dec 30, 2014</time>
   这是一个测试覆盖率图标，非常的漂亮。我们可以在很多github的项目主页上看到，本文将介绍如何自动生成这个图标。
@@ -714,7 +714,7 @@ wget http://nginx.org/download/nginx-$(NGINX_VERSION).tar.gz tar zxvf $(NGINX_RO
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2014/12/28/go-source-code-reading/">Golang源码阅读</a>
+    <a href="http://blog.codeg.cn/2014/12/28/go-source-code-reading/">Golang源码阅读</a>
   </h1>
   <time datetime="2014-12-28T00:00:00Z" class="post-date">Sun, Dec 28, 2014</time>
   总览  src/cmd/dist/buf.c 该文件提供两个数据结构：Buf、Vec，分别用来取代char*和char**的相关操作。Buf和Vec这两个数据结构非常简单易懂，其他C语言项目如有需要，可以比较方便的拿过去使用，因此记录在此。 src/lib9/cleanname.c Unix下的路径压缩功能 cmd/dist/windows.c windows平台相关的一些功能函数 src/unicode/utf8/utf8.go utf8编码问题 src/io/pipe.go 进程内的单工管道 src/net/pipe.go 进程内的双工管道  1. src/cmd/dist/buf.c Buf定义 // A Buf is a byte buffer, like Go&#39;s []byte. typedef struct Buf Buf; struct Buf { char *p; int len; int cap; }; 对Buf结构相关的一些操作  void binit(Buf *b) 初始化一个Buf void breset(Buf *b) 重置Buf，使之长度为0。类似于C++中的std::string::clear()，其数据内存不释放，但数据长度字段设为0 void bfree(Buf *b) 释放掉Buf内部的内存，并调用binit初始化这个Buf void bgrow(Buf *b, int n) 增长Buf内部的内存，确保至少还能容纳n字节数据 void bwrite(Buf *b, void *v, int n) 将从v地址开始的n字节数据追加写入Buf中。类似于C++中的std::string::append(v,n) void bwritestr(Buf *b, char *p) 将字符串p追加写入Buf中，会自动调用strlen(p)计算p的长度。类似于C++中的std::string::append(p) char* bstr(Buf *b) 返回一个NUL结束的字符串指针，该指针指向Buf内部，外部调用者不能释放该指针。类似于C++中的std::string::c_str() char* btake(Buf *b) 返回一个NUL结束的字符串指针，外部调用者需要自己释放该指针。 void bwriteb(Buf *dst, Buf *src) 将Bufsrc追加到dst中，src保持不变。类似于C++中的std::string::append(s) bool bequal(Buf *s, Buf *t) 判断两个Buf是否相等。类似于C++中的std::string::compare(s) == 0 void bsubst(Buf *b, char *x, char *y) 使用子串y替换掉Buf中所有的x  Vec定义 // A Vec is a string vector, like Go&#39;s []string.
@@ -725,7 +725,7 @@ wget http://nginx.org/download/nginx-$(NGINX_VERSION).tar.gz tar zxvf $(NGINX_RO
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2014/12/27/gochart-info/">发布一个使用简单的绘图工具</a>
+    <a href="http://blog.codeg.cn/2014/12/27/gochart-info/">发布一个使用简单的绘图工具</a>
   </h1>
   <time datetime="2014-12-27T00:00:00Z" class="post-date">Sat, Dec 27, 2014</time>
   gochart是仿照goplot使用golang和highcharts开源库制作的一个使用起来非常简单的绘制图表的工具，图表风格有曲线图、折线图、面积图、柱状图、饼图等。编译好的gochart只有一个二进制文件，不依赖任何库/网络。
@@ -740,7 +740,7 @@ wget http://nginx.org/download/nginx-$(NGINX_VERSION).tar.gz tar zxvf $(NGINX_RO
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2014/12/15/golang1.4-resource-download/">Golang1.4资源下载</a>
+    <a href="http://blog.codeg.cn/2014/12/15/golang1.4-resource-download/">Golang1.4资源下载</a>
   </h1>
   <time datetime="2014-12-15T00:00:00Z" class="post-date">Mon, Dec 15, 2014</time>
   当前golang官方主页背墙，且有些golang.org/x下面的库也下载不到，因此我将这项资源统一放在这里供大家下载。
@@ -748,7 +748,7 @@ golang.org/x打包下载
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2014/12/15/ubuntu-source-list-of-china/">Ubuntu中国源地址列表及更改方法</a>
+    <a href="http://blog.codeg.cn/2014/12/15/ubuntu-source-list-of-china/">Ubuntu中国源地址列表及更改方法</a>
   </h1>
   <time datetime="2014-12-15T00:00:00Z" class="post-date">Mon, Dec 15, 2014</time>
   首先备份Ubuntu源列表
@@ -762,14 +762,14 @@ sudo cp /etc/apt/sources.list /etc/apt/sources.list.backup （备份下当前的
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2014/12/14/gc-cpp-java/">C&#43;&#43;与Java垃圾回收的区别</a>
+    <a href="http://blog.codeg.cn/2014/12/14/gc-cpp-java/">C&#43;&#43;与Java垃圾回收的区别</a>
   </h1>
   <time datetime="2014-12-14T00:00:00Z" class="post-date">Sun, Dec 14, 2014</time>
   
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2014/12/14/jekyll-install-on-win7/">Jekyll在github上构建免费的Web应用</a>
+    <a href="http://blog.codeg.cn/2014/12/14/jekyll-install-on-win7/">Jekyll在github上构建免费的Web应用</a>
   </h1>
   <time datetime="2014-12-14T00:00:00Z" class="post-date">Sun, Dec 14, 2014</time>
   1. Jekyll介绍 Jekyll是一个静态站点生成器，它会根据网页源码生成静态文件。它提供了模板、变量、插件等功能，可以用来生成整个网站。
@@ -785,7 +785,7 @@ $ ruby --version ruby 2.1.5p273 (2014-11-13 revision 48405) [x64-mingw32] $ gem 
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2014/12/13/golang-vs-nginx-at-httpecho/">Golang写的HTTP服务与Nginx对比</a>
+    <a href="http://blog.codeg.cn/2014/12/13/golang-vs-nginx-at-httpecho/">Golang写的HTTP服务与Nginx对比</a>
   </h1>
   <time datetime="2014-12-13T00:00:00Z" class="post-date">Sat, Dec 13, 2014</time>
   Golang写网络程序的确很简单，一个HTTP Echo服务，几行源码就可以搞定。Golang源码如下：
@@ -798,7 +798,7 @@ worker_processes 24; #daemon off; events { worker_connections 4096; } http { inc
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2014/12/13/Hello-CodeG/">你好，编码哥</a>
+    <a href="http://blog.codeg.cn/2014/12/13/Hello-CodeG/">你好，编码哥</a>
   </h1>
   <time datetime="2014-12-13T00:00:00Z" class="post-date">Sat, Dec 13, 2014</time>
   哥都不记得上次写博客的具体时间了，中间一直说写点什么，就是没有动手。原因有几：
@@ -807,7 +807,7 @@ worker_processes 24; #daemon off; events { worker_connections 4096; } http { inc
   
 </article><article class="post">
   <h1 class="post-title">
-    <a href="http://zieckey.github.io/2014/12/13/github-pages/">使用Github Pages建独立博客</a>
+    <a href="http://blog.codeg.cn/2014/12/13/github-pages/">使用Github Pages建独立博客</a>
   </h1>
   <time datetime="2014-12-13T00:00:00Z" class="post-date">Sat, Dec 13, 2014</time>
   本博客框架是直接在 BeiYuu：使用Github Pages建独立博客 上改造而来的。增加了下列特性：

@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>shared_ptr on CodeG Blog</title>
-    <link>http://zieckey.github.io/tags/shared_ptr/</link>
+    <link>http://blog.codeg.cn/tags/shared_ptr/</link>
     <description>Recent content in shared_ptr on CodeG Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 19 Apr 2017 10:11:01 +0000</lastBuildDate><atom:link href="http://zieckey.github.io/tags/shared_ptr/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 19 Apr 2017 10:11:01 +0000</lastBuildDate><atom:link href="http://blog.codeg.cn/tags/shared_ptr/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>evpp设计细节系列(1)：利用 enable_shared_from_this 实现一个自管理的定时器</title>
-      <link>http://zieckey.github.io/post/2017-04-19-the-detail-design-of-evpp-invoke-timer/</link>
+      <link>http://blog.codeg.cn/post/2017-04-19-the-detail-design-of-evpp-invoke-timer/</link>
       <pubDate>Wed, 19 Apr 2017 10:11:01 +0000</pubDate>
       
-      <guid>http://zieckey.github.io/post/2017-04-19-the-detail-design-of-evpp-invoke-timer/</guid>
+      <guid>http://blog.codeg.cn/post/2017-04-19-the-detail-design-of-evpp-invoke-timer/</guid>
       <description>0. 前言 https://github.com/Qihoo360/evpp是一个高性能的Reactor模式的现代化的C++11版本的高性能网络库。该项目中有一个InvokeTimer对象，接口头文件详细代码请参见https://github.com/Qihoo360/evpp/blob/master/evpp/invoke_timer.h。它是一个能自我管理的定时器类，可以将一个仿函数绑定到该定时器上，然后让该定时器自己管理并在预期的一段时间后执行该仿函数。
 现在我们复盘一下这个功能的实现细节和演化过程。
 1. 基础代码 定时器原型声明可能是下面的样子：

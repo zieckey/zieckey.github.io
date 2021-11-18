@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Java on CodeG Blog</title>
-    <link>http://zieckey.github.io/tags/java/</link>
+    <link>http://blog.codeg.cn/tags/java/</link>
     <description>Recent content in Java on CodeG Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 14 Dec 2014 00:00:00 +0000</lastBuildDate><atom:link href="http://zieckey.github.io/tags/java/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 14 Dec 2014 00:00:00 +0000</lastBuildDate><atom:link href="http://blog.codeg.cn/tags/java/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>C&#43;&#43;与Java垃圾回收的区别</title>
-      <link>http://zieckey.github.io/2014/12/14/gc-cpp-java/</link>
+      <link>http://blog.codeg.cn/2014/12/14/gc-cpp-java/</link>
       <pubDate>Sun, 14 Dec 2014 00:00:00 +0000</pubDate>
       
-      <guid>http://zieckey.github.io/2014/12/14/gc-cpp-java/</guid>
+      <guid>http://blog.codeg.cn/2014/12/14/gc-cpp-java/</guid>
       <description></description>
     </item>
     

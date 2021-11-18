@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Jekyll on CodeG Blog</title>
-    <link>http://zieckey.github.io/tags/jekyll/</link>
+    <link>http://blog.codeg.cn/tags/jekyll/</link>
     <description>Recent content in Jekyll on CodeG Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 14 Dec 2014 00:00:00 +0000</lastBuildDate><atom:link href="http://zieckey.github.io/tags/jekyll/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 14 Dec 2014 00:00:00 +0000</lastBuildDate><atom:link href="http://blog.codeg.cn/tags/jekyll/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Jekyll在github上构建免费的Web应用</title>
-      <link>http://zieckey.github.io/2014/12/14/jekyll-install-on-win7/</link>
+      <link>http://blog.codeg.cn/2014/12/14/jekyll-install-on-win7/</link>
       <pubDate>Sun, 14 Dec 2014 00:00:00 +0000</pubDate>
       
-      <guid>http://zieckey.github.io/2014/12/14/jekyll-install-on-win7/</guid>
+      <guid>http://blog.codeg.cn/2014/12/14/jekyll-install-on-win7/</guid>
       <description>1. Jekyll介绍 Jekyll是一个静态站点生成器，它会根据网页源码生成静态文件。它提供了模板、变量、插件等功能，可以用来生成整个网站。
 Jekyll生成的站点，可以直接发布到github上面，这样我们就有了一个免费的，无限流量的，有人维护的属于我们的自己的web网站。Jekyll是基于Rub y的程序，可以通过gem来下载安装。
 Jekyll官方文档：http://jekyllrb.com/

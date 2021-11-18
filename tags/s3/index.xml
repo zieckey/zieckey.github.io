@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>S3 on CodeG Blog</title>
-    <link>http://zieckey.github.io/tags/s3/</link>
+    <link>http://blog.codeg.cn/tags/s3/</link>
     <description>Recent content in S3 on CodeG Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 06 Sep 2016 11:52:00 +0000</lastBuildDate><atom:link href="http://zieckey.github.io/tags/s3/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 06 Sep 2016 11:52:00 +0000</lastBuildDate><atom:link href="http://blog.codeg.cn/tags/s3/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>minio源码阅读</title>
-      <link>http://zieckey.github.io/post/2016-09-06-minio-source-code-reading/</link>
+      <link>http://blog.codeg.cn/post/2016-09-06-minio-source-code-reading/</link>
       <pubDate>Tue, 06 Sep 2016 11:52:00 +0000</pubDate>
       
-      <guid>http://zieckey.github.io/post/2016-09-06-minio-source-code-reading/</guid>
+      <guid>http://blog.codeg.cn/post/2016-09-06-minio-source-code-reading/</guid>
       <description>简介 minio是Go实现的一个完全兼容S3的服务，和大多Go项目一样，干净小巧，没有依赖，编译运行一键搞定，便利之极。
 源码阅读 HTTP事件注册 启动阶段的初始化工作还是相当繁琐，没戏看。重点看一下运行期间的功能。
 minio进程起来了，对外提供HTTP服务，那么找到HTTP的事件注册的函数就是最好的入口点。事件处理函数的注册代码路径为：serverMain -&amp;gt; configureServerHandler -&amp;gt; api-router.go:registerAPIRouter

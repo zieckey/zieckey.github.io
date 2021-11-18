@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Docker on CodeG Blog</title>
-    <link>http://zieckey.github.io/tags/docker/</link>
+    <link>http://blog.codeg.cn/tags/docker/</link>
     <description>Recent content in Docker on CodeG Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 02 Feb 2015 00:00:00 +0000</lastBuildDate><atom:link href="http://zieckey.github.io/tags/docker/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 02 Feb 2015 00:00:00 +0000</lastBuildDate><atom:link href="http://blog.codeg.cn/tags/docker/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Docker介绍及初次使用教程</title>
-      <link>http://zieckey.github.io/2015/02/02/docker-intro/</link>
+      <link>http://blog.codeg.cn/2015/02/02/docker-intro/</link>
       <pubDate>Mon, 02 Feb 2015 00:00:00 +0000</pubDate>
       
-      <guid>http://zieckey.github.io/2015/02/02/docker-intro/</guid>
+      <guid>http://blog.codeg.cn/2015/02/02/docker-intro/</guid>
       <description>介绍 请参考下列文章：
  深入浅出Docker（一）：Docker核心技术预览 Docker镜像文件（images）的存储结构  初次使用 实验环境 $ uname -a Linux 3.13.0-44-generic #73-Ubuntu SMP Tue Dec 16 00:22:43 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux Docker安装 请参考官方文档https://docs.docker.com/installation/ubuntulinux/，不再累述。
 下载一个基础镜像 按照官方教程执行sudo docker run -i -t ubuntu /bin/bash会得到下列错误：

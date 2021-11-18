@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>分布式 on CodeG Blog</title>
-    <link>http://zieckey.github.io/tags/%E5%88%86%E5%B8%83%E5%BC%8F/</link>
+    <link>http://blog.codeg.cn/tags/%E5%88%86%E5%B8%83%E5%BC%8F/</link>
     <description>Recent content in 分布式 on CodeG Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 24 Feb 2016 20:43:00 +0000</lastBuildDate><atom:link href="http://zieckey.github.io/tags/%E5%88%86%E5%B8%83%E5%BC%8F/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 24 Feb 2016 20:43:00 +0000</lastBuildDate><atom:link href="http://blog.codeg.cn/tags/%E5%88%86%E5%B8%83%E5%BC%8F/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>使用Golang利用ectd实现一个分布式锁</title>
-      <link>http://zieckey.github.io/post/2016-02-24-distrubute-lock-over-etcd/</link>
+      <link>http://blog.codeg.cn/post/2016-02-24-distrubute-lock-over-etcd/</link>
       <pubDate>Wed, 24 Feb 2016 20:43:00 +0000</pubDate>
       
-      <guid>http://zieckey.github.io/post/2016-02-24-distrubute-lock-over-etcd/</guid>
+      <guid>http://blog.codeg.cn/post/2016-02-24-distrubute-lock-over-etcd/</guid>
       <description>etcd是随着CoreOS项目一起成长起来的，随着Golang和CoreOS等项目在开源社区日益火热， etcd作为一个高可用、强一致性的分布式Key-Value存储系统被越来越多的开发人员关注和使用。
 这篇文章全方位介绍了etcd的应用场景，这里简单摘要如下：
  服务发现（Service Discovery） 消息发布与订阅 负载均衡 分布式通知与协调 分布式锁 分布式队列 集群监控与Leader竞选 为什么用etcd而不用ZooKeeper  本文重点介绍如何利用ectd实现一个分布式锁。 锁的概念大家都熟悉，当我们希望某一事件在同一时间点只有一个线程(goroutine)在做，或者某一个资源在同一时间点只有一个服务能访问，这个时候我们就需要用到锁。 例如我们要实现一个分布式的id生成器，多台服务器之间的协调就非常麻烦。分布式锁就正好派上用场。
@@ -23,10 +23,10 @@ package etcdsync import ( &amp;#34;fmt&amp;#34; &amp;#34;io&amp;#34; &amp;#34;os
     
     <item>
       <title>serf介绍</title>
-      <link>http://zieckey.github.io/2015/12/20/serf/</link>
+      <link>http://blog.codeg.cn/2015/12/20/serf/</link>
       <pubDate>Sun, 20 Dec 2015 00:00:00 +0000</pubDate>
       
-      <guid>http://zieckey.github.io/2015/12/20/serf/</guid>
+      <guid>http://blog.codeg.cn/2015/12/20/serf/</guid>
       <description>简介 Serf是一个无中心化的服务调度和服务发现工具。它容错性极好、无中心化设计、没有单点故障。Serf是建立在Gossip协议之上的，Gossip协议就是为无中心化通信而设计的。为了让一个新节点加入Serf集群，只需要知道集群中的任意一个节点即可，一旦新节点加入进来，它将获得集群中所有的成员信息。Gossip协议让Serf的配置和启动变得非常容易。
 如何使用 在官方网站 https://www.serfdom.io/downloads.html 下载合适的版本。
 简单使用 新建一个事件处理器脚本，例如 handler.sh ：
@@ -38,10 +38,10 @@ $ ./serf agent -bind=133.130.106.57:5001 -rpc-addr=133.130.106.57:7373 -log-leve
     
     <item>
       <title>nsq介绍及源码阅读</title>
-      <link>http://zieckey.github.io/2015/10/22/nsq/</link>
+      <link>http://blog.codeg.cn/2015/10/22/nsq/</link>
       <pubDate>Thu, 22 Oct 2015 00:00:00 +0000</pubDate>
       
-      <guid>http://zieckey.github.io/2015/10/22/nsq/</guid>
+      <guid>http://blog.codeg.cn/2015/10/22/nsq/</guid>
       <description>简介 nsq客户端逻辑 nsq消费者 主要请参考nsq_tail代码。nsqd的回应消息处理代码为func (c *Conn) readLoop()。
 TCP消息流的二进制结构请参考官方文档：http://nsq.io/clients/tcp_protocol_spec.html
 nsq消费者与nsqd建立连接的流程如下：
