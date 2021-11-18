@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>etcd on CodeG Blog</title>
+    <link>http://zieckey.github.io/tags/etcd/</link>
+    <description>Recent content in etcd on CodeG Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 24 Feb 2016 20:43:00 +0000</lastBuildDate><atom:link href="http://zieckey.github.io/tags/etcd/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>使用Golang利用ectd实现一个分布式锁</title>
+      <link>http://zieckey.github.io/post/2016-02-24-distrubute-lock-over-etcd/</link>
+      <pubDate>Wed, 24 Feb 2016 20:43:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/post/2016-02-24-distrubute-lock-over-etcd/</guid>
+      <description>etcd是随着CoreOS项目一起成长起来的，随着Golang和CoreOS等项目在开源社区日益火热， etcd作为一个高可用、强一致性的分布式Key-Value存储系统被越来越多的开发人员关注和使用。
+这篇文章全方位介绍了etcd的应用场景，这里简单摘要如下：
+ 服务发现（Service Discovery） 消息发布与订阅 负载均衡 分布式通知与协调 分布式锁 分布式队列 集群监控与Leader竞选 为什么用etcd而不用ZooKeeper  本文重点介绍如何利用ectd实现一个分布式锁。 锁的概念大家都熟悉，当我们希望某一事件在同一时间点只有一个线程(goroutine)在做，或者某一个资源在同一时间点只有一个服务能访问，这个时候我们就需要用到锁。 例如我们要实现一个分布式的id生成器，多台服务器之间的协调就非常麻烦。分布式锁就正好派上用场。
+其基本实现原理为：
+ 在ectd系统里创建一个key 如果创建失败，key存在，则监听该key的变化事件，直到该key被删除，回到1 如果创建成功，则认为我获得了锁  具体代码如下：
+package etcdsync import ( &amp;#34;fmt&amp;#34; &amp;#34;io&amp;#34; &amp;#34;os&amp;#34; &amp;#34;sync&amp;#34; &amp;#34;time&amp;#34; &amp;#34;github.com/coreos/etcd/client&amp;#34; &amp;#34;github.com/coreos/etcd/Godeps/_workspace/src/golang.org/x/net/context&amp;#34; ) const ( defaultTTL = 60 defaultTry = 3 deleteAction = &amp;#34;delete&amp;#34; expireAction = &amp;#34;expire&amp;#34; ) // A Mutex is a mutual exclusion lock which is distributed across a cluster. type Mutex struct { key string id string // The identity of the caller 	client client.</description>
+    </item>
+    
+  </channel>
+</rss>

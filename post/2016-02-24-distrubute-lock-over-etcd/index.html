@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<head>
+  <link href="https://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="generator" content="Hugo 0.89.4" />
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>使用Golang利用ectd实现一个分布式锁 &middot; CodeG Blog</title>
+  <meta name="description" content="" />
+
+  
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/print.css" media="print">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/poole.css">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/syntax.css">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/hyde.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
+
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/favicon.png">
+
+  
+  
+</head>
+
+  <body class=" ">
+  <aside class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <a href="http://zieckey.github.io/"><h1>CodeG Blog</h1></a>
+      <p class="lead">
+      An elegant open source and mobile first theme for <a href="http://hugo.spf13.com">hugo</a> made by <a href="http://twitter.com/mdo">@mdo</a>. Originally made for Jekyll.
+      </p>
+    </div>
+
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="http://zieckey.github.io/">Home</a> </li>
+        
+      </ul>
+    </nav>
+
+    <p>&copy; 2021. All rights reserved. </p>
+  </div>
+</aside>
+
+    <main class="content container">
+    <div class="post">
+  <h1>使用Golang利用ectd实现一个分布式锁</h1>
+  <time datetime=2016-02-24T20:43:00Z class="post-date">Wed, Feb 24, 2016</time>
+  <p><code>etcd</code>是随着<code>CoreOS</code>项目一起成长起来的，随着Golang和CoreOS等项目在开源社区日益火热，
+<code>etcd</code>作为一个高可用、强一致性的分布式Key-Value存储系统被越来越多的开发人员关注和使用。</p>
+<p>这篇<a href="http://www.infoq.com/cn/articles/etcd-interpretation-application-scenario-implement-principle">文章</a>全方位介绍了etcd的应用场景，这里简单摘要如下：</p>
+<ul>
+<li>服务发现（Service Discovery）</li>
+<li>消息发布与订阅</li>
+<li>负载均衡</li>
+<li>分布式通知与协调</li>
+<li>分布式锁</li>
+<li>分布式队列</li>
+<li>集群监控与Leader竞选</li>
+<li>为什么用etcd而不用ZooKeeper</li>
+</ul>
+<p>本文重点介绍如何利用<code>ectd</code>实现一个分布式锁。
+锁的概念大家都熟悉，当我们希望某一事件在同一时间点只有一个线程(goroutine)在做，或者某一个资源在同一时间点只有一个服务能访问，这个时候我们就需要用到锁。
+例如我们要实现一个分布式的id生成器，多台服务器之间的协调就非常麻烦。分布式锁就正好派上用场。</p>
+<p>其基本实现原理为：</p>
+<ol>
+<li>在ectd系统里创建一个key</li>
+<li>如果创建失败，key存在，则监听该key的变化事件，直到该key被删除，回到1</li>
+<li>如果创建成功，则认为我获得了锁</li>
+</ol>
+<p>具体代码如下：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#f92672">package</span> <span style="color:#a6e22e">etcdsync</span>
+
+<span style="color:#f92672">import</span> (
+	<span style="color:#e6db74">&#34;fmt&#34;</span>
+	<span style="color:#e6db74">&#34;io&#34;</span>
+	<span style="color:#e6db74">&#34;os&#34;</span>
+	<span style="color:#e6db74">&#34;sync&#34;</span>
+	<span style="color:#e6db74">&#34;time&#34;</span>
+
+	<span style="color:#e6db74">&#34;github.com/coreos/etcd/client&#34;</span>
+	<span style="color:#e6db74">&#34;github.com/coreos/etcd/Godeps/_workspace/src/golang.org/x/net/context&#34;</span>
+)
+
+<span style="color:#66d9ef">const</span> (
+	<span style="color:#a6e22e">defaultTTL</span> = <span style="color:#ae81ff">60</span>
+	<span style="color:#a6e22e">defaultTry</span> = <span style="color:#ae81ff">3</span>
+	<span style="color:#a6e22e">deleteAction</span> = <span style="color:#e6db74">&#34;delete&#34;</span>
+	<span style="color:#a6e22e">expireAction</span> = <span style="color:#e6db74">&#34;expire&#34;</span>
+)
+
+<span style="color:#75715e">// A Mutex is a mutual exclusion lock which is distributed across a cluster.
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Mutex</span> <span style="color:#66d9ef">struct</span> {
+	<span style="color:#a6e22e">key</span>    <span style="color:#66d9ef">string</span>
+	<span style="color:#a6e22e">id</span>     <span style="color:#66d9ef">string</span> <span style="color:#75715e">// The identity of the caller
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">client</span> <span style="color:#a6e22e">client</span>.<span style="color:#a6e22e">Client</span>
+	<span style="color:#a6e22e">kapi</span>   <span style="color:#a6e22e">client</span>.<span style="color:#a6e22e">KeysAPI</span>
+	<span style="color:#a6e22e">ctx</span>    <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Context</span>
+	<span style="color:#a6e22e">ttl</span>    <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Duration</span>
+	<span style="color:#a6e22e">mutex</span>  <span style="color:#f92672">*</span><span style="color:#a6e22e">sync</span>.<span style="color:#a6e22e">Mutex</span>
+	<span style="color:#a6e22e">logger</span> <span style="color:#a6e22e">io</span>.<span style="color:#a6e22e">Writer</span>
+}
+
+<span style="color:#75715e">// New creates a Mutex with the given key which must be the same
+</span><span style="color:#75715e">// across the cluster nodes.
+</span><span style="color:#75715e">// machines are the ectd cluster addresses
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">New</span>(<span style="color:#a6e22e">key</span> <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">ttl</span> <span style="color:#66d9ef">int</span>, <span style="color:#a6e22e">machines</span> []<span style="color:#66d9ef">string</span>) <span style="color:#f92672">*</span><span style="color:#a6e22e">Mutex</span> {
+	<span style="color:#a6e22e">cfg</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">client</span>.<span style="color:#a6e22e">Config</span>{
+		<span style="color:#a6e22e">Endpoints</span>:               <span style="color:#a6e22e">machines</span>,
+		<span style="color:#a6e22e">Transport</span>:               <span style="color:#a6e22e">client</span>.<span style="color:#a6e22e">DefaultTransport</span>,
+		<span style="color:#a6e22e">HeaderTimeoutPerRequest</span>: <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Second</span>,
+	}
+
+	<span style="color:#a6e22e">c</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">client</span>.<span style="color:#a6e22e">New</span>(<span style="color:#a6e22e">cfg</span>)
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>
+	}
+
+	<span style="color:#a6e22e">hostname</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">os</span>.<span style="color:#a6e22e">Hostname</span>()
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>
+	}
+
+	<span style="color:#66d9ef">if</span> len(<span style="color:#a6e22e">key</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">||</span> len(<span style="color:#a6e22e">machines</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span> {
+		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>
+	}
+
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">key</span>[<span style="color:#ae81ff">0</span>] <span style="color:#f92672">!=</span> <span style="color:#e6db74">&#39;/&#39;</span> {
+		<span style="color:#a6e22e">key</span> = <span style="color:#e6db74">&#34;/&#34;</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">key</span>
+	}
+
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">ttl</span> &lt; <span style="color:#ae81ff">1</span> {
+		<span style="color:#a6e22e">ttl</span> = <span style="color:#a6e22e">defaultTTL</span>
+	}
+
+	<span style="color:#66d9ef">return</span> <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">Mutex</span>{
+		<span style="color:#a6e22e">key</span>:    <span style="color:#a6e22e">key</span>,
+		<span style="color:#a6e22e">id</span>:     <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Sprintf</span>(<span style="color:#e6db74">&#34;%v-%v-%v&#34;</span>, <span style="color:#a6e22e">hostname</span>, <span style="color:#a6e22e">os</span>.<span style="color:#a6e22e">Getpid</span>(), <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Now</span>().<span style="color:#a6e22e">Format</span>(<span style="color:#e6db74">&#34;20060102-15:04:05.999999999&#34;</span>)),
+		<span style="color:#a6e22e">client</span>: <span style="color:#a6e22e">c</span>,
+		<span style="color:#a6e22e">kapi</span>:   <span style="color:#a6e22e">client</span>.<span style="color:#a6e22e">NewKeysAPI</span>(<span style="color:#a6e22e">c</span>),
+		<span style="color:#a6e22e">ctx</span>: <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">TODO</span>(),
+		<span style="color:#a6e22e">ttl</span>: <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Second</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Duration</span>(<span style="color:#a6e22e">ttl</span>),
+		<span style="color:#a6e22e">mutex</span>:  new(<span style="color:#a6e22e">sync</span>.<span style="color:#a6e22e">Mutex</span>),
+	}
+}
+
+<span style="color:#75715e">// Lock locks m.
+</span><span style="color:#75715e">// If the lock is already in use, the calling goroutine
+</span><span style="color:#75715e">// blocks until the mutex is available.
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">m</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Mutex</span>) <span style="color:#a6e22e">Lock</span>() (<span style="color:#a6e22e">err</span> <span style="color:#66d9ef">error</span>) {
+	<span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">mutex</span>.<span style="color:#a6e22e">Lock</span>()
+	<span style="color:#66d9ef">for</span> <span style="color:#a6e22e">try</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">1</span>; <span style="color:#a6e22e">try</span> <span style="color:#f92672">&lt;=</span> <span style="color:#a6e22e">defaultTry</span>; <span style="color:#a6e22e">try</span><span style="color:#f92672">++</span> {
+		<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">lock</span>() <span style="color:#f92672">==</span> <span style="color:#66d9ef">nil</span> {
+			<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>
+		}
+		
+		<span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">debug</span>(<span style="color:#e6db74">&#34;Lock node %v ERROR %v&#34;</span>, <span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">key</span>, <span style="color:#a6e22e">err</span>)
+		<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">try</span> &lt; <span style="color:#a6e22e">defaultTry</span> {
+			<span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">debug</span>(<span style="color:#e6db74">&#34;Try to lock node %v again&#34;</span>, <span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">key</span>, <span style="color:#a6e22e">err</span>)
+		}
+	}
+	<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">err</span>
+}
+
+<span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">m</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Mutex</span>) <span style="color:#a6e22e">lock</span>() (<span style="color:#a6e22e">err</span> <span style="color:#66d9ef">error</span>) {
+	<span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">debug</span>(<span style="color:#e6db74">&#34;Trying to create a node : key=%v&#34;</span>, <span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">key</span>)
+	<span style="color:#a6e22e">setOptions</span> <span style="color:#f92672">:=</span> <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">client</span>.<span style="color:#a6e22e">SetOptions</span>{
+		<span style="color:#a6e22e">PrevExist</span>:<span style="color:#a6e22e">client</span>.<span style="color:#a6e22e">PrevNoExist</span>,
+		<span style="color:#a6e22e">TTL</span>:      <span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">ttl</span>,
+	}
+	<span style="color:#a6e22e">resp</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">kapi</span>.<span style="color:#a6e22e">Set</span>(<span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">ctx</span>, <span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">key</span>, <span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">id</span>, <span style="color:#a6e22e">setOptions</span>)
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">==</span> <span style="color:#66d9ef">nil</span> {
+		<span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">debug</span>(<span style="color:#e6db74">&#34;Create node %v OK [%q]&#34;</span>, <span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">key</span>, <span style="color:#a6e22e">resp</span>)
+		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>
+	}
+	<span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">debug</span>(<span style="color:#e6db74">&#34;Create node %v failed [%v]&#34;</span>, <span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">key</span>, <span style="color:#a6e22e">err</span>)
+	<span style="color:#a6e22e">e</span>, <span style="color:#a6e22e">ok</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">err</span>.(<span style="color:#a6e22e">client</span>.<span style="color:#a6e22e">Error</span>)
+	<span style="color:#66d9ef">if</span> !<span style="color:#a6e22e">ok</span> {
+		<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">err</span>
+	}
+
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">e</span>.<span style="color:#a6e22e">Code</span> <span style="color:#f92672">!=</span> <span style="color:#a6e22e">client</span>.<span style="color:#a6e22e">ErrorCodeNodeExist</span> {
+		<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">err</span>
+	}
+
+	<span style="color:#75715e">// Get the already node&#39;s value.
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">resp</span>, <span style="color:#a6e22e">err</span> = <span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">kapi</span>.<span style="color:#a6e22e">Get</span>(<span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">ctx</span>, <span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">key</span>, <span style="color:#66d9ef">nil</span>)
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+		<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">err</span>
+	}
+	<span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">debug</span>(<span style="color:#e6db74">&#34;Get node %v OK&#34;</span>, <span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">key</span>)
+	<span style="color:#a6e22e">watcherOptions</span> <span style="color:#f92672">:=</span> <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">client</span>.<span style="color:#a6e22e">WatcherOptions</span>{
+		<span style="color:#a6e22e">AfterIndex</span> : <span style="color:#a6e22e">resp</span>.<span style="color:#a6e22e">Index</span>,
+		<span style="color:#a6e22e">Recursive</span>:<span style="color:#66d9ef">false</span>,
+	}
+	<span style="color:#a6e22e">watcher</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">kapi</span>.<span style="color:#a6e22e">Watcher</span>(<span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">key</span>, <span style="color:#a6e22e">watcherOptions</span>)
+	<span style="color:#66d9ef">for</span> {
+		<span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">debug</span>(<span style="color:#e6db74">&#34;Watching %v ...&#34;</span>, <span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">key</span>)
+		<span style="color:#a6e22e">resp</span>, <span style="color:#a6e22e">err</span> = <span style="color:#a6e22e">watcher</span>.<span style="color:#a6e22e">Next</span>(<span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">ctx</span>)
+		<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+			<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">err</span>
+		}
+
+		<span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">debug</span>(<span style="color:#e6db74">&#34;Received an event : %q&#34;</span>, <span style="color:#a6e22e">resp</span>)
+		<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">resp</span>.<span style="color:#a6e22e">Action</span> <span style="color:#f92672">==</span> <span style="color:#a6e22e">deleteAction</span> <span style="color:#f92672">||</span> <span style="color:#a6e22e">resp</span>.<span style="color:#a6e22e">Action</span> <span style="color:#f92672">==</span> <span style="color:#a6e22e">expireAction</span> {
+			<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>
+		}
+	}
+
+}
+
+<span style="color:#75715e">// Unlock unlocks m.
+</span><span style="color:#75715e">// It is a run-time error if m is not locked on entry to Unlock.
+</span><span style="color:#75715e">//
+</span><span style="color:#75715e">// A locked Mutex is not associated with a particular goroutine.
+</span><span style="color:#75715e">// It is allowed for one goroutine to lock a Mutex and then
+</span><span style="color:#75715e">// arrange for another goroutine to unlock it.
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">m</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Mutex</span>) <span style="color:#a6e22e">Unlock</span>() (<span style="color:#a6e22e">err</span> <span style="color:#66d9ef">error</span>) {
+	<span style="color:#66d9ef">defer</span> <span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">mutex</span>.<span style="color:#a6e22e">Unlock</span>()
+	<span style="color:#66d9ef">for</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">1</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">&lt;=</span> <span style="color:#a6e22e">defaultTry</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">++</span> {
+		<span style="color:#66d9ef">var</span> <span style="color:#a6e22e">resp</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">client</span>.<span style="color:#a6e22e">Response</span>
+		<span style="color:#a6e22e">resp</span>, <span style="color:#a6e22e">err</span> = <span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">kapi</span>.<span style="color:#a6e22e">Delete</span>(<span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">ctx</span>, <span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">key</span>, <span style="color:#66d9ef">nil</span>)
+		<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">==</span> <span style="color:#66d9ef">nil</span> {
+			<span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">debug</span>(<span style="color:#e6db74">&#34;Delete %v OK&#34;</span>, <span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">key</span>)
+			<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>
+		}
+		<span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">debug</span>(<span style="color:#e6db74">&#34;Delete %v falied: %q&#34;</span>, <span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">key</span>, <span style="color:#a6e22e">resp</span>)
+		<span style="color:#a6e22e">e</span>, <span style="color:#a6e22e">ok</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">err</span>.(<span style="color:#a6e22e">client</span>.<span style="color:#a6e22e">Error</span>)
+		<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">ok</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">e</span>.<span style="color:#a6e22e">Code</span> <span style="color:#f92672">==</span> <span style="color:#a6e22e">client</span>.<span style="color:#a6e22e">ErrorCodeKeyNotFound</span> {
+			<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>
+		}
+	}
+	<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">err</span>
+}
+
+<span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">m</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Mutex</span>) <span style="color:#a6e22e">debug</span>(<span style="color:#a6e22e">format</span> <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">v</span> <span style="color:#f92672">...</span><span style="color:#66d9ef">interface</span>{}) {
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">logger</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+		<span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">logger</span>.<span style="color:#a6e22e">Write</span>([]byte(<span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">id</span>))
+		<span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">logger</span>.<span style="color:#a6e22e">Write</span>([]byte(<span style="color:#e6db74">&#34; &#34;</span>))
+		<span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">logger</span>.<span style="color:#a6e22e">Write</span>([]byte(<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Sprintf</span>(<span style="color:#a6e22e">format</span>, <span style="color:#a6e22e">v</span><span style="color:#f92672">...</span>)))
+		<span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">logger</span>.<span style="color:#a6e22e">Write</span>([]byte(<span style="color:#e6db74">&#34;\n&#34;</span>))
+	}
+}
+
+<span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">m</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Mutex</span>) <span style="color:#a6e22e">SetDebugLogger</span>(<span style="color:#a6e22e">w</span> <span style="color:#a6e22e">io</span>.<span style="color:#a6e22e">Writer</span>) {
+	<span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">logger</span> = <span style="color:#a6e22e">w</span>
+}
+</code></pre></div><p>其实类似的实现有很多，但目前都已经过时，使用的都是被官方标记为<code>deprecated</code>的项目。且大部分接口都不如上述代码简单。
+使用上，跟Golang官方sync包的Mutex接口非常类似，先<code>New()</code>，然后调用<code>Lock()</code>，使用完后调用<code>Unlock()</code>，就三个接口，就是这么简单。示例代码如下：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#f92672">package</span> <span style="color:#a6e22e">main</span>
+
+<span style="color:#f92672">import</span> (
+	<span style="color:#e6db74">&#34;github.com/zieckey/etcdsync&#34;</span>
+	<span style="color:#e6db74">&#34;log&#34;</span>
+)
+
+<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
+	<span style="color:#75715e">//etcdsync.SetDebug(true)
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">SetFlags</span>(<span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Ldate</span>|<span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Ltime</span>|<span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Lshortfile</span>)
+	<span style="color:#a6e22e">m</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">etcdsync</span>.<span style="color:#a6e22e">New</span>(<span style="color:#e6db74">&#34;/etcdsync&#34;</span>, <span style="color:#e6db74">&#34;123&#34;</span>, []<span style="color:#66d9ef">string</span>{<span style="color:#e6db74">&#34;http://127.0.0.1:2379&#34;</span>})
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">m</span> <span style="color:#f92672">==</span> <span style="color:#66d9ef">nil</span> {
+		<span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;etcdsync.NewMutex failed&#34;</span>)
+	}
+	<span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">Lock</span>()
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+		<span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;etcdsync.Lock failed&#34;</span>)
+	} <span style="color:#66d9ef">else</span> {
+		<span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;etcdsync.Lock OK&#34;</span>)
+	}
+
+	<span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;Get the lock. Do something here.&#34;</span>)
+
+	<span style="color:#a6e22e">err</span> = <span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">Unlock</span>()
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+		<span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;etcdsync.Unlock failed&#34;</span>)
+	} <span style="color:#66d9ef">else</span> {
+		<span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;etcdsync.Unlock OK&#34;</span>)
+	}
+}
+
+</code></pre></div><h2 id="参考">参考</h2>
+<ol>
+<li><a href="https://github.com/zieckey/etcdsync">etcdsync项目地址</a></li>
+<li><a href="https://github.com/coreos/etcd">ectd项目官方地址</a></li>
+</ol>
+
+</div>
+
+
+    </main>
+
+    
+      
+    
+  </body>
+</html>

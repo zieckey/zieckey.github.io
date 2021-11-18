@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<head>
+  <link href="https://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="generator" content="Hugo 0.89.4" />
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>多进程编程 &middot; CodeG Blog</title>
+  <meta name="description" content="" />
+
+  
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/print.css" media="print">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/poole.css">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/syntax.css">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/hyde.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
+
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/favicon.png">
+
+  
+  
+</head>
+
+  <body class=" ">
+  <aside class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <a href="http://zieckey.github.io/"><h1>CodeG Blog</h1></a>
+      <p class="lead">
+      An elegant open source and mobile first theme for <a href="http://hugo.spf13.com">hugo</a> made by <a href="http://twitter.com/mdo">@mdo</a>. Originally made for Jekyll.
+      </p>
+    </div>
+
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="http://zieckey.github.io/">Home</a> </li>
+        
+      </ul>
+    </nav>
+
+    <p>&copy; 2021. All rights reserved. </p>
+  </div>
+</aside>
+
+    <main class="content container">
+    <div class="post">
+  <h1>多进程编程</h1>
+  <time datetime=2015-01-13T00:00:00Z class="post-date">Tue, Jan 13, 2015</time>
+  <h3 id="wait-和-waitpid">wait 和 waitpid</h3>
+<p>当一个进程正常或异常退出时，内核就向其父进程发送<code>SIGCHLD</code>信号。因为子进程退出是一个异步事件，所以该信号也是内核向父进程发送的异步信号。</p>
+<p>wait的函数原型是：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;sys/types.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;sys/wait.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+pid_t <span style="color:#a6e22e">wait</span>(<span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>status);
+pid_t <span style="color:#a6e22e">waitpid</span>(pid_t pid, <span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>status, <span style="color:#66d9ef">int</span> options);
+</code></pre></div><p>参数status用来保存被收集进程退出时的一些状态信息，它是一个指向int类型的指针。进程一旦调用了wait或waitpid，则可能发生：</p>
+<ul>
+<li>如果其所有子进程都还在运行，则阻塞</li>
+<li>如果某个子进程已经退出， wait/waitpid就会收集这个子进程的信息，并把它彻底销毁后返回</li>
+<li>如果没有任何子进程，则会立即出错返回　　　　</li>
+</ul>
+<p>这两个函数的区别在于：</p>
+<ul>
+<li>在子进程结束之前，wait使其调用者阻塞，而waitpid有一个选项，可以使调用者不阻塞。</li>
+<li>waitpid并不等待在其调用之后的第一个终止子进程，它有若干选项可以控制它所等待的子进程。</li>
+<li>对于wait()，其唯一的出错是调用进程没有子进程；对于waitpid()，若指定的进程或进程组不存在，或者参数pid指定的进程不是调用进程的子进程都可能出错。</li>
+<li>waitpid()提供了wait()没有的三个功能：一是waitpid()可等待一个特定的进程；二是waitpid()提供了一个wait()的非阻塞版本（有时希望取的一个子进程的状态，但不想使父进程阻塞，waitpid() 提供了一个这样的选择：WNOHANG，它可以使调用者不阻塞）；三是waitpid()支持作业控制。</li>
+<li>wait(&amp;status) 的功能就等于waitpid(-1, &amp;status, 0);</li>
+</ul>
+<p>下面看一个示例代码：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#include</span><span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span><span style="color:#75715e">&lt;sys/types.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span><span style="color:#75715e">&lt;sys/wait.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span><span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span><span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>()
+{
+    pid_t child;
+    <span style="color:#66d9ef">int</span> i;
+    child <span style="color:#f92672">=</span> fork();
+    <span style="color:#66d9ef">if</span>(child <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>){
+        printf(<span style="color:#e6db74">&#34;create failed!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+        <span style="color:#66d9ef">return</span> (<span style="color:#ae81ff">1</span>);
+    }
+    <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (<span style="color:#ae81ff">0</span> <span style="color:#f92672">==</span> child){
+        printf(<span style="color:#e6db74">&#34;this is the child process pid= %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>,getpid());
+        <span style="color:#66d9ef">for</span>(i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;i<span style="color:#f92672">&lt;</span><span style="color:#ae81ff">5</span>;i<span style="color:#f92672">++</span>){
+            printf(<span style="color:#e6db74">&#34;this is the child process print %d !</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>,i<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>);
+        }
+        printf(<span style="color:#e6db74">&#34;the child end</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+    }
+    <span style="color:#66d9ef">else</span>{
+        printf(<span style="color:#e6db74">&#34;this is the father process,ppid=%d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>,getppid());
+        printf(<span style="color:#e6db74">&#34;father wait the child end</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+        wait(<span style="color:#f92672">&amp;</span>child);
+        printf(<span style="color:#e6db74">&#34;father end</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+    }
+
+    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+}
+
+<span style="color:#960050;background-color:#1e0010">运行结果：</span>
+<span style="color:#960050;background-color:#1e0010">$</span> .<span style="color:#f92672">/</span>wait 
+this is the father process,ppid<span style="color:#f92672">=</span><span style="color:#ae81ff">21831</span>
+father wait the child end
+this is the child process pid<span style="color:#f92672">=</span> <span style="color:#ae81ff">22126</span>
+this is the child process print <span style="color:#ae81ff">1</span> <span style="color:#f92672">!</span>
+this is the child process print <span style="color:#ae81ff">2</span> <span style="color:#f92672">!</span>
+this is the child process print <span style="color:#ae81ff">3</span> <span style="color:#f92672">!</span>
+this is the child process print <span style="color:#ae81ff">4</span> <span style="color:#f92672">!</span>
+this is the child process print <span style="color:#ae81ff">5</span> <span style="color:#f92672">!</span>
+the child end
+father end
+</code></pre></div><h3 id="sigprocmask">sigprocmask</h3>
+<p>有时候不希望在接到信号时就立即停止当前执行去处理信号，同时也不希望忽略该信号，而是延时一段时间去调用信号处理函数。这种情况是通过阻塞信号实现的，即调用<code>sigprocmask</code>系统函数。</p>
+<p><code>sigprocmask</code>功能描述：设定对信号屏蔽集内的信号的处理方式(阻塞或不阻塞)。函数原型：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;signal.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">sigprocmask</span>(<span style="color:#66d9ef">int</span> how, <span style="color:#66d9ef">const</span> sigset_t <span style="color:#f92672">*</span>set, sigset_t <span style="color:#f92672">*</span>oldset);
+</code></pre></div><p>参数<code>how</code>用于指定信号修改的方式，可能选择有三种</p>
+<ul>
+<li>SIG_BLOCK   将set信号集合加入进程的信号屏蔽列表中</li>
+<li>SIG_UNBLOCK 将set信号集合从进程的信号屏蔽列表中删除</li>
+<li>SIG_SETMASK 将set信号集合设定为新的进程的信息屏蔽列表</li>
+</ul>
+<p><strong>屏蔽之后又能怎样呢？</strong></p>
+<p>To be continue &hellip;</p>
+
+</div>
+
+
+    </main>
+
+    
+      
+    
+  </body>
+</html>

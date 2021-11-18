@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>trafik on CodeG Blog</title>
+    <link>http://zieckey.github.io/tags/trafik/</link>
+    <description>Recent content in trafik on CodeG Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 26 May 2016 07:00:00 +0000</lastBuildDate><atom:link href="http://zieckey.github.io/tags/trafik/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Trafik源代码阅读</title>
+      <link>http://zieckey.github.io/post/2016-05-26-trafik-source-code-reading/</link>
+      <pubDate>Thu, 26 May 2016 07:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/post/2016-05-26-trafik-source-code-reading/</guid>
+      <description>Trafik介绍 其官网是这么介绍的：
+Træfɪk is a modern HTTP reverse proxy and load balancer made to deploy microservices with ease. It supports several backends (Docker, Swarm, Mesos/Marathon, Consul, Etcd, Zookeeper, BoltDB, Rest API, file...) to manage its configuration automatically and dynamically. 翻译过来就是：Træfɪk是一个现代的HTTP反向代理和易用的微服务负载平衡器，支持多种后端服务， 例如 Docker、 Swarm、 Mesos/Marathon、 Kubernetes、 Consul、 Etcd、 Zookeeper、 BoltDB、 Rest API、 文件 等等， 可以自动地动态管理和加载各种配置。
+特点如下：
+ 快速，benchmark显示，能够达到nginx的85%的性能 没有依赖地狱，得益于Golang的特性，单个二进制文件就能运行 Rest API 监视后端，能够自动监听后端配置的变化。 配置的热重加载，无需重新启动进程或服务器 优雅地关闭Http连接 后端的断路器Circuit breaker Round Robin rebalancer 负载平衡 Rest测量 包括小的官方docker SSL后端支持 SSL前端支持 干净的AngularJS Web UI 支持Websocket 支持Http/2 如果网络错误重试请求 自动Https支持(Let’s Encrypt)  用法 最简单的用法当然是做一个HTTP反向代理用。</description>
+    </item>
+    
+  </channel>
+</rss>

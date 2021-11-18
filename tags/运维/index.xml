@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>运维 on CodeG Blog</title>
+    <link>http://zieckey.github.io/tags/%E8%BF%90%E7%BB%B4/</link>
+    <description>Recent content in 运维 on CodeG Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 08 Oct 2015 00:00:00 +0000</lastBuildDate><atom:link href="http://zieckey.github.io/tags/%E8%BF%90%E7%BB%B4/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>ansible简介</title>
+      <link>http://zieckey.github.io/2015/10/08/ansible/</link>
+      <pubDate>Thu, 08 Oct 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/10/08/ansible/</guid>
+      <description>简介 ansible是新出现的自动化运维工具，基于Python开发，集合了众多运维工具（puppet、cfengine、chef、func、fabric）的优点，实现了批量系统配置、批量程序部署、批量运行命令等功能。ansible是基于模块工作的，本身没有批量部署的能力。真正具有批量部署的是ansible所运行的模块，ansible只是提供一种框架。主要包括：
+ 连接插件connection plugins：负责和被监控端实现通信； host inventory：指定操作的主机，是一个配置文件里面定义监控的主机； 各种模块核心模块、command模块、自定义模块； 借助于插件完成记录日志邮件等功能； playbook：剧本执行多个任务时，非必需可以让节点一次性运行多个任务。  在centos上安装 直接使用yum安装即可： sudo yum install ansible
+简单使用 其默认的配置路径： /etc/ansible/ansible.cfg
+为了避免SHH key host检查，可以将下面配置项打开：
+host_key_checking = False  另外，为避免一些依赖（依赖目标机器上的软件环境），可以使用 -m raw 参数，例如下面是没有加这个参数时会出错：
+$ ansible builddev -m shell -a &amp;quot;uname -a&amp;quot; -k SSH password: 10.16.28.17 | FAILED &amp;gt;&amp;gt; { &amp;quot;failed&amp;quot;: true, &amp;quot;msg&amp;quot;: &amp;quot;/usr/bin/python: not found\n&amp;quot;, &amp;quot;parsed&amp;quot;: false } 加上这个参数就没有问题： ansible builddev -m shell -m raw -a &amp;quot;uname -a&amp;quot; -k
+修改配置文件 ansible使用配置文件 /etc/ansible/hosts 。其格式如下：</description>
+    </item>
+    
+  </channel>
+</rss>

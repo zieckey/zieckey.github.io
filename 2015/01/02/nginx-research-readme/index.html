@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<head>
+  <link href="https://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="generator" content="Hugo 0.89.4" />
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Nginx源码研究（1）——项目介绍 &middot; CodeG Blog</title>
+  <meta name="description" content="本项目是为了研究Nginx源码而建立的。该项目有以下几点比较不错的优点。（1）VS2013源码编译和调试  (2) 将Nginx看做一个优秀的C库使用，已经将其编译为库了，并且有很多例子参考" />
+
+  
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/print.css" media="print">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/poole.css">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/syntax.css">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/hyde.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
+
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/favicon.png">
+
+  
+  
+</head>
+
+  <body class=" ">
+  <aside class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <a href="http://zieckey.github.io/"><h1>CodeG Blog</h1></a>
+      <p class="lead">
+      An elegant open source and mobile first theme for <a href="http://hugo.spf13.com">hugo</a> made by <a href="http://twitter.com/mdo">@mdo</a>. Originally made for Jekyll.
+      </p>
+    </div>
+
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="http://zieckey.github.io/">Home</a> </li>
+        
+      </ul>
+    </nav>
+
+    <p>&copy; 2021. All rights reserved. </p>
+  </div>
+</aside>
+
+    <main class="content container">
+    <div class="post">
+  <h1>Nginx源码研究（1）——项目介绍</h1>
+  <time datetime=2015-01-02T00:00:00Z class="post-date">Fri, Jan 2, 2015</time>
+  <h1 id="nginx-research">nginx-research</h1>
+<p>本项目是为了研究Nginx源码而建立的。该项目有以下几点比较不错的优点：</p>
+<ul>
+<li>VS2013源码编译和调试</li>
+<li>将Nginx看做一个优秀的C库使用，已经将其编译为库了，并且有很多例子参考</li>
+</ul>
+<p>项目地址：<a href="https://github.com/zieckey/nginx-research">https://github.com/zieckey/nginx-research</a></p>
+<p>中文介绍页面：<a href="http://blog.codeg.cn/2015/01/02/nginx-research-readme">http://blog.codeg.cn/2015/01/02/nginx-research-readme</a></p>
+<h2 id="1-windows使用">1. Windows使用</h2>
+<p>打开<code>nginx-win32-src\nginx.sln</code>文件，可以看到两个工程：</p>
+<ul>
+<li>nginx ： Nginx的Windows版本，可以直接编译运行。</li>
+<li>nginxresearch : 将Nginx做为lib库使用的工程</li>
+</ul>
+<h5 id="nginx二进制">Nginx二进制</h5>
+<p>直接编译运行nginx工程即可。目前包含下列几个示例Nginx扩展模块：</p>
+<ul>
+<li>ngx_http hello world module</li>
+<li>ngx_http merge module</li>
+<li>ngx_http memcached module</li>
+<li>ngx_http upstream sample code</li>
+</ul>
+<p>windows下运行起来后，监听80端口，在浏览器打开<a href="http://localhost/helloworld.html">http://localhost/helloworld.html</a> 会返回当前的时间和程序启动的时间，如下：</p>
+<pre><code>startup: 2015-01-01 19:26:16
+current: 2015-01-01 19:26:57
+</code></pre>
+<h5 id="将nginx做为c库使用">将Nginx做为C库使用</h5>
+<p>直接编译运行nginxresearch工程即可。自带gtest，方便写样例代码。目前包含下列几个示例程序：</p>
+<ul>
+<li>ngx_encode_base64的使用</li>
+<li>ngx_str_t</li>
+<li>ngx_pool_t</li>
+<li>ngx_hash_t</li>
+<li>ngx_list_t</li>
+<li>ngx_array_t</li>
+<li>ngx_queue_t</li>
+<li>ngx_pool_t</li>
+</ul>
+<p>另外，还从<code>ngx_pool_t</code>抽取了一个完全独立的<code>cg_pool_t</code>结构，不依赖Nginx，也不依赖任何第三方类库，可以直接将源码拿走集成进现有系统中。典型的应用场景是这样的，假如你有一个nginx扩展，用到了ngx_pool_t这个数据结构，但是现在有一个需求是需要将这份扩展代码独立出来，不依赖nginx运行，那么这个<code>cg_pool_t</code>是你的好帮手，你几乎只需要将头文件从<code>ngx_palloc.h</code>换为<code>cg_pool.h</code>即可，代码完全不用修改即可完成移植。</p>
+<h2 id="2-linux-使用">2. Linux 使用</h2>
+<h5 id="nginx二进制-1">Nginx二进制</h5>
+<p>进入各个模块的子目录，直接make即可</p>
+<h5 id="将nginx做为c库使用-1">将Nginx做为C库使用</h5>
+<p>进入<code>libnginx</code>目录，直接make即可</p>
+<h2 id="3-比较不错的资源">3. 比较不错的资源</h2>
+<ol>
+<li><a href="http://tengine.taobao.org/book/">淘宝：Nginx开发从入门到精通</a></li>
+</ol>
+
+</div>
+
+
+    </main>
+
+    
+      
+    
+  </body>
+</html>

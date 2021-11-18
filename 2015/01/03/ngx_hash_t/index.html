@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<head>
+  <link href="https://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="generator" content="Hugo 0.89.4" />
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Nginx源码研究（4）——hash结构ngx_hash_t &middot; CodeG Blog</title>
+  <meta name="description" content="本文主要介绍Nginx数组ngx_hash_t这一重要的数据结构的使用方法和具体实现。nginx实现的hash表特点是构建一次, 初始化后无法动态的增删，之后就只用于&lt;k,v&gt;查找。" />
+
+  
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/print.css" media="print">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/poole.css">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/syntax.css">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/hyde.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
+
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/favicon.png">
+
+  
+  
+</head>
+
+  <body class=" ">
+  <aside class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <a href="http://zieckey.github.io/"><h1>CodeG Blog</h1></a>
+      <p class="lead">
+      An elegant open source and mobile first theme for <a href="http://hugo.spf13.com">hugo</a> made by <a href="http://twitter.com/mdo">@mdo</a>. Originally made for Jekyll.
+      </p>
+    </div>
+
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="http://zieckey.github.io/">Home</a> </li>
+        
+      </ul>
+    </nav>
+
+    <p>&copy; 2021. All rights reserved. </p>
+  </div>
+</aside>
+
+    <main class="content container">
+    <div class="post">
+  <h1>Nginx源码研究（4）——hash结构ngx_hash_t</h1>
+  <time datetime=2015-01-03T00:00:00Z class="post-date">Sat, Jan 3, 2015</time>
+  <h2 id="简介">简介</h2>
+<p>本文主要介绍Nginx的hash结构<code>ngx_hash_t</code>这一重要的数据结构的使用方法和具体实现。nginx实现的hash表特点是构建一次, 初始化后无法动态的增删，之后就只用于&lt;k,v&gt;查找。之所以这么设计是为了使用最少的内存同时得到最快的查找速度。</p>
+<h2 id="冲突解决">冲突解决</h2>
+<p>Nginx的<code>ngx_hash_t</code>采用开放地址法来解决冲突问题，即：插入的时候发现自己的位置f(key)已经被占了，就向后遍历，查看f(key)+1的位置是否被占用，如果没被占用，就占用它，否则继续相后，查询的时候，同样也如果f(key)不是需要的值，也依次向后遍历，一直找到需要的元素。</p>
+<h2 id="源代码位置">源代码位置</h2>
+<p>src/core/ngx_hash.{h,c}</p>
+<h2 id="数据结构">数据结构</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">//hash结构
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> {
+    ngx_hash_elt_t  <span style="color:#f92672">**</span>buckets; <span style="color:#75715e">//hash桶(有size个桶)
+</span><span style="color:#75715e"></span>    ngx_uint_t        size;    <span style="color:#75715e">//hash桶个数
+</span><span style="color:#75715e"></span>} ngx_hash_t;
+
+
+<span style="color:#75715e">// &lt;key,value&gt; 结构，初始化时候使用
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> {
+    ngx_str_t         key;      <span style="color:#75715e">//key，为nginx的字符串结构
+</span><span style="color:#75715e"></span>    ngx_uint_t        key_hash; <span style="color:#75715e">//由该key计算出的hash值(通过hash函数如ngx_hash_key_lc())
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">void</span>             <span style="color:#f92672">*</span>value;    <span style="color:#75715e">//该key对应的值，组成一个键-值对&lt;key,value&gt;
+</span><span style="color:#75715e"></span>} ngx_hash_key_t;
+
+<span style="color:#75715e">//hash元素结构
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> {
+    <span style="color:#66d9ef">void</span>             <span style="color:#f92672">*</span>value;    <span style="color:#75715e">//value，即某个key对应的值，即&lt;key,value&gt;中的value
+</span><span style="color:#75715e"></span>    u_short           len;      <span style="color:#75715e">//name长度
+</span><span style="color:#75715e"></span>    u_char            name[<span style="color:#ae81ff">1</span>];  <span style="color:#75715e">//某个要hash的数据(在nginx中表现为字符串)，即&lt;key,value&gt;中的key
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// 这里数组长度为1，是一个小技巧。实现时，在具体分配ngx_hash_elt_t的大小时使用宏NGX_HASH_ELT_SIZE来确定(并且是内存对齐的)：
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// #define NGX_HASH_ELT_SIZE(name) (sizeof(void *) + ngx_align((name)-&gt;key.len + 2, sizeof(void *)))
+</span><span style="color:#75715e"></span>} ngx_hash_elt_t;
+
+<span style="color:#75715e">//hash初始化结构，用来将其相关数据封装起来作为参数传递给ngx_hash_init()或ngx_hash_wildcard_init()函数
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> {
+    ngx_hash_t       <span style="color:#f92672">*</span>hash;         <span style="color:#75715e">//指向待初始化的hash结构。
+</span><span style="color:#75715e"></span>    ngx_hash_key_pt   key;          <span style="color:#75715e">//hash函数指针
+</span><span style="color:#75715e"></span>
+    <span style="color:#75715e">// 散列表中槽的最大数目
+</span><span style="color:#75715e"></span>    ngx_uint_t        max_size;     <span style="color:#75715e">//bucket的最大个数
+</span><span style="color:#75715e"></span>
+    <span style="color:#75715e">// 散列表中一个槽的空间大小，它限制了每个散列表元素关键字的最大长度，通过NGX_HASH_ELT_SIZE(name)计算每个element的大小。
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// 如果这个bucket_size设置较大，那么他就能够容纳多个element，这样一个bucket里存放多个element，进而导致查找速度下降。
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// 为了更好的查找速度，请将bucket_size设置为所有element长度最大的那个。
+</span><span style="color:#75715e"></span>    ngx_uint_t        bucket_size;
+
+    <span style="color:#75715e">// 散列表的名称
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">char</span>             <span style="color:#f92672">*</span>name;         <span style="color:#75715e">//该hash结构的名字(仅在错误日志中使用)
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// 内存池，它分配散列表（最多3个，包括1个普通散列表，1个前置通配符散列表，1个后置通配符散列表）中的所有槽
+</span><span style="color:#75715e"></span>    ngx_pool_t       <span style="color:#f92672">*</span>pool;         <span style="color:#75715e">//该hash结构从pool指向的内存池中分配
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// 临时内存池，它仅存在于初始化散列表之前。它主要用于分配一些临时的动态数组，带通配符的元素在初始化时需要用到这些数组。
+</span><span style="color:#75715e"></span>    ngx_pool_t       <span style="color:#f92672">*</span>temp_pool;    <span style="color:#75715e">//分配临时数据空间的内存池
+</span><span style="color:#75715e"></span>} ngx_hash_init_t;
+
+</code></pre></div><h2 id="内存结构图">内存结构图</h2>
+<p><a href="/images/githubpages/nginx/ngx_hash_t-2.png"><img src="/images/githubpages/nginx/ngx_hash_t-2.png" alt=""></a>
+备注：从参考文档7摘录</p>
+<p><a href="/images/githubpages/nginx/ngx_hash_t-1.png"><img src="/images/githubpages/nginx/ngx_hash_t-1.png" alt=""></a>
+备注：从参考博客6摘录</p>
+<h2 id="初始化函数">初始化函数</h2>
+<p>直接上增加了注释的代码，这个需要结合上面两个图片来看。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">
+<span style="color:#75715e">// 第一个参数hinit是初始化的一些参数的一个集合。 names是初始化一个ngx_hash_t所需要的所有&lt;key,value&gt;对的一个数组，而nelts是该数组的个数。
+</span><span style="color:#75715e">// 备注：我倒是觉得可以直接使用一个ngx_array_t*作为参数呢？
+</span><span style="color:#75715e">//
+</span><span style="color:#75715e">//初始化步骤
+</span><span style="color:#75715e">//1. 遍历待初始化的ngx_hash_key_t数组, 保证占用空间最大的ngx_hash_elt_t元素可以装进bucket_size大小空间
+</span><span style="color:#75715e">//2. 预估一个可以装入所有元素的hash表长度start, 判断是否可以将所有元素装进这个size大小的hash表
+</span><span style="color:#75715e">//3. 装不下, 增加size, 如果size达到max_size仍然不能创建这个hash表, 则失败. 否则确定了要构建的hash表长度(buckets个数)
+</span><span style="color:#75715e">//4. found:处开始,, 计算所有元素占用总空间, 为hash表的各个bucket分配各自的空间
+</span><span style="color:#75715e">//5. 将ngx_hash_key_t数组元素分别放入对应的bucket中
+</span><span style="color:#75715e">//
+</span><span style="color:#75715e">//其中第2步中怎么计算初始的可能hash表的大小start?
+</span><span style="color:#75715e">//start = nelts / (bucket_size / (2 * sizeof(void *)));
+</span><span style="color:#75715e">//也即认为一个bucket最多放入的元素个数为bucket_size / (2 * sizeof(void *));
+</span><span style="color:#75715e">//64位机器上, sizeof(void *) 为8 Bytes,  sizeof(unsigned short)为2Bytes, sizeof(name)为1 Byte, sizeof(ngx_hash_elt_t)为16Bytes, 正好与2 * sizeof(void *)相等.
+</span><span style="color:#75715e"></span>ngx_int_t
+<span style="color:#a6e22e">ngx_hash_init</span>(ngx_hash_init_t <span style="color:#f92672">*</span>hinit, ngx_hash_key_t <span style="color:#f92672">*</span>names, ngx_uint_t nelts)
+{
+    u_char          <span style="color:#f92672">*</span>elts;
+    size_t           len;
+    u_short         <span style="color:#f92672">*</span>test;
+    ngx_uint_t       i, n, key, size, start, bucket_size;
+    ngx_hash_elt_t  <span style="color:#f92672">*</span>elt, <span style="color:#f92672">**</span>buckets;
+
+    <span style="color:#75715e">//检查names数组的每一个元素，判断桶的大小是否够存放key
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> (n <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; n <span style="color:#f92672">&lt;</span> nelts; n<span style="color:#f92672">++</span>) {
+        <span style="color:#66d9ef">if</span> (hinit<span style="color:#f92672">-&gt;</span>bucket_size <span style="color:#f92672">&lt;</span> NGX_HASH_ELT_SIZE(<span style="color:#f92672">&amp;</span>names[n]) <span style="color:#f92672">+</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>))
+        {
+        	<span style="color:#75715e">//有任何一个元素，桶的大小不够为该元素分配空间，则退出
+</span><span style="color:#75715e"></span>            ngx_log_error(NGX_LOG_EMERG, hinit<span style="color:#f92672">-&gt;</span>pool<span style="color:#f92672">-&gt;</span>log, <span style="color:#ae81ff">0</span>,
+                          <span style="color:#e6db74">&#34;could not build the %s, you should &#34;</span>
+                          <span style="color:#e6db74">&#34;increase %s_bucket_size: %i&#34;</span>,
+                          hinit<span style="color:#f92672">-&gt;</span>name, hinit<span style="color:#f92672">-&gt;</span>name, hinit<span style="color:#f92672">-&gt;</span>bucket_size);
+            <span style="color:#66d9ef">return</span> NGX_ERROR;
+        }
+    }
+
+    <span style="color:#75715e">//分配 sizeof(u_short)*max_size 个字节的空间保存hash数据
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">//(该内存分配操作不在nginx的内存池中进行，因为test只是临时的)
+</span><span style="color:#75715e"></span>    test <span style="color:#f92672">=</span> ngx_alloc(hinit<span style="color:#f92672">-&gt;</span>max_size <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(u_short), hinit<span style="color:#f92672">-&gt;</span>pool<span style="color:#f92672">-&gt;</span>log);
+    <span style="color:#66d9ef">if</span> (test <span style="color:#f92672">==</span> NULL) {
+        <span style="color:#66d9ef">return</span> NGX_ERROR;
+    }
+
+    bucket_size <span style="color:#f92672">=</span> hinit<span style="color:#f92672">-&gt;</span>bucket_size <span style="color:#f92672">-</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>);
+
+    start <span style="color:#f92672">=</span> nelts <span style="color:#f92672">/</span> (bucket_size <span style="color:#f92672">/</span> (<span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>)));
+    start <span style="color:#f92672">=</span> start <span style="color:#f92672">?</span> start : <span style="color:#ae81ff">1</span>;
+
+    <span style="color:#66d9ef">if</span> (hinit<span style="color:#f92672">-&gt;</span>max_size <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">10000</span> <span style="color:#f92672">&amp;&amp;</span> nelts <span style="color:#f92672">&amp;&amp;</span> hinit<span style="color:#f92672">-&gt;</span>max_size <span style="color:#f92672">/</span> nelts <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">100</span>) {
+        start <span style="color:#f92672">=</span> hinit<span style="color:#f92672">-&gt;</span>max_size <span style="color:#f92672">-</span> <span style="color:#ae81ff">1000</span>;
+    }
+
+    <span style="color:#66d9ef">for</span> (size <span style="color:#f92672">=</span> start; size <span style="color:#f92672">&lt;</span> hinit<span style="color:#f92672">-&gt;</span>max_size; size<span style="color:#f92672">++</span>) {
+
+        ngx_memzero(test, size <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(u_short));
+        <span style="color:#75715e">//标记1：此块代码是检查bucket大小是否够分配hash数据
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">for</span> (n <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; n <span style="color:#f92672">&lt;</span> nelts; n<span style="color:#f92672">++</span>) {
+            <span style="color:#66d9ef">if</span> (names[n].key.data <span style="color:#f92672">==</span> NULL) {
+                <span style="color:#66d9ef">continue</span>;
+            }
+
+            <span style="color:#75715e">//计算key和names中所有name长度，并保存在test[key]中
+</span><span style="color:#75715e"></span>            key <span style="color:#f92672">=</span> names[n].key_hash <span style="color:#f92672">%</span> size; <span style="color:#75715e">//若size=1，则key一直为0
+</span><span style="color:#75715e"></span>            test[key] <span style="color:#f92672">=</span> (u_short) (test[key] <span style="color:#f92672">+</span> NGX_HASH_ELT_SIZE(<span style="color:#f92672">&amp;</span>names[n]));
+
+<span style="color:#75715e">#if 0</span><span style="color:#75715e">
+</span><span style="color:#75715e">            ngx_log_error(NGX_LOG_ALERT, hinit-&gt;pool-&gt;log, 0,
+</span><span style="color:#75715e">                          &#34;%ui: %ui %ui \&#34;%V\&#34;&#34;,
+</span><span style="color:#75715e">                          size, key, test[key], &amp;names[n].key);
+</span><span style="color:#75715e"></span><span style="color:#75715e">#endif
+</span><span style="color:#75715e"></span>
+            <span style="color:#75715e">//若超过了桶的大小，则到下一个桶重新计算
+</span><span style="color:#75715e"></span>            <span style="color:#66d9ef">if</span> (test[key] <span style="color:#f92672">&gt;</span> (u_short) bucket_size) {
+                <span style="color:#66d9ef">goto</span> next;
+            }
+        }
+
+        <span style="color:#66d9ef">goto</span> found;
+
+    next:
+
+        <span style="color:#66d9ef">continue</span>;
+    }
+
+    <span style="color:#75715e">//若没有找到合适的bucket，退出
+</span><span style="color:#75715e"></span>    ngx_log_error(NGX_LOG_EMERG, hinit<span style="color:#f92672">-&gt;</span>pool<span style="color:#f92672">-&gt;</span>log, <span style="color:#ae81ff">0</span>,
+                  <span style="color:#e6db74">&#34;could not build the %s, you should increase &#34;</span>
+                  <span style="color:#e6db74">&#34;either %s_max_size: %i or %s_bucket_size: %i&#34;</span>,
+                  hinit<span style="color:#f92672">-&gt;</span>name, hinit<span style="color:#f92672">-&gt;</span>name, hinit<span style="color:#f92672">-&gt;</span>max_size,
+                  hinit<span style="color:#f92672">-&gt;</span>name, hinit<span style="color:#f92672">-&gt;</span>bucket_size);
+
+    ngx_free(test);
+
+    <span style="color:#66d9ef">return</span> NGX_ERROR;
+
+found: <span style="color:#75715e">//找到合适的bucket
+</span><span style="color:#75715e"></span>
+	<span style="color:#75715e">//将test数组前size个元素初始化为sizeof(void *)
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> (i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> size; i<span style="color:#f92672">++</span>) {
+        test[i] <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>);
+    }
+
+    <span style="color:#75715e">/** 标记2：与标记1代码基本相同，但此块代码是再次计算所有hash数据的总长度(标记1的检查已通过)
+</span><span style="color:#75715e">        但此处的test[i]已被初始化为sizeof(void *)，即相当于后续的计算再加上一个void指针的大小。
+</span><span style="color:#75715e">     */</span>
+    <span style="color:#66d9ef">for</span> (n <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; n <span style="color:#f92672">&lt;</span> nelts; n<span style="color:#f92672">++</span>) {
+        <span style="color:#66d9ef">if</span> (names[n].key.data <span style="color:#f92672">==</span> NULL) {
+            <span style="color:#66d9ef">continue</span>;
+        }
+
+        <span style="color:#75715e">//计算key和names中所有name长度，并保存在test[key]中
+</span><span style="color:#75715e"></span>        key <span style="color:#f92672">=</span> names[n].key_hash <span style="color:#f92672">%</span> size;<span style="color:#75715e">//若size=1，则key一直为0
+</span><span style="color:#75715e"></span>        test[key] <span style="color:#f92672">=</span> (u_short) (test[key] <span style="color:#f92672">+</span> NGX_HASH_ELT_SIZE(<span style="color:#f92672">&amp;</span>names[n]));
+    }
+
+    <span style="color:#75715e">//计算hash数据的总长度
+</span><span style="color:#75715e"></span>    len <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+
+    <span style="color:#66d9ef">for</span> (i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> size; i<span style="color:#f92672">++</span>) {
+        <span style="color:#66d9ef">if</span> (test[i] <span style="color:#f92672">==</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>)) {
+        	<span style="color:#75715e">//若test[i]仍为初始化的值为sizeof(void *)，即没有变化，则继续
+</span><span style="color:#75715e"></span>            <span style="color:#66d9ef">continue</span>;
+        }
+
+        <span style="color:#75715e">//对test[i]按ngx_cacheline_size对齐(32位平台，ngx_cacheline_size=32)
+</span><span style="color:#75715e"></span>        test[i] <span style="color:#f92672">=</span> (u_short) (ngx_align(test[i], ngx_cacheline_size));
+
+        len <span style="color:#f92672">+=</span> test[i];
+    }
+
+    <span style="color:#66d9ef">if</span> (hinit<span style="color:#f92672">-&gt;</span>hash <span style="color:#f92672">==</span> NULL) {
+    	<span style="color:#75715e">//在内存池中分配hash头及buckets数组(size个ngx_hash_elt_t*结构)
+</span><span style="color:#75715e"></span>        hinit<span style="color:#f92672">-&gt;</span>hash <span style="color:#f92672">=</span> ngx_pcalloc(hinit<span style="color:#f92672">-&gt;</span>pool, <span style="color:#66d9ef">sizeof</span>(ngx_hash_wildcard_t)
+                                             <span style="color:#f92672">+</span> size <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(ngx_hash_elt_t <span style="color:#f92672">*</span>));
+        <span style="color:#66d9ef">if</span> (hinit<span style="color:#f92672">-&gt;</span>hash <span style="color:#f92672">==</span> NULL) {
+            ngx_free(test);
+            <span style="color:#66d9ef">return</span> NGX_ERROR;
+        }
+
+        <span style="color:#75715e">//计算buckets的启示位置(在ngx_hash_wildcard_t结构之后)
+</span><span style="color:#75715e"></span>        buckets <span style="color:#f92672">=</span> (ngx_hash_elt_t <span style="color:#f92672">**</span>)
+                      ((u_char <span style="color:#f92672">*</span>) hinit<span style="color:#f92672">-&gt;</span>hash <span style="color:#f92672">+</span> <span style="color:#66d9ef">sizeof</span>(ngx_hash_wildcard_t));
+
+    } <span style="color:#66d9ef">else</span> {
+    	<span style="color:#75715e">//在内存池中分配buckets数组(size个ngx_hash_elt_t*结构)
+</span><span style="color:#75715e"></span>        buckets <span style="color:#f92672">=</span> ngx_pcalloc(hinit<span style="color:#f92672">-&gt;</span>pool, size <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(ngx_hash_elt_t <span style="color:#f92672">*</span>));
+        <span style="color:#66d9ef">if</span> (buckets <span style="color:#f92672">==</span> NULL) {
+            ngx_free(test);
+            <span style="color:#66d9ef">return</span> NGX_ERROR;
+        }
+    }
+
+    <span style="color:#75715e">//接着分配elts，大小为len+ngx_cacheline_size，此处为什么+ngx_cacheline_size？——下面要按ngx_cacheline_size字节对齐
+</span><span style="color:#75715e"></span>    elts <span style="color:#f92672">=</span> ngx_palloc(hinit<span style="color:#f92672">-&gt;</span>pool, len <span style="color:#f92672">+</span> ngx_cacheline_size);
+    <span style="color:#66d9ef">if</span> (elts <span style="color:#f92672">==</span> NULL) {
+        ngx_free(test);
+        <span style="color:#66d9ef">return</span> NGX_ERROR;
+    }
+
+    <span style="color:#75715e">// 对齐
+</span><span style="color:#75715e"></span>    elts <span style="color:#f92672">=</span> ngx_align_ptr(elts, ngx_cacheline_size);
+
+    <span style="color:#75715e">//将buckets数组与相应elts对应起来
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> (i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> size; i<span style="color:#f92672">++</span>) {
+        <span style="color:#66d9ef">if</span> (test[i] <span style="color:#f92672">==</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>)) {
+            <span style="color:#66d9ef">continue</span>;
+        }
+
+        buckets[i] <span style="color:#f92672">=</span> (ngx_hash_elt_t <span style="color:#f92672">*</span>) elts;
+        elts <span style="color:#f92672">+=</span> test[i];
+    }
+
+    <span style="color:#66d9ef">for</span> (i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> size; i<span style="color:#f92672">++</span>) {
+        test[i] <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+    }
+
+    <span style="color:#75715e">//将传进来的每一个hash数据存入hash表
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> (n <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; n <span style="color:#f92672">&lt;</span> nelts; n<span style="color:#f92672">++</span>) {
+        <span style="color:#66d9ef">if</span> (names[n].key.data <span style="color:#f92672">==</span> NULL) {
+            <span style="color:#66d9ef">continue</span>;
+        }
+
+        <span style="color:#75715e">//计算key，即将被hash的数据在第几个bucket，并计算其对应的elts位置
+</span><span style="color:#75715e"></span>        key <span style="color:#f92672">=</span> names[n].key_hash <span style="color:#f92672">%</span> size;
+        elt <span style="color:#f92672">=</span> (ngx_hash_elt_t <span style="color:#f92672">*</span>) ((u_char <span style="color:#f92672">*</span>) buckets[key] <span style="color:#f92672">+</span> test[key]);
+
+        <span style="color:#75715e">//对ngx_hash_elt_t结构赋值
+</span><span style="color:#75715e"></span>        elt<span style="color:#f92672">-&gt;</span>value <span style="color:#f92672">=</span> names[n].value;
+        elt<span style="color:#f92672">-&gt;</span>len <span style="color:#f92672">=</span> (u_short) names[n].key.len;
+
+        ngx_strlow(elt<span style="color:#f92672">-&gt;</span>name, names[n].key.data, names[n].key.len);
+
+        <span style="color:#75715e">//计算下一个要被hash的数据的长度偏移
+</span><span style="color:#75715e"></span>        test[key] <span style="color:#f92672">=</span> (u_short) (test[key] <span style="color:#f92672">+</span> NGX_HASH_ELT_SIZE(<span style="color:#f92672">&amp;</span>names[n]));
+    }
+
+    <span style="color:#66d9ef">for</span> (i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> size; i<span style="color:#f92672">++</span>) {
+        <span style="color:#66d9ef">if</span> (buckets[i] <span style="color:#f92672">==</span> NULL) {
+            <span style="color:#66d9ef">continue</span>;
+        }
+
+        <span style="color:#75715e">//test[i]相当于所有被hash的数据总长度
+</span><span style="color:#75715e"></span>        elt <span style="color:#f92672">=</span> (ngx_hash_elt_t <span style="color:#f92672">*</span>) ((u_char <span style="color:#f92672">*</span>) buckets[i] <span style="color:#f92672">+</span> test[i]);
+
+        <span style="color:#75715e">//将每个bucket的最后一个指针大小区域置NULL
+</span><span style="color:#75715e"></span>        elt<span style="color:#f92672">-&gt;</span>value <span style="color:#f92672">=</span> NULL;
+    }
+
+    ngx_free(test);<span style="color:#75715e">//释放该临时空间
+</span><span style="color:#75715e"></span>
+    hinit<span style="color:#f92672">-&gt;</span>hash<span style="color:#f92672">-&gt;</span>buckets <span style="color:#f92672">=</span> buckets;
+    hinit<span style="color:#f92672">-&gt;</span>hash<span style="color:#f92672">-&gt;</span>size <span style="color:#f92672">=</span> size;
+
+    <span style="color:#66d9ef">return</span> NGX_OK;
+}
+
+</code></pre></div><h2 id="测试代码">测试代码</h2>
+<p>该测试代码的完整工程的编译和运行方式请参考 <a href="https://github.com/zieckey/nginx-research">https://github.com/zieckey/nginx-research项目</a>。Linux&amp;Windows都测试通过。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">static</span> ngx_str_t names[] <span style="color:#f92672">=</span> {
+    ngx_string(<span style="color:#e6db74">&#34;zieckey&#34;</span>),
+    ngx_string(<span style="color:#e6db74">&#34;codeg&#34;</span>),
+    ngx_string(<span style="color:#e6db74">&#34;jane&#34;</span>) };
+
+<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">char</span><span style="color:#f92672">*</span> descs[] <span style="color:#f92672">=</span> { <span style="color:#e6db74">&#34;zieckey&#39;s id is 0&#34;</span>, <span style="color:#e6db74">&#34;codeg&#39;s id is 1&#34;</span>, <span style="color:#e6db74">&#34;jane&#39;s id is 2&#34;</span> };
+
+<span style="color:#75715e">// hash table的一些基本操作
+</span><span style="color:#75715e"></span>TEST_UNIT(ngx_hash)
+{
+    ngx_uint_t          k;
+    ngx_pool_t<span style="color:#f92672">*</span>         pool <span style="color:#f92672">=</span> g_pool;
+    ngx_hash_init_t     hash_init;
+    ngx_array_t<span style="color:#f92672">*</span>        elements;
+    ngx_hash_key_t<span style="color:#f92672">*</span>     arr_node;
+    <span style="color:#66d9ef">char</span><span style="color:#f92672">*</span>               find;
+    <span style="color:#66d9ef">int</span>                 i;
+
+    ngx_cacheline_size <span style="color:#f92672">=</span> NGX_CPU_CACHE_LINE;
+
+    hash_init.hash <span style="color:#f92672">=</span> NULL;                      <span style="color:#75715e">// 置为NULL，让ngx_hash_init来初始化
+</span><span style="color:#75715e"></span>    hash_init.key <span style="color:#f92672">=</span> <span style="color:#f92672">&amp;</span>ngx_hash_key_lc;          <span style="color:#75715e">// hash算法函数
+</span><span style="color:#75715e"></span>    hash_init.max_size <span style="color:#f92672">=</span> <span style="color:#ae81ff">1024</span>;                   <span style="color:#75715e">// max_size
+</span><span style="color:#75715e"></span>    hash_init.bucket_size <span style="color:#f92672">=</span> <span style="color:#ae81ff">64</span>; <span style="color:#75715e">// ngx_align(64, ngx_cacheline_size);
+</span><span style="color:#75715e"></span>    hash_init.name <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;codeg_hash&#34;</span>;          <span style="color:#75715e">// 在log里会用到
+</span><span style="color:#75715e"></span>    hash_init.pool <span style="color:#f92672">=</span> pool;                 <span style="color:#75715e">// 内存池
+</span><span style="color:#75715e"></span>    hash_init.temp_pool <span style="color:#f92672">=</span> NULL;
+
+    <span style="color:#75715e">// 创建数组
+</span><span style="color:#75715e"></span>    elements <span style="color:#f92672">=</span> ngx_array_create(pool, H_ARRAYSIZE(names), <span style="color:#66d9ef">sizeof</span>(ngx_hash_key_t));
+    <span style="color:#66d9ef">for</span> (i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> H_ARRAYSIZE(names); i<span style="color:#f92672">++</span>) {
+        arr_node <span style="color:#f92672">=</span> (ngx_hash_key_t<span style="color:#f92672">*</span>)ngx_array_push(elements);
+        arr_node<span style="color:#f92672">-&gt;</span>key <span style="color:#f92672">=</span> (names[i]);
+        arr_node<span style="color:#f92672">-&gt;</span>key_hash <span style="color:#f92672">=</span> ngx_hash_key_lc(arr_node<span style="color:#f92672">-&gt;</span>key.data, arr_node<span style="color:#f92672">-&gt;</span>key.len);
+        arr_node<span style="color:#f92672">-&gt;</span>value <span style="color:#f92672">=</span> (<span style="color:#66d9ef">void</span><span style="color:#f92672">*</span>)descs[i];
+        printf(<span style="color:#e6db74">&#34;key: %s , key_hash: %u</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, arr_node<span style="color:#f92672">-&gt;</span>key.data, arr_node<span style="color:#f92672">-&gt;</span>key_hash);
+    }
+
+    H_TEST_ASSERT(ngx_hash_init(<span style="color:#f92672">&amp;</span>hash_init, (ngx_hash_key_t<span style="color:#f92672">*</span>)elements<span style="color:#f92672">-&gt;</span>elts, elements<span style="color:#f92672">-&gt;</span>nelts) <span style="color:#f92672">==</span> NGX_OK);
+
+    <span style="color:#75715e">// 查找
+</span><span style="color:#75715e"></span>    k <span style="color:#f92672">=</span> ngx_hash_key_lc(names[<span style="color:#ae81ff">0</span>].data, names[<span style="color:#ae81ff">0</span>].len);
+    printf(<span style="color:#e6db74">&#34;%s key is %u</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, names[<span style="color:#ae81ff">0</span>].data, k);
+    find <span style="color:#f92672">=</span> (<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span>)ngx_hash_find(hash_init.hash, k, (u_char<span style="color:#f92672">*</span>)names[<span style="color:#ae81ff">0</span>].data, names[<span style="color:#ae81ff">0</span>].len);
+    H_TEST_ASSERT(find);
+    <span style="color:#66d9ef">if</span> (find) {
+        printf(<span style="color:#e6db74">&#34;get desc of %s : %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, (<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span>)names[<span style="color:#ae81ff">0</span>].data, (<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span>)find);
+    }
+
+    ngx_array_destroy(elements);
+}
+</code></pre></div><h2 id="参考">参考：</h2>
+<ol>
+<li><a href="http://tengine.taobao.org/book/chapter_02.html#ngx-hash-t-100">淘宝：Nginx开发从入门到精通 http://tengine.taobao.org/book/chapter_02.html#ngx-hash-t-100</a></li>
+<li><a href="https://github.com/zieckey/nginx-1.0.14_comment/blob/master/src/core/ngx_hash.h">nginx源码注释 https://github.com/zieckey/nginx-1.0.14_comment/blob/master/src/core/ngx_hash.h</a></li>
+<li><a href="https://github.com/zieckey/nginx-1.0.14_comment/blob/master/src/core/ngx_hash.c">nginx源码注释 https://github.com/zieckey/nginx-1.0.14_comment/blob/master/src/core/ngx_hash.c</a></li>
+<li><a href="http://blog.csdn.net/livelylittlefish/article/details/6636229">nginx源码分析—hash结构ngx_hash_t(v1.0.4) http://blog.csdn.net/livelylittlefish/article/details/6636229</a></li>
+<li><a href="http://blog.csdn.net/chen19870707/article/details/40794285">菜鸟nginx源码剖析数据结构篇（六） 哈希表 ngx_hash_t（上） http://blog.csdn.net/chen19870707/article/details/40794285</a></li>
+<li><a href="http://my.oschina.net/chenzhuo/blog/177866">nginx代码分析-基本结构-哈希表ngx_hash_t http://my.oschina.net/chenzhuo/blog/177866</a></li>
+<li><a href="https://code.google.com/p/nginxsrp/wiki/NginxCodeReview">nginx源码研究 https://code.google.com/p/nginxsrp/wiki/NginxCodeReview</a></li>
+</ol>
+
+</div>
+
+
+    </main>
+
+    
+      
+    
+  </body>
+</html>

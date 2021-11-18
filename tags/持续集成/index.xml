@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>持续集成 on CodeG Blog</title>
+    <link>http://zieckey.github.io/tags/%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90/</link>
+    <description>Recent content in 持续集成 on CodeG Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 30 Dec 2014 00:00:00 +0000</lastBuildDate><atom:link href="http://zieckey.github.io/tags/%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>测试覆盖率工具coveralls.io的配置介绍</title>
+      <link>http://zieckey.github.io/2014/12/30/coveralls-io-configuration-info/</link>
+      <pubDate>Tue, 30 Dec 2014 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2014/12/30/coveralls-io-configuration-info/</guid>
+      <description>这是一个测试覆盖率图标，非常的漂亮。我们可以在很多github的项目主页上看到，本文将介绍如何自动生成这个图标。
+1. 在其主页上https://coveralls.io/上开通你的项目 2. 找到项目的 repo_token 请参考下图中的标红部分：
+3. 加密repo_token 为什么要加密repo_token?因为，这个repo_token是你的项目在coverall.io网站的唯一token，不能公开，但是又希望travis-ci.com网站使用这个repo_token，因此travis提供一个非对称加密工具来加密这个token串。详细原因和使用介绍可以参考官方文档
+进入你的github项目所在目录，输入下列命令travis encrypt COVERALLS_TOKEN=aaaaa(记得替换你自己的repo_token)来加密上述repo_token，如下：
+[ codeg@ ~/goini]$ travis encrypt COVERALLS_TOKEN=aaaaa Faraday: you may want to install system_timer for reliable timeouts Your Ruby version is outdated, please consider upgrading, as we will drop support for 1.8.7 soon! Please add the following to your .travis.yml file: secure: &amp;quot;cSst9VQrOpZsBwKMku0vMoF53T6FhWVN50ZeV/dScUhXQndKd4WuOboxdM0w2wEKOURkYDt5R3uQZ7XU0J1ekXsZ775JZmSEEdWaKSU80Yp3qF/89hc8p3r0Ej4w/EeqFC3fSJINrQzXpetvEnqzAjZQGNMO/NSATxHRkBJc7CQ=&amp;quot; Pro Tip: You can add it automatically by running with --add.  4. 在.travis.yml中集成coverall coverall配置请见文档其中COVERALLS_TOKEN稍稍麻烦一点，请继续往下看。</description>
+    </item>
+    
+  </channel>
+</rss>

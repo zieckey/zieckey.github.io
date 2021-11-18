@@ -1,0 +1,703 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>CodeG Blog</title>
+    <link>http://zieckey.github.io/</link>
+    <description>Recent content on CodeG Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 28 May 2017 18:11:01 +0000</lastBuildDate><atom:link href="http://zieckey.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>手把手制作一个vcpkg的安装包及port file相关说明</title>
+      <link>http://zieckey.github.io/post/2017-05-28-how-to-build-a-vcpkg/</link>
+      <pubDate>Sun, 28 May 2017 18:11:01 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/post/2017-05-28-how-to-build-a-vcpkg/</guid>
+      <description>0. 前言 Windows平台的程序包的依赖管理一直以来都是个大难题。之前有NuGet，现在有vcpkg。 本文的重点是先介绍一下vcpkg的特性，然后以一个实际例子说明，说明如何创建一个vcpkg安装包。
+1. vcpkg简介 vcpkg是为了在windows平台能够方便获取一个C或者C++库。当前还处于预览版状态。不过已经有很多常见的库了，例如：
+ openssl boost zlib glog libevent curl  等等，很多知名的C/C++库都已经提供vcpkg安装包。
+2. vcpkg安装 首先，我们的windows系统必须安装有下列软件
+ Visual Studio 2015 Update 3 or Visual Studio 2017 CMake 3.8.0 or higher (note: downloaded automatically if not found) git.exe available in your path  然后，我们在windows命令行终端上运行：
+d:\git&amp;gt; git clone https://github.com/Microsoft/vcpkg d:\git&amp;gt; cd vcpkg d:\git\vcpkg&amp;gt; .\bootstrap-vcpkg.bat d:\git\vcpkg&amp;gt; .\vcpkg integrate install  3. 使用vcpkg获取C/C++库 使用vcpkg --help命令查看联席帮助文档：
+D:\git\vcpkg&amp;gt;.\vcpkg --help Commands: vcpkg search [pat] Search for packages available to be built vcpkg install &amp;lt;pkg&amp;gt;.</description>
+    </item>
+    
+    <item>
+      <title>evpp设计细节系列(1)：利用 enable_shared_from_this 实现一个自管理的定时器</title>
+      <link>http://zieckey.github.io/post/2017-04-19-the-detail-design-of-evpp-invoke-timer/</link>
+      <pubDate>Wed, 19 Apr 2017 10:11:01 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/post/2017-04-19-the-detail-design-of-evpp-invoke-timer/</guid>
+      <description>0. 前言 https://github.com/Qihoo360/evpp是一个高性能的Reactor模式的现代化的C++11版本的高性能网络库。该项目中有一个InvokeTimer对象，接口头文件详细代码请参见https://github.com/Qihoo360/evpp/blob/master/evpp/invoke_timer.h。它是一个能自我管理的定时器类，可以将一个仿函数绑定到该定时器上，然后让该定时器自己管理并在预期的一段时间后执行该仿函数。
+现在我们复盘一下这个功能的实现细节和演化过程。
+1. 基础代码 定时器原型声明可能是下面的样子：
+class InvokeTimer { public: InvokeTimer(struct event_base* evloop, double timeout_ms, const std::function&amp;lt;void()&amp;gt;&amp;amp; f); ~InvokeTimer(); void Start(); }; 这个是最基本的接口，可以设置一个仿函数，并设置一个过期时间，然后绑定到一个event_base对象上，然后就可以期待过了一个预期的时间后，我们设置的仿函数被调用了。
+为了便于说明后续的多个版本的实现，我们先将基础的不变的代码说明一下。
+基础代码，我们采用evpp项目中的TimerEventWatcher，详细实现在这里event_watcher.h和event_watcher.cc。它是一个时间定时器观察者对象，可以观察一个时间事件。
+头文件event_watcher.h定义如下：
+#pragma once  #include &amp;lt;functional&amp;gt; struct event; struct event_base; namespace recipes { class EventWatcher { public: typedef std::function&amp;lt;void()&amp;gt; Handler; virtual ~EventWatcher(); bool Init(); void Cancel(); void SetCancelCallback(const Handler&amp;amp; cb); void ClearHandler() { handler_ = Handler(); } protected: EventWatcher(struct event_base* evbase, const Handler&amp;amp; handler); bool Watch(double timeout_ms); void Close(); void FreeEvent(); virtual bool DoInit() = 0; virtual void DoClose() {} protected: struct event* event_; struct event_base* evbase_; bool attached_; Handler handler_; Handler cancel_callback_; }; class TimerEventWatcher : public EventWatcher { public: TimerEventWatcher(struct event_base* evbase, const Handler&amp;amp; handler, double timeout_ms); bool AsyncWait(); private: virtual bool DoInit(); static void HandlerFn(int fd, short which, void* v); private: double timeout_ms_; }; } 实现文件event_watcher.</description>
+    </item>
+    
+    <item>
+      <title>基于evpp的EventLoop实现来对无锁队列boost::lockfree::queue和moodycamel::ConcurrentQueue做一个性能测试对比</title>
+      <link>http://zieckey.github.io/post/2017-04-09-the-benchmark-of-lockfree/</link>
+      <pubDate>Sun, 09 Apr 2017 10:11:01 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/post/2017-04-09-the-benchmark-of-lockfree/</guid>
+      <description>English version : The performance benchmark of queue with std::mutex against boost::lockfree::queue and moodycamel::ConcurrentQueue
+Brief 我们使用https://github.com/Qihoo360/evpp项目中的EventLoop::QueueInLoop(...)函数来做这个性能测试。我们通过该函数能够将一个仿函数执行体从一个线程调度到另一个线程中执行。这是一个典型的生产者和消费者问题。
+我们用一个队列来保存这种仿函数执行体。多个生产者线程向这个队列写入仿函数执行体，一个消费者线程从队列中取出仿函数执行体来执行。为了保证队列的线程安全问题，我们可以使用一个锁来保护这个队列，或者使用无锁队列机制来解决安全问题。EventLoop::QueueInLoop(...)函数通过通定义实现了三种不同模式的跨线程交换数据的队列。
+测试对象  evpp-v0.3.2 EventLoop::QueueInLoop(...)函数内的队列的三种实现方式：  带锁的队列用std::vector和std::mutex来实现，具体的 gcc 版本为 4.8.2 boost::lockfree::queue from boost-1.53 moodycamel::ConcurrentQueue with commit c54341183f8674c575913a65ef7c651ecce47243    测试环境  Linux CentOS 6.2, 2.6.32-220.7.1.el6.x86_64 Intel(R) Xeon(R) CPU E5-2630 v2 @ 2.60GHz gcc version 4.8.2 20140120 (Red Hat 4.8.2-15) (GCC)  测试方法 测试代码请参考https://github.com/Qihoo360/evpp/blob/master/benchmark/post_task/post_task6.cc. 在一个消费者线程中运行一个EventLoop对象loop_，多个生产者线程不停的调用loop_-&amp;gt;QueueInLoop(...)方法将仿函数执行体放入到消费者的队列中让其消费（执行）。每个生产者线程放入一定总数（由运行参数指定）的仿函数执行体之后就停下来，等消费者线程完全消费完所有的仿函数执行体之后，程序退出，并记录开始和结束时间。
+为了便于大家阅读，现将相关代码的核心部分摘录如下。
+event_loop.h中定义了队列：
+std::shared_ptr&amp;lt;PipeEventWatcher&amp;gt; watcher_; #ifdef H_HAVE_BOOST  boost::lockfree::queue&amp;lt;Functor*&amp;gt;* pending_functors_; #elif defined(H_HAVE_CAMERON314_CONCURRENTQUEUE)  moodycamel::ConcurrentQueue&amp;lt;Functor&amp;gt;* pending_functors_; #else  std::mutex mutex_; std::vector&amp;lt;Functor&amp;gt;* pending_functors_; // @Guarded By mutex_ #endif event_loop.</description>
+    </item>
+    
+    <item>
+      <title>evpp与asio吞吐量对比</title>
+      <link>http://zieckey.github.io/post/2017-04-04-the-throughput-benchmark-test-of-evpp-vs-asio/</link>
+      <pubDate>Tue, 04 Apr 2017 18:13:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/post/2017-04-04-the-throughput-benchmark-test-of-evpp-vs-asio/</guid>
+      <description>简介 Boost.Asio是用于网络和低层IO编程的跨平台C++库,为开发者提供了C++环境下稳定的异步编程模型。也是业内公认的优秀的C++网络库代表。一般来讲，其他的网络库的性能如果不能与asio做一下全面的对比和评测，就不能令人信服。
+本次测试是参考陈硕的博客文章muduo 与 boost asio 吞吐量对比，该文章的结论是：muduo吞吐量平均比asio高 15% 以上。
+我们之前做的evpp与[moduo]吞吐量测试性能报告显示，evpp与[moduo]吞吐量基本相当，各自都没有明显的优势。因此我们希望evpp在与boost的性能对比测试中能够占优。
+测试对象  evpp-v0.2.4 based on libevent-2.0.21 asio-1.10.8  测试环境  Linux CentOS 6.2, 2.6.32-220.7.1.el6.x86_64 Intel(R) Xeon(R) CPU E5-2630 v2 @ 2.60GHz gcc version 4.8.2 20140120 (Red Hat 4.8.2-15) (GCC)  测试方法 依据 boost.asio 性能测试 http://think-async.com/Asio/LinuxPerformanceImprovements 的办法，用 ping pong 协议来测试吞吐量。
+简单地说，ping pong 协议是客户端和服务器都实现 echo 协议。当 TCP 连接建立时，客户端向服务器发送一些数据，服务器会 echo 回这些数据，然后客户端再 echo 回服务器。这些数据就会像乒乓球一样在客户端和服务器之间来回传送，直到有一方断开连接为止。这是用来测试吞吐量的常用办法。
+evpp的测试代码在软件包内的路径为benchmark/throughput/evpp，代码如https://github.com/Qihoo360/evpp/tree/master/benchmark/throughput/evpp所示。并使用 tools目录下的benchmark-build.sh
+asio的测试代码直接使用陈硕recipes的实现，具体代码在这里https://github.com/chenshuo/recipes/tree/master/pingpong/asio。
+我们做了下面两项测试：
+ 单线程测试，测试并发连接数为 1/10/100/1000/10000 时，消息大小分别为 4096 8192 81920 409600 时的吞吐量 多线程测试，并发连接数为 100 或 1000，服务器和客户端的线程数同时设为 2/3/4/6/8，ping pong 消息的大小为 4096 bytes。测试用的 shell 脚本可从evpp的源码包中找到。  测试结果数据 最终测试结论如下：</description>
+    </item>
+    
+    <item>
+      <title>evpp与muduo吞吐量对比</title>
+      <link>http://zieckey.github.io/post/2017-03-14-the-throughput-benchmark-test-of-evpp-vs-muduo/</link>
+      <pubDate>Tue, 14 Mar 2017 18:13:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/post/2017-03-14-the-throughput-benchmark-test-of-evpp-vs-muduo/</guid>
+      <description>简介 muduo是最近几年中国开源界里产生的优秀作品。它是由业内大牛陈硕实现的。详细介绍，请参考其博客介绍http://blog.csdn.net/solstice/article/details/5848547。
+本次测试是参考陈硕的博客文章muduo与libevent2吞吐量对比，该文章的结论是：muduo吞吐量平均比libevent2高 18% 以上。
+由于evpp本身是基于libevent2实现的，因此我们希望将evpp和muduo放到一起做一次全面的性能测试。本文是关于这两个库在吞吐量方面的测试。
+测试对象  evpp-v0.2.4 based on libevent-2.0.21 muduo-v1.0.9  测试环境  Linux CentOS 6.2, 2.6.32-220.7.1.el6.x86_64 Intel(R) Xeon(R) CPU E5-2630 v2 @ 2.60GHz gcc version 4.8.2 20140120 (Red Hat 4.8.2-15) (GCC)  测试方法 依据 boost.asio 性能测试 http://think-async.com/Asio/LinuxPerformanceImprovements 的办法，用 ping pong 协议来测试吞吐量。
+简单地说，ping pong 协议是客户端和服务器都实现 echo 协议。当 TCP 连接建立时，客户端向服务器发送一些数据，服务器会 echo 回这些数据，然后客户端再 echo 回服务器。这些数据就会像乒乓球一样在客户端和服务器之间来回传送，直到有一方断开连接为止。这是用来测试吞吐量的常用办法。
+muduo的测试代码在软件包内的路径为 examples/pingpong/，代码如https://github.com/chenshuo/muduo/tree/master/examples/pingpong所示。并使用BUILD_TYPE=release ./build.sh方式编译muduo的优化版本。
+evpp的测试代码在软件包内的路径为benchmark/throughput/evpp，代码如https://github.com/Qihoo360/evpp/tree/master/benchmark/throughput/evpp所示。并使用 tools目录下的benchmark-build.sh
+我们做了下面两项测试：
+ 单线程测试，测试并发连接数为 1/10/100/1000/10000 时，消息大小分别为 4096 8192 81920 409600 时的吞吐量 多线程测试，并发连接数为 100 或 1000，服务器和客户端的线程数同时设为 2/3/4/6/8，ping pong 消息的大小为 16k bytes。测试用的 shell 脚本可从evpp的源码包中找到。  单线程测试结果数据 最终测试结论如下：</description>
+    </item>
+    
+    <item>
+      <title>发布一个高性能的Reactor模式的C&#43;&#43;网络库：evpp</title>
+      <link>http://zieckey.github.io/post/2017-03-13-release-a-high-performance-c&#43;&#43;11-network-library/</link>
+      <pubDate>Mon, 13 Mar 2017 18:13:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/post/2017-03-13-release-a-high-performance-c&#43;&#43;11-network-library/</guid>
+      <description>简介 evpp是一个基于libevent开发的现代化的支持C++11特性的高性能网络库，自带TCP/UDP/HTTP等协议的异步非阻塞式的服务器和客户端库。
+特性  现代版的C++11接口 非阻塞异步接口都是C++11的functional/bind形式的回调仿函数（不是libevent中的C风格的函数指针） 非阻塞纯异步多线程TCP服务器/客户端 非阻塞纯异步多线程HTTP服务器/客户端 非阻塞纯异步多线程UDP服务器 支持多进程模式 优秀的跨平台特性和高性能（继承自libevent的优点）  除此之外，基于该库之上，还提供两个附带的应用层协议库：
+ evmc ：一个纯异步非阻塞式的memcached的C++客户端库，支持membase集群模式。该库已经用于生产环境，每天发起1000多亿次memcache查询请求。详情请见：evmc readme evnsq ： 一个纯异步非阻塞式的NSQ的C++客户端库，支持消费者、生产者、服务发现等特性。该库已经用于生产环境，每天生产200多亿条日志消息。详情请见：evnsq readme  将来还会推出redis的客户端库。
+项目由来 我们开发小组负责的业务需要用到TCP协议来建设长连接网关服务和一些其他的一些基于TCP的短连接服务，在调研开源项目的过程中，没有发现一个合适的库来满足我们要求。结合我们自身的业务情况，理想中的C++网络库应具备一下几个特性：
+ 接口简单易用，最好是C++接口 多线程，也能支持多进程 最好是基于libevent实现（因为现有的历史遗留框架、基础库等是依赖libevent），这样能很方便嵌入libevent的事件循环，否则改动较大或者集成起来的程序可能会有很多跨线程的调用（这些会带来编程的复杂性以及跨线程锁带来的性能下降）  基于这些需求，可供选择的不多，所以我们只能自己开发一个。开发过程中，接口设计方面基本上大部分是参考muduo项目来设计和实现的，当然也做了一些取舍和增改；同时也大量借鉴了Golang的一些设计哲学和思想。下面举几个小例子来说明一下：
+ Duration ： 这是一个时间区间相关的类，自带时间单位信息，参考了Golang项目中的Duration实现。我们在其他项目中见到太多的时间是不带单位的，例如timeout，到底是秒、毫秒还是微秒？需要看文档说明或具体实现，好一点的设计会将单位带在变量名中，例如timeout_ms，但还是没有Duration这种独立的类好。目前C++11中也有类似的实现std::chrono::duration，但稍显复杂，没有咱们这个借鉴Golang实现的版本来的简单明了 Buffer ： 这是一个缓冲区类，融合了muduo和Golang两个项目中相关类的设计和实现 http::Server : 这是一个http服务器类，自带线程池，它的事件循环和工作线程调度，完全是线程安全的，业务层不用太多关心跨线程调用问题。同时，还将http服务器的核心功能单独抽取出来形成http::Service类，是一个可嵌入型的服务器类，可以嵌入到已有的libevent事件循环中 网络地址的表达就仅仅使用&amp;quot;ip:port&amp;quot;这种形式字符串表示，就是参考Golang的设计 httpc::ConnPool是一个http的客户端连接池库，设计上尽量考虑高性能和复用。以后基于此还可以增加负载均衡和故障转移等特性  另外，我们实现过程中极其重视线程安全问题，一个事件相关的资源必须在其所属的EventLoop（每个EventLoop绑定一个线程）中初始化和析构释放，这样我们能最大限度的减少出错的可能。为了达到这个目标我们重载event_add和event_del等函数，每一次调用event_add，就在对应的线程私有数据中记录该对象，在调用event_del时，检查之前该线程私有数据中是否拥有该对象，然后在整个程序退出前，再完整的检查所有线程的私有数据，看看是否仍然有对象没有析构释放。具体实现稍有区别，详细代码实现可以参考 https://github.com/Qihoo360/evpp/blob/master/evpp/inner_pre.cc#L46~L87。我们如此苛刻的追求线程安全，只是为了让一个程序能安静的平稳的退出或Reload，因为我们深刻的理解“编写永远运行的系统，和编写运行一段时间后平静关闭的系统是两码事”，后者要困难的多得多。
+吞吐量Benchmark测试报告 本文用 ping pong 测试来对比evpp与libevent、boost.asio、muduo] 等网络的吞吐量，测试结果表明evpp吞吐量与boost.asio、muduo等相当，比libevent高**17%~130%**左右。
+evpp本身是基于libevent实现的，不过evpp只是用了libevent的事件循环，并没有用libevent的evbuffer，而是自己参考muduo和Golang实现了自己的网络IO读写类Buffer。
+性能测试相关的代码都在这里：https://github.com/Qihoo360/evpp/tree/master/benchmark/.
+测试对象  evpp-0.2.0 based on libevent-2.0.21 boost.asio-1.53 libevent-2.0.21  系统环境  操作系统：Linux CentOS 6.2, 2.6.32-220.7.1.el6.x86_64 硬件CPU：Intel(R) Xeon(R) CPU E5-2630 v2 @ 2.</description>
+    </item>
+    
+    <item>
+      <title>minio源码阅读</title>
+      <link>http://zieckey.github.io/post/2016-09-06-minio-source-code-reading/</link>
+      <pubDate>Tue, 06 Sep 2016 11:52:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/post/2016-09-06-minio-source-code-reading/</guid>
+      <description>简介 minio是Go实现的一个完全兼容S3的服务，和大多Go项目一样，干净小巧，没有依赖，编译运行一键搞定，便利之极。
+源码阅读 HTTP事件注册 启动阶段的初始化工作还是相当繁琐，没戏看。重点看一下运行期间的功能。
+minio进程起来了，对外提供HTTP服务，那么找到HTTP的事件注册的函数就是最好的入口点。事件处理函数的注册代码路径为：serverMain -&amp;gt; configureServerHandler -&amp;gt; api-router.go:registerAPIRouter
+在registerAPIRouter这个函数中，注册了所有HTTP相关的事件处理回调函数。事件分发使用了github.com/gorilla/mux库。这个mux库，在Golang的项目中，使用率还是蛮多的，上次我在Trafix项目中也看到是使用mux库来处理HTTP事件注册和分发处理。
+PutObject：上传一个对象 注册回调函数为bucket.Methods(&amp;quot;PUT&amp;quot;).Path(&amp;quot;/{object:.+}&amp;quot;).HandlerFunc(api.PutObjectHandler)
+下面我们来分析一下func (api objectAPIHandlers) PutObjectHandler(w http.ResponseWriter, r *http.Request)函数的实现。
+ 首先，检测HTTP HEADER中是否有设置 X-Amz-Copy-Source 检测HTTP HEADER中的Content-Md5，并获取该MD5（注意：该MD5是16进制数Base64Encode之后的结果） 检测是否有相应权限 检测是否超过最大大小限制 根据权限，调用相应的函数。这里我们重点介绍api.ObjectAPI.PutObject(bucket, object, size, r.Body, metadata) 如果是单机版本，会进入func (fs fsObjects) PutObject(bucket string, object string, size int64, data io.Reader, metadata map[string]string) (string, error)函数中  继续分析func (fs fsObjects) PutObject(...)函数
+ 首先检测 BucketName、ObjectName 是否合法 生成一个UUID，然后根据UUID生成一个唯一的临时的obj路径tempObj new一个MD5对象，用来计算上传的数据的MD5 根据HTTP请求的Reader生成一个io.TeeReader对象，用来读取数据的同时，顺便计算一下MD5值 调用func fsCreateFile(...)来创建一个临时的对象文件 再检查计算出来的MD5是否与HTTP HEADER中的MD5完全一致 如果MD5不一致就删除临时文件，返回错误。如果MD5完全一致，就将临时文件Rename为目标文件 最后，如果HTTP HEADER中有额外的meta数据需要写入，就调用writeFSMetadata写入meta文件中 最最后，返回数据的MD5值  上面func fsCreateFile(.</description>
+    </item>
+    
+    <item>
+      <title>发布一个Golang版本的INI解析器</title>
+      <link>http://zieckey.github.io/post/2016-05-29-a-new-ini-parser-for-golang/</link>
+      <pubDate>Sun, 29 May 2016 13:14:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/post/2016-05-29-a-new-ini-parser-for-golang/</guid>
+      <description>goini 这是一个为Golang开发的读取INI格式文件的库，它还能读取类似于INI格式的key/value对数据。
+goini 的设计目标是简单、灵活、高效，有如下特性：
+ 支持标准INI格式 支持节 支持从本地磁盘中读取INI文件 支持从内存数据中读取INI数据 支持解析形如INI格式的key/value对数据，分隔符可以自定义 支持UTF8编码 支持注释符 ; or # 支持级联继承 仅仅只依赖Golang标准库 测试用户100%覆盖  使用时导入 import github.com/zieckey/goini  用法示例 示例1 : 解析INI文件 import github.com/zieckey/goini ini := goini.New() err := ini.ParseFile(filename) if err != nil { fmt.Printf(&amp;#34;parse INI file %v failed : %v\n&amp;#34;, filename, err.Error()) return } v, ok := ini.Get(&amp;#34;the-key&amp;#34;) //... 示例2 ： 解析内存中形如INI格式的数据 raw := []byte(&amp;#34;a:av||b:bv||c:cv||||d:dv||||||&amp;#34;) ini := goini.New() err := ini.Parse(raw, &amp;#34;||&amp;#34;, &amp;#34;:&amp;#34;) if err !</description>
+    </item>
+    
+    <item>
+      <title>Trafik源代码阅读</title>
+      <link>http://zieckey.github.io/post/2016-05-26-trafik-source-code-reading/</link>
+      <pubDate>Thu, 26 May 2016 07:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/post/2016-05-26-trafik-source-code-reading/</guid>
+      <description>Trafik介绍 其官网是这么介绍的：
+Træfɪk is a modern HTTP reverse proxy and load balancer made to deploy microservices with ease. It supports several backends (Docker, Swarm, Mesos/Marathon, Consul, Etcd, Zookeeper, BoltDB, Rest API, file...) to manage its configuration automatically and dynamically. 翻译过来就是：Træfɪk是一个现代的HTTP反向代理和易用的微服务负载平衡器，支持多种后端服务， 例如 Docker、 Swarm、 Mesos/Marathon、 Kubernetes、 Consul、 Etcd、 Zookeeper、 BoltDB、 Rest API、 文件 等等， 可以自动地动态管理和加载各种配置。
+特点如下：
+ 快速，benchmark显示，能够达到nginx的85%的性能 没有依赖地狱，得益于Golang的特性，单个二进制文件就能运行 Rest API 监视后端，能够自动监听后端配置的变化。 配置的热重加载，无需重新启动进程或服务器 优雅地关闭Http连接 后端的断路器Circuit breaker Round Robin rebalancer 负载平衡 Rest测量 包括小的官方docker SSL后端支持 SSL前端支持 干净的AngularJS Web UI 支持Websocket 支持Http/2 如果网络错误重试请求 自动Https支持(Let’s Encrypt)  用法 最简单的用法当然是做一个HTTP反向代理用。</description>
+    </item>
+    
+    <item>
+      <title>如何在win7 64位系统下安装gopcap包及使用</title>
+      <link>http://zieckey.github.io/post/2016-05-26-howto-build-gopcap-on-windows-x64/</link>
+      <pubDate>Wed, 25 May 2016 20:12:01 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/post/2016-05-26-howto-build-gopcap-on-windows-x64/</guid>
+      <description>gopcap是libpcap库的Golang封装，其项目地址在这里 https://github.com/akrennmair/gopcap 。 本文简要介绍一下如何在win7 64位系统平台上使用 gopcap 库。
+安装步骤如下：
+ 安装Golang 64位版本 安装mingw 64位版本，注意导入到windows环境变量中。让命令行能自动找到 gcc 命令 在 http://www.tcpdump.org/ 下载 libpcap-1.7.4.tar.gz，从这个包中得到libpcap的C语言头文件 在 https://www.winpcap.org/install/ 下载winpcap并安装，从这里可以得到libpcap的windows DLL文件 wpcap.dll，用于运行 在 http://www.winpcap.org/archive/ 下载 4.1.1-WpdPack.zip，从其中的x64目录下找到 wpcap.lib 库，用于编译 执行下列命令：  这里，将相关头文库、库文件都放在 C:\wpdpcak 目录下，是因为 gopcap 库的cgo编译选择是这么设置，当然你也可以修改源码的方式来重新设置目录。
+ 编译过程中如果出现下列错误  $ go build # github.com/akrennmair/gopcap In file included from C:/WpdPack/Include/pcap.h:43:0, from ..\..\..\akrennmair\gopcap\pcap.go:12: C:/WpdPack/Include/pcap/pcap.h:450:1: error: unknown type name &amp;#39;Adapter&amp;#39; Adapter *pcap_get_adapter(pcap_t *p); ^ 就将 pcap/pcap.h 中这一行注释掉。   至此，应该再不会有问题了，编译成功。 gopcap 库的toots目录有很多使用用例，可以看看以了解如何使用。  参考  http://blog.</description>
+    </item>
+    
+    <item>
+      <title>Golang CGO编程之调用返回char*指针及长度的C函数库</title>
+      <link>http://zieckey.github.io/post/2016-04-20-golang-cgo/</link>
+      <pubDate>Wed, 20 Apr 2016 21:43:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/post/2016-04-20-golang-cgo/</guid>
+      <description>现代所有主流操作系统几乎都是用C语音实现的，几乎所有高级语言都能调用C语言，例如PHP可以调用C语言写的PHP扩展，Python也可以调用C语言实现的Python扩展。 Golang语言也不例外。
+Golang通过CGO机制能很方便的调用C语言。本文介绍一下如何在Go中调用稍稍复杂一点C函数，例如： char* f(int, int*)
+首先看一个最简单的例子，将Golang中的一个字符串传入C函数中：
+package main /* #include &amp;lt;stdio.h&amp;gt; #include &amp;lt;stdlib.h&amp;gt; void print(char *str) { printf(&amp;#34;%s\n&amp;#34;, str); } */ import &amp;#34;C&amp;#34; import &amp;#34;unsafe&amp;#34; func main() { s := &amp;#34;Hello Cgo&amp;#34; cs := C.CString(s) C.print(cs) C.free(unsafe.Pointer(cs)) } 注意上述程序中的关键语句cs := C.CString(s)是将一个Golang的字符串转换为C语言字符串，该C语言字符串是由C函数malloc从堆中分配的，因此后续需要调用 C.free 释放内存。
+然后，我们看看如何调用一个复杂一点的C函数？例如： char* f(int, int*) ，返回一个char*指针，并且有一个参数也是返回值int*。请直接看下面的例子：
+package main /* #include &amp;lt;stdlib.h&amp;gt; #include &amp;lt;string.h&amp;gt; char* xmalloc(int len, int *rlen) { static const char* s = &amp;#34;0123456789&amp;#34;; char* p = malloc(len); if (len &amp;lt;= strlen(s)) { memcpy(p, s, len); } else { memset(p, &amp;#39;a&amp;#39;, len); } *rlen = len; return p; } */ import &amp;#34;C&amp;#34; import &amp;#34;unsafe&amp;#34; import &amp;#34;fmt&amp;#34; func main() { rlen := C.</description>
+    </item>
+    
+    <item>
+      <title>使用Golang利用ectd实现一个分布式锁</title>
+      <link>http://zieckey.github.io/post/2016-02-24-distrubute-lock-over-etcd/</link>
+      <pubDate>Wed, 24 Feb 2016 20:43:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/post/2016-02-24-distrubute-lock-over-etcd/</guid>
+      <description>etcd是随着CoreOS项目一起成长起来的，随着Golang和CoreOS等项目在开源社区日益火热， etcd作为一个高可用、强一致性的分布式Key-Value存储系统被越来越多的开发人员关注和使用。
+这篇文章全方位介绍了etcd的应用场景，这里简单摘要如下：
+ 服务发现（Service Discovery） 消息发布与订阅 负载均衡 分布式通知与协调 分布式锁 分布式队列 集群监控与Leader竞选 为什么用etcd而不用ZooKeeper  本文重点介绍如何利用ectd实现一个分布式锁。 锁的概念大家都熟悉，当我们希望某一事件在同一时间点只有一个线程(goroutine)在做，或者某一个资源在同一时间点只有一个服务能访问，这个时候我们就需要用到锁。 例如我们要实现一个分布式的id生成器，多台服务器之间的协调就非常麻烦。分布式锁就正好派上用场。
+其基本实现原理为：
+ 在ectd系统里创建一个key 如果创建失败，key存在，则监听该key的变化事件，直到该key被删除，回到1 如果创建成功，则认为我获得了锁  具体代码如下：
+package etcdsync import ( &amp;#34;fmt&amp;#34; &amp;#34;io&amp;#34; &amp;#34;os&amp;#34; &amp;#34;sync&amp;#34; &amp;#34;time&amp;#34; &amp;#34;github.com/coreos/etcd/client&amp;#34; &amp;#34;github.com/coreos/etcd/Godeps/_workspace/src/golang.org/x/net/context&amp;#34; ) const ( defaultTTL = 60 defaultTry = 3 deleteAction = &amp;#34;delete&amp;#34; expireAction = &amp;#34;expire&amp;#34; ) // A Mutex is a mutual exclusion lock which is distributed across a cluster. type Mutex struct { key string id string // The identity of the caller 	client client.</description>
+    </item>
+    
+    <item>
+      <title>编译Golang包为C语言库文件</title>
+      <link>http://zieckey.github.io/2016/02/19/sharing-golang-package-to-C/</link>
+      <pubDate>Fri, 19 Feb 2016 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2016/02/19/sharing-golang-package-to-C/</guid>
+      <description>Go 1.5发布后，其包含一个特性：可以编译生成C语言动态链接库或静态库。本文给出了示例代码和用法。
+go build和go install命令，可以使用参数 -buildmode 来指定生成哪种类型的二进制目标文件。请见https://golang.org/cmd/go/#Description of build modes 详细说明。
+当前我们使用 -buildmode=c-archive 来示例和测试。
+Golang源文件：
+// file hello.go package main port &amp;#34;C&amp;#34; import &amp;#34;fmt&amp;#34; //export SayHello func SayHello(name string) { fmt.Printf(&amp;#34;func in Golang SayHello says: Hello, %s!\n&amp;#34;, name) } //export SayHelloByte func SayHelloByte(name []byte) { fmt.Printf(&amp;#34;func in Golang SayHelloByte says: Hello, %s!\n&amp;#34;, string(name)) } //export SayBye func SayBye() { fmt.Println(&amp;#34;func in Golang SayBye says: Bye!&amp;#34;) } func main() { // We need the main function to make possible  // CGO compiler to compile the package as C shared library } 使用命令go build -buildmode=c-archive -o libhello.</description>
+    </item>
+    
+    <item>
+      <title>Golang发送邮件</title>
+      <link>http://zieckey.github.io/2016/02/14/send-email-for-golang/</link>
+      <pubDate>Sun, 14 Feb 2016 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2016/02/14/send-email-for-golang/</guid>
+      <description>本文介绍一个简单的方法使用Go语言发送邮件。直接调用系统自带的mail命令发送邮件。
+在网上找了很多例子，基本上都是基于Golang本身自带的smtp包来实现的，参考 http://www.tuicool.com/articles/e2qUv2，这里需要以下几个关键信息：
+ 邮箱地址(邮箱用户名) 邮箱密码 邮件提供商hostname smtp服务器地址和端口 邮件主题、正文、接收人列表  上述5个信息中，实际上我们关心的其实只有第5个，其他4个都不是太关心。而且，如果我们想写一段开源代码，这里就把邮箱用户名和密码给暴露了，不太合适。我于是想到了PHP中的mail这个发送邮件的函数来，PHP是如何实现邮件发送的功能呢？我搜素PHP的源码发现在非Windows平台使用的系统自带的sendmail命令来发送的，具体代码请参考: php-5.3.3/ext/standard/mail.c:php_mail
+受此启发，我在golang中也这么实现不就简单了么？下面是源码：
+import ( &amp;#34;os/exec&amp;#34; &amp;#34;log&amp;#34; &amp;#34;runtime&amp;#34; ) // SendMail sends an email to the addresses using &amp;#39;mail&amp;#39; command on *nux platform. func SendMail(title, message string, email ...string) error { if runtime.GOOS == &amp;#34;windows&amp;#34; { log.Printf(&amp;#34;TODO: cannot send email on windows title=[%v] messagebody=[%v]&amp;#34;, title, message) return nil } mailCommand := exec.Command(&amp;#34;mail&amp;#34;, &amp;#34;-s&amp;#34;, title) mailCommand.Args = append(mailCommand.Args, email...) stdin, err := mailCommand.</description>
+    </item>
+    
+    <item>
+      <title>Golang版本的remove_if函数实现</title>
+      <link>http://zieckey.github.io/2016/02/14/golang-remove_if/</link>
+      <pubDate>Sun, 14 Feb 2016 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2016/02/14/golang-remove_if/</guid>
+      <description>C++中的std::remove_if函数实现了一个算法，可以将一个容器中的元素按照一定的规则进行删除，但Go语言中却没有类似的函数。代码其实很简单，如下：
+func RemoveIf(s string, f func(rune) bool) string { runes := []rune(s) result := 0 for i, r := range runes { if !f(r) { runes[result] = runes[i] result++ } } return string(runes[0:result]) } 上述算法是参考C++标准库中的实现(bits/stl_algo.h:remove_if)，但比C++的效率低，因为多了两次转换（string与[]rune互相转换两次）。
+进一步思考：这两次转换不知道是否可以通过其他方式节省掉？类似于C++的实现，就地删除（并没有新开辟内存空间）。
+上述源码放到这里了： https://github.com/zieckey/gocom/tree/master/tstrings
+必须要吐槽一下Go语言没有泛型，如果要针对[]byte就又得要重复实现一遍类似的代码。</description>
+    </item>
+    
+    <item>
+      <title>使用grafana&#43;influxdb搭建炫酷的实时可视化监控平台</title>
+      <link>http://zieckey.github.io/2016/02/05/influxdb-grafana/</link>
+      <pubDate>Fri, 05 Feb 2016 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2016/02/05/influxdb-grafana/</guid>
+      <description>最近看到一篇介绍influxdb的文章，然后又看到用grafana配合图形展示，就简单试用了一下，确实还不错。但其中也遇到一些低级问题，这篇博文就当一个流水文档吧，便于以后查阅。
+这几个组件的使用方式为：数据收集 &amp;ndash;&amp;gt; influxdb存储 &amp;ndash;&amp;gt; grafana展现。
+本文所述的influxdb版本适用于为0.9x，grafana版本适用于2.6
+influxdb介绍 InfluxDB 是一个开源分布式的时序、事件和指标数据库。使用 Go 语言编写，无需外部依赖。其设计目标是实现分布式和水平伸缩扩展。 它有三大特性：
+ Time Series （时间序列）：你可以使用与时间有关的相关函数（如最大，最小，求和等） Metrics（度量）：你可以实时对大量数据进行计算 Eevents（事件）：它支持任意的事件数据  又有如下特点：
+ schemaless(无结构)，可以是任意数量的列 Scalable min, max, sum, count, mean, median 一系列函数，方便统计  按照其官方文档，可以很方便的在centos上安装：
+cat &amp;lt;&amp;lt;EOF | sudo tee /etc/yum.repos.d/influxdb.repo [influxdb] name = InfluxDB Repository - RHEL \$releasever baseurl = https://repos.influxdata.com/rhel/\$releasever/\$basearch/stable enabled = 1 gpgcheck = 1 gpgkey = https://repos.influxdata.com/influxdb.key EOF  然后使用yum安装： sudo yum install influxdb
+直接在前台启动也很方便，输入命令 influxdb 即可启动。
+默认情况下influxdb会监听一下端口：</description>
+    </item>
+    
+    <item>
+      <title>源码阅读-悟空搜索引擎</title>
+      <link>http://zieckey.github.io/2016/02/02/wukong-source-code-reading/</link>
+      <pubDate>Tue, 02 Feb 2016 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2016/02/02/wukong-source-code-reading/</guid>
+      <description>一个最简单的例子 我们还是从一个最简单的示例代码开始：
+package main import ( &amp;#34;github.com/huichen/wukong/engine&amp;#34; &amp;#34;github.com/huichen/wukong/types&amp;#34; &amp;#34;log&amp;#34; ) var ( // searcher是协程安全的 	searcher = engine.Engine{} ) func main() { // 初始化 	searcher.Init(types.EngineInitOptions{ SegmenterDictionaries: &amp;#34;./data/dictionary.txt&amp;#34;}) defer searcher.Close() // 将文档加入索引 	searcher.IndexDocument(0, types.DocumentIndexData{Content: &amp;#34;此次百度收购将成中国互联网最大并购&amp;#34;}) searcher.IndexDocument(1, types.DocumentIndexData{Content: &amp;#34;百度宣布拟全资收购91无线业务&amp;#34;}) searcher.IndexDocument(2, types.DocumentIndexData{Content: &amp;#34;百度是中国最大的搜索引擎&amp;#34;}) // 等待索引刷新完毕 	searcher.FlushIndex() // 搜索输出格式见types.SearchResponse结构体 	res := searcher.Search(types.SearchRequest{Text:&amp;#34;百度中国&amp;#34;}) log.Printf(&amp;#34;num=%d &amp;#34;, res.NumDocs) for _, d := range res.Docs { log.Printf(&amp;#34;docId=%d&amp;#34;, d.DocId) log.Print(&amp;#34;\tscore:&amp;#34;, d.Scores) log.Print(&amp;#34;\tTokenLocations:&amp;#34;, d.TokenLocations) log.Print(&amp;#34;\tTokenSnippetLocations:&amp;#34;, d.TokenSnippetLocations) } } 悟空搜索引擎不是一个完整的搜索引擎，我们可以把它当做一个搜索引擎基础库来使用。上面的示例代码是一个最简单的例子，展示了如何使用这个库，非常简单，三步即可完成：</description>
+    </item>
+    
+    <item>
+      <title>应用双缓冲技术完美解决资源数据优雅无损的热加载问题</title>
+      <link>http://zieckey.github.io/2016/01/27/double-buffering/</link>
+      <pubDate>Wed, 27 Jan 2016 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2016/01/27/double-buffering/</guid>
+      <description>简介 在一个网络服务器不间断运行过程中，有一些资源数据需要实时更新，例如需要及时更新一份白名单列表，怎么做才能做到优雅无损的更新到服务的进程空间内？这里我们提出一种叫“双缓冲”的技术来解决这种问题。
+这里的双缓冲技术是借鉴了计算机屏幕绘图领域的概念。双缓冲技术绘图即在内存中创建一个与屏幕绘图区域一致的对象，先将图形绘制到内存中的这个对象上，再一次性将这个对象上的图形拷贝到屏幕上，这样能大大加快绘图的速度。
+问题抽象 假设我们有一个查询服务，为了方便描述，我们将数据加密传输等一些不必要的细节都省去后，请求报文可以抽象成两个参数：一个是id，用来唯一标识一台设备（例如手机或电脑）；另一个查询主体query。服务端业务逻辑是通过query查询数据库/NoSQL等数据引擎然后返回相应的数据，同时记录一条请求日志。
+用Golang来实现这个逻辑如下：
+package main import ( &amp;#34;net/http&amp;#34; &amp;#34;log&amp;#34; &amp;#34;os&amp;#34; &amp;#34;fmt&amp;#34; ) func Query(r *http.Request) string { id := r.FormValue(&amp;#34;id&amp;#34;) query := r.FormValue(&amp;#34;query&amp;#34;) //参数合法性检查  //具体的业务逻辑，查询数据库/NoSQL等数据引擎，然后做逻辑计算，然后合并结果 	//这里简单抽象，直接返回欢迎语 	result := fmt.Sprintf(&amp;#34;hello, %v&amp;#34;, id) // 记录一条查询日志，用于离线统计和分析 	log.Printf(&amp;#34;&amp;lt;id=%v&amp;gt;&amp;lt;query=%v&amp;gt;&amp;lt;result=%v&amp;gt;&amp;lt;ip=%v&amp;gt;&amp;#34;, id, query, result, r.RemoteAddr) return result } func Handler(w http.ResponseWriter, r *http.Request) { r.ParseForm() result := Query(r) w.Write([]byte(result)) } func main() { http.HandleFunc(&amp;#34;/q&amp;#34;, Handler) hostname, _ := os.Hostname() log.Printf(&amp;#34;start http://%s:8091/q&amp;#34;, hostname) log.</description>
+    </item>
+    
+    <item>
+      <title>serf介绍</title>
+      <link>http://zieckey.github.io/2015/12/20/serf/</link>
+      <pubDate>Sun, 20 Dec 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/12/20/serf/</guid>
+      <description>简介 Serf是一个无中心化的服务调度和服务发现工具。它容错性极好、无中心化设计、没有单点故障。Serf是建立在Gossip协议之上的，Gossip协议就是为无中心化通信而设计的。为了让一个新节点加入Serf集群，只需要知道集群中的任意一个节点即可，一旦新节点加入进来，它将获得集群中所有的成员信息。Gossip协议让Serf的配置和启动变得非常容易。
+如何使用 在官方网站 https://www.serfdom.io/downloads.html 下载合适的版本。
+简单使用 新建一个事件处理器脚本，例如 handler.sh ：
+#!/bin/bash if [ &amp;#34;${SERF_USER_EVENT}&amp;#34; = &amp;#34;memresponse&amp;#34; ]; then cat &amp;gt;&amp;gt; /tmp/mem.txt echo &amp;#34;\n&amp;#34; &amp;gt;&amp;gt; /tmp/mem.txt fi 再启动 serf 服务，绑定handler.sh为默认的事件处理器： ./serf agent -bind=133.130.106.57:5001 -rpc-addr=133.130.106.57:7373 -log-level=debug -event-handler=./handler.sh
+再再再另一个console窗口利用serf命令发送一个事件到之前启动的serf： ./serf event -rpc-addr=133.130.106.57:7373 memresponse xcxx
+我们可以到serf服务的窗口输出：
+$ ./serf agent -bind=133.130.106.57:5001 -rpc-addr=133.130.106.57:7373 -log-level=debug -event-handler=./handler.sh ==&amp;gt; Starting Serf agent... ==&amp;gt; Starting Serf agent RPC... ==&amp;gt; Serf agent running! Node name: &#39;133-130-106-57&#39; Bind addr: &#39;133.130.106.57:5001&#39; RPC addr: &#39;133.</description>
+    </item>
+    
+    <item>
+      <title>godotenv介绍</title>
+      <link>http://zieckey.github.io/2015/12/15/godotenv/</link>
+      <pubDate>Tue, 15 Dec 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/12/15/godotenv/</guid>
+      <description>简介 godotenv是ruby社区的dotenv的Golang移植版本。该库会解析 .env 文件，该文件是一个典型的INI格式的文件，类似于下面：
+SOME_ENV_VAR=somevalue
+然后在你的代码中调用 godotenv.Load() 即可解析并将相应的Key/Value对都放到环境变量中。
+例如可以通过 os.Getenv(&amp;quot;SOME_ENV_VAR&amp;quot;) 获取。
+参考文献  dotenv godotenv  </description>
+    </item>
+    
+    <item>
+      <title>nsq介绍及源码阅读</title>
+      <link>http://zieckey.github.io/2015/10/22/nsq/</link>
+      <pubDate>Thu, 22 Oct 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/10/22/nsq/</guid>
+      <description>简介 nsq客户端逻辑 nsq消费者 主要请参考nsq_tail代码。nsqd的回应消息处理代码为func (c *Conn) readLoop()。
+TCP消息流的二进制结构请参考官方文档：http://nsq.io/clients/tcp_protocol_spec.html
+nsq消费者与nsqd建立连接的流程如下：
+ 当建立好TCP连接后，客户端必须发送一个 4 字节的 &amp;ldquo;magic&amp;rdquo; 标识码，表示通讯协议的版本。 V2(4 个字节的 ASCII [space][space][V][2]) 消费用到的推送流协议（和发布用到的请求/响应协议） 认证后，客户端可以发送IDENTIFY命令来停供常用的元数据（比如，更多的描述标识码）和协商特性。服务器会根据客户端请求的内容返回一个JSON数据或直接返回OK 然后，客户端还必须使用SUB命令订阅一个话题(Topic)和通道(Channel)。成功后服务器会返回OK 最后，还需要设置RDY状态。如果RDY状态为 0 ，意味着客户端不会收到任何消息。因此需要设置一个RDY状态值，例如设置100，不需要任何附加命令，将会有 100 条消息推送到客户端  消费消息数据时，需要给NSQD返回该消息是否成功被处理。只有成功被处理的消息，才真正从NSQ队列中删除不会再投递到任何消费者。
+nsq生产者 主要参考https://github.com/nsqio/go-nsq项目中Producer类的实现。
+nsq生产者与nsqd建立连接的流程如下：
+ 当建立好TCP连接后，客户端必须发送一个 4 字节的 &amp;ldquo;magic&amp;rdquo; 标识码，表示通讯协议的版本。 V2(4 个字节的 ASCII [space][space][V][2]) 消费用到的推送流协议（和发布用到的请求/响应协议） 认证后，客户端可以发送IDENTIFY命令来停供常用的元数据（比如，更多的描述标识码）和协商特性。服务器会根据客户端请求的内容返回一个JSON数据或直接返回OK，表明连接建立成功。  将消息投递到NSQD时，成功后NSQD会返回OK。由于返回消息上没有ID，表明上看是不能做pipeline操作的。 不过由于在一条连接上NSQD的返回消息肯定与接收到的消息顺序一一对应，因此可以做pipeline操作，可以连续调用多次PUB/MPUB命令， 但需要将这些命令保存下来，等待NSQD返回数据后再决定是否将这些命令标记完成还是标记为需要重新投递。
+实现时，可以借用TCP的滑动窗口概念。如果滑动窗口为1，相当于每次调用PUB/MPUB命令都需要等待服务器返回后才决定下一步操作，这就退化为同步操作。
+nsqd内部处理逻辑 一个Topic可以有多Channel，每个消息都会复制一份放入Channel中，也就是说每个Channel的数据都是独立的。如果消费速度更不上生产的速度，那么每个Channel上的数据都会序列化到磁盘上，这里是一个坑，有可能会因此导致数据写磁盘多份。
+另外，NSQ不能保证数据的消费顺序与生产顺序完全一致。
+与nsqlookupd交互 代码调用路径如下：
+nsqd.Main() n.waitGroup.Wrap(func() { n.lookupLoop() }) func (n *NSQD) lookupLoop() : 91行： case val := &amp;lt;-n.notifyChan: 消息分发 func (t *Topic) messagePump() 这里进行消息的分发，直接将该topic下的消息推送给所有的channel上。</description>
+    </item>
+    
+    <item>
+      <title>ansible简介</title>
+      <link>http://zieckey.github.io/2015/10/08/ansible/</link>
+      <pubDate>Thu, 08 Oct 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/10/08/ansible/</guid>
+      <description>简介 ansible是新出现的自动化运维工具，基于Python开发，集合了众多运维工具（puppet、cfengine、chef、func、fabric）的优点，实现了批量系统配置、批量程序部署、批量运行命令等功能。ansible是基于模块工作的，本身没有批量部署的能力。真正具有批量部署的是ansible所运行的模块，ansible只是提供一种框架。主要包括：
+ 连接插件connection plugins：负责和被监控端实现通信； host inventory：指定操作的主机，是一个配置文件里面定义监控的主机； 各种模块核心模块、command模块、自定义模块； 借助于插件完成记录日志邮件等功能； playbook：剧本执行多个任务时，非必需可以让节点一次性运行多个任务。  在centos上安装 直接使用yum安装即可： sudo yum install ansible
+简单使用 其默认的配置路径： /etc/ansible/ansible.cfg
+为了避免SHH key host检查，可以将下面配置项打开：
+host_key_checking = False  另外，为避免一些依赖（依赖目标机器上的软件环境），可以使用 -m raw 参数，例如下面是没有加这个参数时会出错：
+$ ansible builddev -m shell -a &amp;quot;uname -a&amp;quot; -k SSH password: 10.16.28.17 | FAILED &amp;gt;&amp;gt; { &amp;quot;failed&amp;quot;: true, &amp;quot;msg&amp;quot;: &amp;quot;/usr/bin/python: not found\n&amp;quot;, &amp;quot;parsed&amp;quot;: false } 加上这个参数就没有问题： ansible builddev -m shell -m raw -a &amp;quot;uname -a&amp;quot; -k
+修改配置文件 ansible使用配置文件 /etc/ansible/hosts 。其格式如下：</description>
+    </item>
+    
+    <item>
+      <title>Golang开源项目源码阅读</title>
+      <link>http://zieckey.github.io/2015/09/19/golang-project-source-code-reading/</link>
+      <pubDate>Sat, 19 Sep 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/09/19/golang-project-source-code-reading/</guid>
+      <description>总览 github.com/julienschmidt/httproute httprouter 是一个轻量级的高性能HTTP请求分发器，英文称之为multiplexer，简称mux。
+httproute特性  仅支持精确匹配，及只匹配一个模式或不会匹配到任何模式。相对于其他一些mux，例如go原生的 http.ServerMux, 会使得一个请求URL匹配多个模式，从而需要有优先级顺序，例如最长匹配、最先匹配等等。 不需要关心URL结尾的斜杠 路径自动归一化和矫正 零内存分配 高性能。这一点可以参考Benchmarks 再也不会崩溃  示例代码 使用起来非常简单，与 net/http 包提供的接口非常类似，甚至还提供了完全的一致的接口。
+package main import ( &amp;#34;fmt&amp;#34; &amp;#34;github.com/julienschmidt/httprouter&amp;#34; &amp;#34;net/http&amp;#34; &amp;#34;log&amp;#34; ) func Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) { fmt.Fprint(w, &amp;#34;Welcome!\n&amp;#34;) } func Hello(w http.ResponseWriter, r *http.Request, ps httprouter.Params) { fmt.Fprintf(w, &amp;#34;hello, %s!\n&amp;#34;, ps.ByName(&amp;#34;name&amp;#34;)) } func main() { router := httprouter.New() router.GET(&amp;#34;/&amp;#34;, Index) router.GET(&amp;#34;/hello/:name&amp;#34;, Hello) log.Fatal(http.ListenAndServe(&amp;#34;:8080&amp;#34;, router)) } 源码阅读 httproute内部通过实现一个trie树来提高性能。核心代码就是golang标准库中 http.Handler 接口，在该函数中实现自己的请求路由分发策略。
+// ServeHTTP 实现 func (r *Router) ServeHTTP(w http.</description>
+    </item>
+    
+    <item>
+      <title>QUIC（Quick UDP Internet Connections）源代码阅读</title>
+      <link>http://zieckey.github.io/2015/06/17/quic-source-code-reading/</link>
+      <pubDate>Wed, 17 Jun 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/06/17/quic-source-code-reading/</guid>
+      <description>类 基础类 base  Pickle：针对二进制数据进行pack和unpack操作 MessagePump：消息泵基类，也就是做消息循环用的 TimeDelta：一个int64整型的封装，单位：微妙  net  IOVector : 对 struct iovec 的封装。提供了 struct iovec 相关的读写操作。 IPEndPoint：代表一个 IP:Port 对 QuicConfig：Quic相关的配置信息类(与加解密不相关) QuicDataReader：对一段内存数据的读取做了封装，比较方便的读取整数、浮点数、字符串等等。 QuicDataWriter：与QuicDataReader相对，能够比较方便的将整数、浮点数、字符串、IOVector等数据写入到一段内存buffer中。 QuicRandom：随机数产生器。 QuicFramerVisitorInterface：关于收到的数据包的处理的函数接口类。 QuicDispatcher::QuicFramerVisitor：从QuicFramerVisitorInterface继承，用于处理QUIC数据包 QuicData：对 &amp;lt;char*,size_t&amp;gt; 这中内存数据的封装。 QuicEncryptedPacket：继承自QuicData，并没有新的接口，只是更明确的表明这是一个Quic加密的报文。 QuicDispatcher：数据包处理类  收到一个数据包会调用 QuicDispatcher::ProcessPacket 进而会调用 QuicFramer::ProcessPacket   QuicTime::Delta：是对 base::TimeDelta 的封装 QuicTime：一个相对的时间点 TimeTicks：滴答时间。  TimeTicks::Now()：返回系统启动到当前时间点的 TimeTicks::UnixEpoch()：返回Unix时间戳   QuicAlarm：定时器的抽象类。 DeleteSessionsAlarm：删除过期session的定时器。 QuicFramer：用于对QUIC数据包的解析和组装。 QuicPacketPublicHeader：Quic Public包头。包括 CID，CID长度, reset标记，version标记, 序列化长度，version等。 QuicPacketHeader：Quic包头。包括 FEC标记、加密算法标记，加密Hash，序列号，是否是FEC_group，FEC_group等。 UDPSocket：UDP socket协议相关类，ReadFrom/SendTo 等等。ReadFrom的最后一个回调函数是会在读取到数据的时候调用。具体调用点为：UDPSocketLibevent::ReadWatcher::OnFileCanReadWithoutBlocking。具体平台的实现类有两个：UDPSocketLibevent/UDPSocketWin UDPServerSocket：从DatagramServerSocket这个接口类继承，并对UDPSocket进行了封装 QuicSimplePerConnectionPacketWriter：与每个连接相关的数据包writer。很多连接可能共享一个QuicServerPacketWriter，因此当需要向某个连接发送数据时，无法区分该连接。这个类实际上就是QuicServerPacketWriter和QuicConnection的一个组合包装。 QuicSimpleServerPacketWriter：用来发送数据的。  相关源文件  quic_flags.h ： 整个项目相关的全局配置信息，是全局变量。   源码阅读 QuicPacketPublicHeader struct QuicPacketPublicHeader { // Universal header.</description>
+    </item>
+    
+    <item>
+      <title>QUIC（Quick UDP Internet Connections）协议简要笔记(翻译)</title>
+      <link>http://zieckey.github.io/2015/05/08/quic-protocol/</link>
+      <pubDate>Fri, 08 May 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/05/08/quic-protocol/</guid>
+      <description>概述 动机 支持SPDY协议的动机 目标 我们希望开发出一套传输协议以支持下列目标：
+ 在今天的因特网上的广泛的部署能力（例如，能够顺利通过中间路由、可以在不修改内核或提升权限的情况下运行在普通用户客户端机器上） 减少因丢包引起的 head-of-line 阻塞 （丢失一个数据包不会对其他的数据流产生影响） 低时延 a. 极大的减少连接启动时延 (通常情况零RTT连接、加密算法协商、初始请求） b. 尝试时延前向纠错编码来减少丢包后重传造成的时延 在时延和效率方面提供对移动端的支持 避免拥塞的支持，跟TCP相比更友好 可媲美TLS的隐私数据保证（不需要按顺序的传输或按顺序的解密） 在服务器端和客户端双方面都能对可靠及安全的资源要求自动伸缩（包括合理的缓冲区管理和帮助，以避免促进放大的 DoS 攻击） 减少带宽消耗和增加通道状态的响应能力（在多路复用的流直接，使用统一的信号信道状态) 在不与其他目标相冲突的情况下减少数据包个数 为多路复用的流支持可靠的传输（可以模拟 TCP 多路复用的流） 在不与其他目标相冲突的情况下，能有效的支持带有demux-mux属性的代理 在不会牺牲我们既定的目标情况下，在任何可能的情况下尽量重用或者进化现有协议  理由和一些启示 摘要：从SPDY得到的经验看，为了不让中间路由设备误解数据包，最好的做法是尽可能的使用加密数据传输。
+为什么不使用基于 DTLS 之上的 SCTP 摘要：这个达不到上述3a描述的目标。同时，没有前向纠错功能。
+期望的 API 接口元素 API 概念 从最高层来看，我们希望有一种机制能将新来的stream接入到现有的连接中，而不是独立读写不同的连接。
+流特性 我们期望不同流将具有不同的传输特性，可以设置或修改应用程序。这些包括等鲜明特征设置： • 可调节冗余级别 （延迟储蓄的贸易带宽） • 可调节优先级别 （仿照 SPDY 不断变化的优先次序计划）
+我们期望一些控制通道，可以被看作一个带外流，将始终可用和可用于信号流的其余部分的状态更改。控制信道将可能包括专用帧 （控制帧），作为好保留的流，为加密的谈判。
+按顺序的数据传输 必须提供类似 TCP 按顺序的流式传输模型。
+###　连接状态
+应用程序和实际连接之间分离，使得对连接使用很困难。举个例子，当发送应用程序完成发送功能，它可能试图关闭连接，但数据仍然可能会在本地发送缓冲区中，这样的例子在关闭连接时，可能会导致未定义的行为或终止应用程序。
+为了更好地支持应用程序，必须支持下面的特性：
+1.RTT (当前平滑估计) 2.数据包大小 （包括所有开销 ； 也不包括开销，只包括有效负载） 3.</description>
+    </item>
+    
+    <item>
+      <title>golang学习之如何构造一个multipart/form格式的HTTP请求</title>
+      <link>http://zieckey.github.io/2015/03/18/golang-how-to-make-a-multipart-http-request/</link>
+      <pubDate>Wed, 18 Mar 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/03/18/golang-how-to-make-a-multipart-http-request/</guid>
+      <description>使用PHP里面的curl扩展库可以方便的从一个php array来构造一个multipart/form格式的HTTP请求，但golang里构造起来稍稍麻烦一点，下面我们来介绍具体的构造方法。
+具体代码实现 实际代码中用到 multipart.Writer，并调用其 writer.WriteField(key, val) 方法来构造。
+package main import ( &amp;#34;bytes&amp;#34; &amp;#34;fmt&amp;#34; &amp;#34;log&amp;#34; &amp;#34;mime/multipart&amp;#34; &amp;#34;net/http&amp;#34; ) // Creates a new file upload http request with optional extra params func newMultipartRequest(url string, params map[string]string) (*http.Request, error) { body := &amp;amp;bytes.Buffer{} writer := multipart.NewWriter(body) for key, val := range params { _ = writer.WriteField(key, val) } writer.Close() return http.NewRequest(&amp;#34;POST&amp;#34;, url, body) } func main() { extraParams := map[string]string{ &amp;#34;title&amp;#34;: &amp;#34;My Document&amp;#34;, &amp;#34;author&amp;#34;: &amp;#34;zieckey&amp;#34;, &amp;#34;description&amp;#34;: &amp;#34;A document with all the Go programming language secrets&amp;#34;, } request, err := newMultipartRequest(&amp;#34;http://127.</description>
+    </item>
+    
+    <item>
+      <title>golang学习之继承和重载</title>
+      <link>http://zieckey.github.io/2015/02/12/golang-derive-override/</link>
+      <pubDate>Thu, 12 Feb 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/02/12/golang-derive-override/</guid>
+      <description>其实golang里是不提倡继承的，也不提倡重载的。但是有些场景下，我们还是想试验一下传统C++或Java语言里的继承和重载能否用在golang里。
+实现 package main import ( &amp;#34;fmt&amp;#34; ) type Person struct { Id int Name string } type Tester interface { Test() Eat() } func (this *Person) Test() { fmt.Println(&amp;#34;\tthis =&amp;#34;, &amp;amp;this, &amp;#34;Person.Test&amp;#34;) } func (this *Person) Eat() { fmt.Println(&amp;#34;\tthis =&amp;#34;, &amp;amp;this, &amp;#34;Person.Eat&amp;#34;) } // Employee 从Person继承, 直接继承了 Eat 方法，并且将 Test 方法覆盖了。 type Employee struct { Person } func (this *Employee) Test() { fmt.Println(&amp;#34;\tthis =&amp;#34;, &amp;amp;this, &amp;#34;Employee.Test&amp;#34;) this.Person.Test() // 调用父类的方法，且该方法被子类覆盖了 } func main() { fmt.</description>
+    </item>
+    
+    <item>
+      <title>Docker介绍及初次使用教程</title>
+      <link>http://zieckey.github.io/2015/02/02/docker-intro/</link>
+      <pubDate>Mon, 02 Feb 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/02/02/docker-intro/</guid>
+      <description>介绍 请参考下列文章：
+ 深入浅出Docker（一）：Docker核心技术预览 Docker镜像文件（images）的存储结构  初次使用 实验环境 $ uname -a Linux 3.13.0-44-generic #73-Ubuntu SMP Tue Dec 16 00:22:43 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux Docker安装 请参考官方文档https://docs.docker.com/installation/ubuntulinux/，不再累述。
+下载一个基础镜像 按照官方教程执行sudo docker run -i -t ubuntu /bin/bash会得到下列错误：
+FATA[0301] Get https://registry-1.docker.io/v1/repositories/library/ubuntu/tags: dial tcp 162.242.195.84:443: connection timed out
+这是我大中华局域网F**K墙的原因，Docker官网镜像源的被墙，只能搭建一个梯子来做代理解决。
+sudo stop docker sudo HTTP_PROXY=http://proxy_server:port docker -d &amp;amp; 先停掉之前启动的docker进程，然后使用环境变量设置代理后启动docker进程。再最后执行sudo docker run -i -t ubuntu /bin/bash来下载我们的第一个基础镜像(base image)，这个过程有点长，大约半小时吧（视代理速度），然后看到下列信息表明下载成功了。
+Status: Downloaded newer image for ubuntu:latest 第一次使用 上一步中命令sudo docker run -i -t ubuntu /bin/bash会下载一个基础镜像，并进入docker的执行环境执行/bin/bash.</description>
+    </item>
+    
+    <item>
+      <title>golang解析MIME数据格式的代码示例</title>
+      <link>http://zieckey.github.io/2015/01/23/mime-golang-parsing/</link>
+      <pubDate>Fri, 23 Jan 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/01/23/mime-golang-parsing/</guid>
+      <description>MIME格式 MIME是multipurpose Internet mail extensions 的缩写。它是一种协议，可使电子邮件除包含一般纯文本以外，还可加上彩色图片、视频、声音或二进位格式的文件。它要求邮件的发送端和接收端必须有解读MIME协议的电子邮件程序。
+本文介绍了如何使用golang来解析MIME以及multipart格式的数据。并给出了详细的示例代码。
+MIME格式示例数据 请点击 resources/example.mime.txt
+完整解析代码请参考：https://github.com/zieckey/gohello/tree/master/mime
+解析boundary 使用net/textproto.Reader来解析。示例代码如下：
+// 从textproto.Reader读取数据 func (m *MHtml) GetBoundary(r *textproto.Reader) string { // 先调用ReadMIMEHeader来解析MIME的头信息 	mimeHeader, err := r.ReadMIMEHeader() if err != nil { return &amp;#34;&amp;#34; } // 然后得到 &amp;#34;Content-Type&amp;#34; 	fmt.Printf(&amp;#34;%v %v\n&amp;#34;, mimeHeader, err) contentType := mimeHeader.Get(&amp;#34;Content-Type&amp;#34;) fmt.Printf(&amp;#34;Content-Type = %v %v\n&amp;#34;, contentType) // 再然后，调用 mime.ParseMediaType 来解析 &amp;#34;Content-Type&amp;#34; 	mediatype, params, err := mime.ParseMediaType(contentType) fmt.Printf(&amp;#34;mediatype=%v, params=%v %v, err=%v\n&amp;#34;, mediatype, len(params), params, err) // 最最后，得到 boundary 	boundary := params[&amp;#34;boundary&amp;#34;] fmt.</description>
+    </item>
+    
+    <item>
+      <title>多进程编程</title>
+      <link>http://zieckey.github.io/2015/01/13/linux-system-programming/</link>
+      <pubDate>Tue, 13 Jan 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/01/13/linux-system-programming/</guid>
+      <description>wait 和 waitpid 当一个进程正常或异常退出时，内核就向其父进程发送SIGCHLD信号。因为子进程退出是一个异步事件，所以该信号也是内核向父进程发送的异步信号。
+wait的函数原型是：
+#include &amp;lt;sys/types.h&amp;gt;#include &amp;lt;sys/wait.h&amp;gt; pid_t wait(int *status); pid_t waitpid(pid_t pid, int *status, int options); 参数status用来保存被收集进程退出时的一些状态信息，它是一个指向int类型的指针。进程一旦调用了wait或waitpid，则可能发生：
+ 如果其所有子进程都还在运行，则阻塞 如果某个子进程已经退出， wait/waitpid就会收集这个子进程的信息，并把它彻底销毁后返回 如果没有任何子进程，则会立即出错返回　  这两个函数的区别在于：
+ 在子进程结束之前，wait使其调用者阻塞，而waitpid有一个选项，可以使调用者不阻塞。 waitpid并不等待在其调用之后的第一个终止子进程，它有若干选项可以控制它所等待的子进程。 对于wait()，其唯一的出错是调用进程没有子进程；对于waitpid()，若指定的进程或进程组不存在，或者参数pid指定的进程不是调用进程的子进程都可能出错。 waitpid()提供了wait()没有的三个功能：一是waitpid()可等待一个特定的进程；二是waitpid()提供了一个wait()的非阻塞版本（有时希望取的一个子进程的状态，但不想使父进程阻塞，waitpid() 提供了一个这样的选择：WNOHANG，它可以使调用者不阻塞）；三是waitpid()支持作业控制。 wait(&amp;amp;status) 的功能就等于waitpid(-1, &amp;amp;status, 0);  下面看一个示例代码：
+#include&amp;lt;stdio.h&amp;gt;#include&amp;lt;sys/types.h&amp;gt;#include&amp;lt;sys/wait.h&amp;gt;#include&amp;lt;unistd.h&amp;gt;#include&amp;lt;stdlib.h&amp;gt; int main() { pid_t child; int i; child = fork(); if(child &amp;lt; 0){ printf(&amp;#34;create failed!\n&amp;#34;); return (1); } else if (0 == child){ printf(&amp;#34;this is the child process pid= %d\n&amp;#34;,getpid()); for(i = 0;i&amp;lt;5;i++){ printf(&amp;#34;this is the child process print %d !</description>
+    </item>
+    
+    <item>
+      <title>Golang源码阅读——crypto/subtle.ConstantTimeByteEq 深度解析</title>
+      <link>http://zieckey.github.io/2015/01/12/go-source-code-reading-ConstantTimeByteEq/</link>
+      <pubDate>Mon, 12 Jan 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/01/12/go-source-code-reading-ConstantTimeByteEq/</guid>
+      <description>根据文档说明，ConstantTimeByteEq返回1，如果 x == y；相反则返回0。为什么一个简单整数比较操作要搞一个单独的函数出来实现？并且其实现代码看起来要不x == y复杂多了？
+源码及分析 先看源码实现，如下：
+// ConstantTimeByteEq returns 1 if x == y and 0 otherwise. func ConstantTimeByteEq(x, y uint8) int { z := ^(x ^ y) z &amp;amp;= z &amp;gt;&amp;gt; 4 z &amp;amp;= z &amp;gt;&amp;gt; 2 z &amp;amp;= z &amp;gt;&amp;gt; 1 return int(z) } 分析源码可以发现，其的确是实现了该函数的功能，如果x == y则返回1；相反则返回0。
+x ^ y就是x按位异或y, 以某一位为例，其异或结果为1如果x和y不同，相反为0:
+x = 01010011 y = 00010011 x ^ y = 01000000  ^(x ^ y)是上述表达式的取反操作</description>
+    </item>
+    
+    <item>
+      <title>golang网络编程-udp客户端示例代码</title>
+      <link>http://zieckey.github.io/2015/01/07/golang-udp-client/</link>
+      <pubDate>Wed, 07 Jan 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/01/07/golang-udp-client/</guid>
+      <description>最简单的一个客户端 编程步骤：
+ 创建一个udp socket并连接服务器 发送数据给服务器 从服务器接收数据 关闭udp socket  package main import ( &amp;#34;fmt&amp;#34; &amp;#34;net&amp;#34; &amp;#34;os&amp;#34; ) func main() { hostport := &amp;#34;10.16.28.17:1053&amp;#34; if len(os.Args) == 2 { hostport = os.Args[1] } addr, err := net.ResolveUDPAddr(&amp;#34;udp&amp;#34;, hostport) if err != nil { fmt.Println(&amp;#34;server address error. It MUST be a format like this hostname:port&amp;#34;, err) return } // Create a udp socket and connect to server  socket, err := net.</description>
+    </item>
+    
+    <item>
+      <title>Nginx源码研究（7）——内存池结构ngx_pool_t</title>
+      <link>http://zieckey.github.io/2015/01/06/ngx_pool_t/</link>
+      <pubDate>Tue, 06 Jan 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/01/06/ngx_pool_t/</guid>
+      <description>简介 本文主要介绍Nginx内存池结构ngx_pool_t这一重要的数据结构的使用方法和具体实现。同时为了方便学习和研究，还从ngx_pool_t抽取了一个完全独立的cg_pool_t结构，不依赖Nginx，也不依赖任何第三方类库，可以直接将源码拿走集成进现有系统中。
+典型的应用场景是这样的，假如你有一个nginx扩展，用到了ngx_pool_t这个数据结构，但是现在有一个需求是需要将这份扩展代码独立出来，不依赖nginx运行，那么这个cg_pool_t是你的好帮手，你几乎只需要将头文件从ngx_palloc.h换为cg_pool.h即可，代码完全不用修改即可完成移植。
+Nginx的内存池在大量的小块内存的申请和释放的时候，能更快地进行内存分配（对比malloc和free），同时减少内存碎片，防止内存泄露。尤其是在防止内存泄露方面，Nginx的内存池的设计可谓非常巧妙。调用者可以一直在一个ngx_pool_t上调用ngx_palloc申请内存，而只需在最后释放这个ngx_pool_t对象即可将中途所有申请的内存统统一块释放掉。从而大大减少内存泄露的可能性，也大大简化c程序的开发逻辑流程。
+Nginx内存池源代码位置 src/core/ngx_palloc.{h,c}
+cg_pool_t内存池的源码位置 https://github.com/zieckey/nginx-research/tree/master/libnginx/pool
+源码分析 typedef struct ngx_pool_large_s ngx_pool_large_t; //大内存结构 struct ngx_pool_large_s { ngx_pool_large_t *next; //下一个大块内存  void *alloc;//nginx分配的大块内存空间 }; //该结构用来维护内存池的数据块，供用户分配之用 typedef struct { u_char *last; //当前内存分配结束位置，即下一段可分配内存的起始位置  u_char *end; //内存池结束位置  ngx_pool_t *next; //链接到下一个内存池  ngx_uint_t failed;//统计该内存池不能满足分配请求的次数 } ngx_pool_data_t; //该结构维护整个内存池的头部信息 struct ngx_pool_s { ngx_pool_data_t d; //数据块  size_t max; //数据块大小，即小块内存的最大值  ngx_pool_t *current; //保存当前内存值  ngx_chain_t *chain; //可以挂一个chain结构  ngx_pool_large_t *large; //分配大块内存用，即超过max的内存请求  ngx_pool_cleanup_t *cleanup; //挂载一些内存池释放的时候，同时释放的资源  ngx_log_t *log; }; 内存结构图  备注：从参考博客5摘录</description>
+    </item>
+    
+    <item>
+      <title>Nginx源码研究（5）——单向链表结构ngx_list_t</title>
+      <link>http://zieckey.github.io/2015/01/04/ngx_list_t/</link>
+      <pubDate>Sun, 04 Jan 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/01/04/ngx_list_t/</guid>
+      <description>简介 本文主要介绍Nginx单向链表结构ngx_list_t这一重要的数据结构的使用方法和具体实现。
+该链表结构与我们常说的链表结构(例如std::list)不太一样。它虽然符合list类型数据结构的一些特点，比如可以添加元素，实现动态自增长，不会像数组类型的数据结构，受到初始设定的数组容量的限制，但不同点在于它的节点，std::list每个节点只能存放一个元素，ngx_list_t的节点却是一个固定大小的数组，可以存放多个元素。当添加元素到这个list里面的时候，会在最尾部的节点里的数组上添加元素，如果这个节点的数组存满了，就再增加一个新的节点到这个list里面去。
+源代码位置 src/core/ngx_list.{h,c}
+数据结构 // ngx_list_part_s是代表ngx_list_t链表的一个节点。 // 它自身包含了一个数组，用来存放最终的元素 struct ngx_list_part_s { void *elts; //链表元素elts数组,数组申请的空间大小为size*nalloc  ngx_uint_t nelts; //当前已使用的elts个数，一定要小于等于nalloc  ngx_list_part_t *next; //指向ngx_list_t中的下个链表part }; // ngx_list_t结构是一个链表，链表中每个节点是ngx_list_part_t结构。 // 而ngx_list_part_t中有个elts是一个数组，储存了任意大小固定的元素，它是由ngx_pool_t分配的连续空间 typedef struct { ngx_list_part_t *last; //指向链表中最后一个元素，其作用相当于尾指针。插入新的节点时，从此开始。  ngx_list_part_t part; //链表中第一个元素，其作用相当于头指针。遍历时，从此开始。  size_t size; //链表中每个元素的大小  ngx_uint_t nalloc; //链表的每个ngx_list_part_t中elts数组的所能容纳的最大元素个数  ngx_pool_t *pool; //当前list数据存放的内存池 } ngx_list_t; // 具体实现比较简单，就不在累述。  内存结构图 阅读源码时，请参考下方的内存结构。
+ 备注：从参考博客4摘录
+测试代码 该测试代码的完整工程的编译和运行方式请参考 https://github.com/zieckey/nginx-research项目。Linux&amp;amp;Windows都测试通过。
+#include &amp;#34;allinc.h&amp;#34; namespace { struct ListElement { ngx_str_t name; int id; }; static const char* names[] = { &amp;#34;codeg&amp;#34;, &amp;#34;jane&amp;#34;, &amp;#34;zieckey&amp;#34;, &amp;#34;codeg4&amp;#34;, &amp;#34;codeg5&amp;#34;, &amp;#34;codeg6&amp;#34;, &amp;#34;codeg7&amp;#34;, &amp;#34;codeg8&amp;#34;, &amp;#34;codeg9&amp;#34;, &amp;#34;codeg10&amp;#34; }; } TEST_UNIT(ngx_list) { ngx_uint_t nalloc = 4; ngx_list_t *list = ngx_list_create(g_pool, nalloc, sizeof(ListElement)); // insert element to the list  for (size_t i = 0; i &amp;lt; H_ARRAYSIZE(names); i++) { ListElement* u = (ListElement*)ngx_list_push(list); u-&amp;gt;id = i; u-&amp;gt;name.</description>
+    </item>
+    
+    <item>
+      <title>Nginx源码研究（6）——双向链表结构ngx_queue_t</title>
+      <link>http://zieckey.github.io/2015/01/04/ngx_queue_t/</link>
+      <pubDate>Sun, 04 Jan 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/01/04/ngx_queue_t/</guid>
+      <description>简介 本文主要介绍Nginx双向链表结构ngx_queue_t这一重要的数据结构的使用方法和具体实现。
+ngx_queue_t 是Nginx提供的一个轻量级双向链表容器，它不负责分配内存来存放链表元素。 其具备下列特点：
+ 可以高效的执行插入、删除、合并等操作 具有排序功能 支持两个链表间的合并 支持将一个链表一分为二的拆分动作  不同于教科书中将链表节点的数据成员声明在链表节点的结构体中，ngx_queue_t只是声明了前向和后向指针。在使用的时候，我们首先需要定义一个哨兵节点(对于后续具体存放数据的节点，我们称之为数据节点)，比如：
+ngx_queue_t head;  接下来需要进行初始化，通过宏ngx_queue_init()来实现：
+ngx_queue_init(&amp;amp;head);  ngx_queue_init()的宏定义如下：
+#define ngx_queue_init(q) \ (q)-&amp;gt;prev = q; \ (q)-&amp;gt;next = q;  可见初始的时候哨兵节点的 prev 和 next 都指向自己，因此其实是一个空链表。ngx_queue_empty()可以据此来判断一个链表是否为空。
+源代码位置 src/core/ngx_queue.{h,c}
+源码分析 除了ngx_queue_data值得一说外，其他都是双向链表的基本操作，与教科书里的定义完全一致，不在累述。
+//获取队列中节点数据， q是队列中的节点，type队列类型，field是队列类型中ngx_queue_t的元素名 #define ngx_queue_data(q, type, field) \ (type *) ((u_char *) q - offsetof(type, field))  //offsetof也是一个宏定义，如下： #define offsetof(p_type,field) ((size_t)&amp;amp;(((p_type *)0)-&amp;gt;field)) 测试代码 该测试代码的完整工程的编译和运行方式请参考 https://github.com/zieckey/nginx-research项目。Linux&amp;amp;Windows都测试通过。
+#include &amp;#34;allinc.h&amp;#34; namespace { struct QueueElement { const char* name; int id; ngx_queue_t queue; }; static int ids[] = { 5, 8, 1, 9, 2, 6, 0, 3, 7, 4 }; static const char* names[] = { &amp;#34;codeg&amp;#34;, &amp;#34;jane&amp;#34;, &amp;#34;zieckey&amp;#34;, &amp;#34;codeg4&amp;#34;, &amp;#34;codeg5&amp;#34;, &amp;#34;codeg6&amp;#34;, &amp;#34;codeg7&amp;#34;, &amp;#34;codeg8&amp;#34;, &amp;#34;codeg9&amp;#34;, &amp;#34;codeg10&amp;#34; }; } void dump_queue_from_tail(ngx_queue_t *que) { ngx_queue_t *q = ngx_queue_last(que); printf(&amp;#34;(0x%p: (0x%p, 0x%p)) &amp;lt;==&amp;gt; \n&amp;#34;, que, que-&amp;gt;prev, que-&amp;gt;next); for (; q !</description>
+    </item>
+    
+    <item>
+      <title>Nginx源码研究（3）——Nginx数组ngx_array_t和示例</title>
+      <link>http://zieckey.github.io/2015/01/03/ngx_array_t/</link>
+      <pubDate>Sat, 03 Jan 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/01/03/ngx_array_t/</guid>
+      <description>本文主要介绍Nginx数组ngx_array_t这一重要的数据结构的使用方法和具体实现。
+ngx_array_t是nginx内部使用的数组结构。nginx的数组结构在存储上与大家认知的C语言内置的数组有相似性，比如实际上存储数据的区域也是一大块连续的内存。但是数组除了存储数据的内存以外还包含一些元信息来描述相关的一些信息。ngx_array_t的定义位于src/core/ngx_array.{c,h}里面。
+ngx_array.h实现和注释如下：
+#include &amp;lt;ngx_config.h&amp;gt;#include &amp;lt;ngx_core.h&amp;gt; // 动态数组 struct ngx_array_s { // elts指向数组的首地址  void *elts; // nelts是数组中已经使用的元素个数  ngx_uint_t nelts; // 每个数组元素占用的内存大小  size_t size; // 当前数组中能够容纳元素个数的总大小  ngx_uint_t nalloc; // 内存池对象  ngx_pool_t *pool; }; /* 从内存池中创建n个元素的数组，元素大小为size 创建一个新的数组对象，并返回这个对象。 p:	数组分配内存使用的内存池； n:	数组的初始容量大小，即在不扩容的情况下最多可以容纳的元素个数。 size:	单个元素的大小，单位是字节。 注意事项: 由于使用ngx_palloc分配内存，数组在扩容时，旧的内存不会被释放，会造成内存的浪费。 因此，最好能提前规划好数组的容量，在创建或者初始化的时候一次搞定，避免多次扩容，造成内存浪费。 */ ngx_array_t *ngx_array_create(ngx_pool_t *p, ngx_uint_t n, size_t size); // 销毁该数组对象，并释放其分配的内存回内存池。 void ngx_array_destroy(ngx_array_t *a); // 在数组a上新追加一个元素，并返回指向新元素的指针。 // 需要把返回的指针使用类型转换，转换为具体的类型，然后再给新元素本身或者是各字段（如果数组的元素是复杂类型）赋值。 // 如果数组已满，则重新分配两倍（nalloc*size)的内存空间，且nalloc更新为2*nalloc void *ngx_array_push(ngx_array_t *a); // 返回将要添加n个元素到数组中其首个元素的地址 void *ngx_array_push_n(ngx_array_t *a, ngx_uint_t n); // 如果一个数组对象是被分配在堆上的，那么当调用ngx_array_destroy销毁以后，如果想再次使用，就可以调用此函数。 // 如果一个数组对象是被分配在栈上的，那么就需要调用此函数，进行初始化的工作以后，才可以使用。 static ngx_inline ngx_int_t ngx_array_init(ngx_array_t *array, ngx_pool_t *pool, ngx_uint_t n, size_t size) { /* * set &amp;#34;array-&amp;gt;nelts&amp;#34; before &amp;#34;array-&amp;gt;elts&amp;#34;, otherwise MSVC thinks * that &amp;#34;array-&amp;gt;nelts&amp;#34; may be used without having been initialized */ array-&amp;gt;nelts = 0; array-&amp;gt;size = size; array-&amp;gt;nalloc = n; array-&amp;gt;pool = pool; array-&amp;gt;elts = ngx_palloc(pool, n * size); if (array-&amp;gt;elts == NULL) { return NGX_ERROR; } return NGX_OK; } 测试代码，完整的工程编译请参考 https://github.</description>
+    </item>
+    
+    <item>
+      <title>Nginx源码研究（4）——hash结构ngx_hash_t</title>
+      <link>http://zieckey.github.io/2015/01/03/ngx_hash_t/</link>
+      <pubDate>Sat, 03 Jan 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/01/03/ngx_hash_t/</guid>
+      <description>简介 本文主要介绍Nginx的hash结构ngx_hash_t这一重要的数据结构的使用方法和具体实现。nginx实现的hash表特点是构建一次, 初始化后无法动态的增删，之后就只用于&amp;lt;k,v&amp;gt;查找。之所以这么设计是为了使用最少的内存同时得到最快的查找速度。
+冲突解决 Nginx的ngx_hash_t采用开放地址法来解决冲突问题，即：插入的时候发现自己的位置f(key)已经被占了，就向后遍历，查看f(key)+1的位置是否被占用，如果没被占用，就占用它，否则继续相后，查询的时候，同样也如果f(key)不是需要的值，也依次向后遍历，一直找到需要的元素。
+源代码位置 src/core/ngx_hash.{h,c}
+数据结构 //hash结构 typedef struct { ngx_hash_elt_t **buckets; //hash桶(有size个桶)  ngx_uint_t size; //hash桶个数 } ngx_hash_t; // &amp;lt;key,value&amp;gt; 结构，初始化时候使用 typedef struct { ngx_str_t key; //key，为nginx的字符串结构  ngx_uint_t key_hash; //由该key计算出的hash值(通过hash函数如ngx_hash_key_lc())  void *value; //该key对应的值，组成一个键-值对&amp;lt;key,value&amp;gt; } ngx_hash_key_t; //hash元素结构 typedef struct { void *value; //value，即某个key对应的值，即&amp;lt;key,value&amp;gt;中的value  u_short len; //name长度  u_char name[1]; //某个要hash的数据(在nginx中表现为字符串)，即&amp;lt;key,value&amp;gt;中的key  // 这里数组长度为1，是一个小技巧。实现时，在具体分配ngx_hash_elt_t的大小时使用宏NGX_HASH_ELT_SIZE来确定(并且是内存对齐的)：  // #define NGX_HASH_ELT_SIZE(name) (sizeof(void *) + ngx_align((name)-&amp;gt;key.len + 2, sizeof(void *))) } ngx_hash_elt_t; //hash初始化结构，用来将其相关数据封装起来作为参数传递给ngx_hash_init()或ngx_hash_wildcard_init()函数 typedef struct { ngx_hash_t *hash; //指向待初始化的hash结构。  ngx_hash_key_pt key; //hash函数指针  // 散列表中槽的最大数目  ngx_uint_t max_size; //bucket的最大个数  // 散列表中一个槽的空间大小，它限制了每个散列表元素关键字的最大长度，通过NGX_HASH_ELT_SIZE(name)计算每个element的大小。  // 如果这个bucket_size设置较大，那么他就能够容纳多个element，这样一个bucket里存放多个element，进而导致查找速度下降。  // 为了更好的查找速度，请将bucket_size设置为所有element长度最大的那个。  ngx_uint_t bucket_size; // 散列表的名称  char *name; //该hash结构的名字(仅在错误日志中使用)  // 内存池，它分配散列表（最多3个，包括1个普通散列表，1个前置通配符散列表，1个后置通配符散列表）中的所有槽  ngx_pool_t *pool; //该hash结构从pool指向的内存池中分配  // 临时内存池，它仅存在于初始化散列表之前。它主要用于分配一些临时的动态数组，带通配符的元素在初始化时需要用到这些数组。  ngx_pool_t *temp_pool; //分配临时数据空间的内存池 } ngx_hash_init_t; 内存结构图  备注：从参考文档7摘录</description>
+    </item>
+    
+    <item>
+      <title>发布一个批量转码工具:gbk2utf8</title>
+      <link>http://zieckey.github.io/2015/01/03/gbk2utf8-by-golang/</link>
+      <pubDate>Sat, 03 Jan 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/01/03/gbk2utf8-by-golang/</guid>
+      <description>Linux下的iconv是针对单个文件处理，但是转码后的数据直接输出到STDOUT，不方便批量处理。gbk2utf8工具可以针对一个目录以及递归遍历所有子目录下的所有文件进行批量处理，并且直接修改原始文件为UTF-8编码。为了避免错误，会将原始文件备份为*.bak文件。
+当前其实现是直接调用iconv命令实现，后期可以考虑纯粹使用golang实现。另外，如果将来有需要，可以直接将iconv的几个参数如-f -t等也一并实现了，从而形成goiconv，一个通用的批量原地转码工具。
+代码实现其实非常简单，总共不过100来行golang代码，地址请见: https://github.com/zieckey/tools/tree/master/gbk2utf8
+使用方法：
+  gbk2utf8 处理当前目录以及递归遍历所有子目录下的所有文件
+  gbk2utf8 *.cc 处理当前目录以及递归遍历所有子目录下的所有形如*.cc
+  gbk2utf8 somedir/* 处理somedir目录以及递归遍历所有子目录下的所有文件
+  </description>
+    </item>
+    
+    <item>
+      <title>Nginx源码研究（1）——项目介绍</title>
+      <link>http://zieckey.github.io/2015/01/02/nginx-research-readme/</link>
+      <pubDate>Fri, 02 Jan 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/01/02/nginx-research-readme/</guid>
+      <description>nginx-research 本项目是为了研究Nginx源码而建立的。该项目有以下几点比较不错的优点：
+ VS2013源码编译和调试 将Nginx看做一个优秀的C库使用，已经将其编译为库了，并且有很多例子参考  项目地址：https://github.com/zieckey/nginx-research
+中文介绍页面：http://blog.codeg.cn/2015/01/02/nginx-research-readme
+1. Windows使用 打开nginx-win32-src\nginx.sln文件，可以看到两个工程：
+ nginx ： Nginx的Windows版本，可以直接编译运行。 nginxresearch : 将Nginx做为lib库使用的工程  Nginx二进制 直接编译运行nginx工程即可。目前包含下列几个示例Nginx扩展模块：
+ ngx_http hello world module ngx_http merge module ngx_http memcached module ngx_http upstream sample code  windows下运行起来后，监听80端口，在浏览器打开http://localhost/helloworld.html 会返回当前的时间和程序启动的时间，如下：
+startup: 2015-01-01 19:26:16 current: 2015-01-01 19:26:57  将Nginx做为C库使用 直接编译运行nginxresearch工程即可。自带gtest，方便写样例代码。目前包含下列几个示例程序：
+ ngx_encode_base64的使用 ngx_str_t ngx_pool_t ngx_hash_t ngx_list_t ngx_array_t ngx_queue_t ngx_pool_t  另外，还从ngx_pool_t抽取了一个完全独立的cg_pool_t结构，不依赖Nginx，也不依赖任何第三方类库，可以直接将源码拿走集成进现有系统中。典型的应用场景是这样的，假如你有一个nginx扩展，用到了ngx_pool_t这个数据结构，但是现在有一个需求是需要将这份扩展代码独立出来，不依赖nginx运行，那么这个cg_pool_t是你的好帮手，你几乎只需要将头文件从ngx_palloc.h换为cg_pool.h即可，代码完全不用修改即可完成移植。
+2. Linux 使用 Nginx二进制 进入各个模块的子目录，直接make即可
+将Nginx做为C库使用 进入libnginx目录，直接make即可
+3. 比较不错的资源  淘宝：Nginx开发从入门到精通  </description>
+    </item>
+    
+    <item>
+      <title>C&#43;&#43;11中std::move示例</title>
+      <link>http://zieckey.github.io/2015/01/01/c&#43;&#43;11-move/</link>
+      <pubDate>Thu, 01 Jan 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/01/01/c&#43;&#43;11-move/</guid>
+      <description>std::move作用：如果其类型支持移动的话，会无条件的将其参数（可能是左值）强制转换为右值引用，从而表示其可以移动，它使得编译器随后能够移动（而不是复制）在参数中传递的值。如果其类型不支持移动，则将进行复制。
+因此可以将std::move看着是一个用于提示编译器优化的函数，过去的c++98中，由于无法将作为右值的临时变量从左值当中区别出来，所以程序运行时有大量临时变量白白的创建后又立刻销毁。
+std::move定义 template&amp;lt;class Type&amp;gt; typename remove_reference&amp;lt;Type&amp;gt;::type&amp;amp;&amp;amp; move(Type&amp;amp;&amp;amp; Arg) noexcept; 参数说明：  Type 一种从 Arg 中传递的参数类型推导出的类型（与引用折叠规则一起）。 Arg 要强制转换的参数。虽然 Arg 的类型看起来指定为右值引用，但 move 也接受左值参数，原因是左值引用可以绑定到右值引用。  返回值 返回Arg的右值引用，而无论其类型是否是引用类型。
+示例代码 #include &amp;lt;iostream&amp;gt;#include &amp;lt;utility&amp;gt; class Moveable{ public: Moveable() : i(new int(3)) { std::cout &amp;lt;&amp;lt; &amp;#34;Moveable::Moveable() 构造函数 : ptr(i)=&amp;#34; &amp;lt;&amp;lt; i &amp;lt;&amp;lt; std::endl; } ~Moveable() { std::cout &amp;lt;&amp;lt; &amp;#34;Moveable::~Moveable() 析构函数 ptr(i)=&amp;#34; &amp;lt;&amp;lt; i &amp;lt;&amp;lt; std::endl; if (i) { delete i; i = nullptr; } } Moveable(const Moveable &amp;amp; m) : i(new int(*m.</description>
+    </item>
+    
+    <item>
+      <title>Nginx源码研究（2）——编译Nginx为静(动)态库以及验证</title>
+      <link>http://zieckey.github.io/2014/12/31/compile-nginx-to-static-lib-and-1st-usage/</link>
+      <pubDate>Wed, 31 Dec 2014 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2014/12/31/compile-nginx-to-static-lib-and-1st-usage/</guid>
+      <description>最近编码哥又开始阅读和研究Nginx源码，这一过程中做了一些笔记，从而形成本系列文章。
+本文主要介绍如何将nginx编译为一个动态库或静态库，这样我们可以更方便调用nginx提供的一系列高性能的C函数库，包括:
+ ngx_string_t ngx_array_t ngx_list_t ngx_buf_t ngx_pool_t ngx_hash_t ngx_queue_t ngx_rbtree_t  思路 Nginx项目本来是作为一个整体直接编译出一个二进制文件，要将其编译为库，有两个地方要修改：
+ 增加编译选项-fPIC使得库编译出来是地址无关的，这样方便被其他程序连接 将程序入口main函数修改了，例如修改为__xmain  上述两步做完，就可以轻松将nginx编译为一个动态库或静态库。
+编译脚本 关键内容如下：
+wget http://nginx.org/download/nginx-$(NGINX_VERSION).tar.gz tar zxvf $(NGINX_ROOT).tar.gz sed -i &amp;quot;s|-Werror|-Werror -fPIC|g&amp;quot; $(NGINX_ROOT)/auto/cc/gcc sed -i &amp;quot;s|main(int argc|__xmain(int argc|g&amp;quot; $(NGINX_ROOT)/src/core/nginx.c cd $(NGINX_ROOT); ./configure ; (make||echo) # 编译静态库 $(LIBNGINX) : $(NGINX_MAKEFILE) $(AR) $(ARFLAGS) $@ $(NGINX_OBJS) ranlib $@ # 编译动态库 libnginx.so : cc -static -o $@ $(LDFLAGS) $(NGINX_OBJS)  详情请见Makefile
+将该Makefile和build.mk两个文件保存到一个目录下，然后在该目录下执行make命令即可将最新的nginx-1.7.9.tar.gz（2014-12-23发布）下载下来，然后解压、编译为一个libnginx.a的静态库。
+写测试程序 #include &amp;lt;stdio.h&amp;gt;	#include &amp;#34;ngx_config.</description>
+    </item>
+    
+    <item>
+      <title>测试覆盖率工具coveralls.io的配置介绍</title>
+      <link>http://zieckey.github.io/2014/12/30/coveralls-io-configuration-info/</link>
+      <pubDate>Tue, 30 Dec 2014 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2014/12/30/coveralls-io-configuration-info/</guid>
+      <description>这是一个测试覆盖率图标，非常的漂亮。我们可以在很多github的项目主页上看到，本文将介绍如何自动生成这个图标。
+1. 在其主页上https://coveralls.io/上开通你的项目 2. 找到项目的 repo_token 请参考下图中的标红部分：
+3. 加密repo_token 为什么要加密repo_token?因为，这个repo_token是你的项目在coverall.io网站的唯一token，不能公开，但是又希望travis-ci.com网站使用这个repo_token，因此travis提供一个非对称加密工具来加密这个token串。详细原因和使用介绍可以参考官方文档
+进入你的github项目所在目录，输入下列命令travis encrypt COVERALLS_TOKEN=aaaaa(记得替换你自己的repo_token)来加密上述repo_token，如下：
+[ codeg@ ~/goini]$ travis encrypt COVERALLS_TOKEN=aaaaa Faraday: you may want to install system_timer for reliable timeouts Your Ruby version is outdated, please consider upgrading, as we will drop support for 1.8.7 soon! Please add the following to your .travis.yml file: secure: &amp;quot;cSst9VQrOpZsBwKMku0vMoF53T6FhWVN50ZeV/dScUhXQndKd4WuOboxdM0w2wEKOURkYDt5R3uQZ7XU0J1ekXsZ775JZmSEEdWaKSU80Yp3qF/89hc8p3r0Ej4w/EeqFC3fSJINrQzXpetvEnqzAjZQGNMO/NSATxHRkBJc7CQ=&amp;quot; Pro Tip: You can add it automatically by running with --add.  4. 在.travis.yml中集成coverall coverall配置请见文档其中COVERALLS_TOKEN稍稍麻烦一点，请继续往下看。</description>
+    </item>
+    
+    <item>
+      <title>Golang源码阅读</title>
+      <link>http://zieckey.github.io/2014/12/28/go-source-code-reading/</link>
+      <pubDate>Sun, 28 Dec 2014 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2014/12/28/go-source-code-reading/</guid>
+      <description>总览  src/cmd/dist/buf.c 该文件提供两个数据结构：Buf、Vec，分别用来取代char*和char**的相关操作。Buf和Vec这两个数据结构非常简单易懂，其他C语言项目如有需要，可以比较方便的拿过去使用，因此记录在此。 src/lib9/cleanname.c Unix下的路径压缩功能 cmd/dist/windows.c windows平台相关的一些功能函数 src/unicode/utf8/utf8.go utf8编码问题 src/io/pipe.go 进程内的单工管道 src/net/pipe.go 进程内的双工管道  1. src/cmd/dist/buf.c Buf定义 // A Buf is a byte buffer, like Go&amp;#39;s []byte. typedef struct Buf Buf; struct Buf { char *p; int len; int cap; }; 对Buf结构相关的一些操作  void binit(Buf *b) 初始化一个Buf void breset(Buf *b) 重置Buf，使之长度为0。类似于C++中的std::string::clear()，其数据内存不释放，但数据长度字段设为0 void bfree(Buf *b) 释放掉Buf内部的内存，并调用binit初始化这个Buf void bgrow(Buf *b, int n) 增长Buf内部的内存，确保至少还能容纳n字节数据 void bwrite(Buf *b, void *v, int n) 将从v地址开始的n字节数据追加写入Buf中。类似于C++中的std::string::append(v,n) void bwritestr(Buf *b, char *p) 将字符串p追加写入Buf中，会自动调用strlen(p)计算p的长度。类似于C++中的std::string::append(p) char* bstr(Buf *b) 返回一个NUL结束的字符串指针，该指针指向Buf内部，外部调用者不能释放该指针。类似于C++中的std::string::c_str() char* btake(Buf *b) 返回一个NUL结束的字符串指针，外部调用者需要自己释放该指针。 void bwriteb(Buf *dst, Buf *src) 将Bufsrc追加到dst中，src保持不变。类似于C++中的std::string::append(s) bool bequal(Buf *s, Buf *t) 判断两个Buf是否相等。类似于C++中的std::string::compare(s) == 0 void bsubst(Buf *b, char *x, char *y) 使用子串y替换掉Buf中所有的x  Vec定义 // A Vec is a string vector, like Go&amp;#39;s []string.</description>
+    </item>
+    
+    <item>
+      <title>发布一个使用简单的绘图工具</title>
+      <link>http://zieckey.github.io/2014/12/27/gochart-info/</link>
+      <pubDate>Sat, 27 Dec 2014 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2014/12/27/gochart-info/</guid>
+      <description>gochart是仿照goplot使用golang和highcharts开源库制作的一个使用起来非常简单的绘制图表的工具，图表风格有曲线图、折线图、面积图、柱状图、饼图等。编译好的gochart只有一个二进制文件，不依赖任何库/网络。
+直接下载二进制 Win7 amd64
+从源码安装 直接只用命令go get -u github.com/zieckey/gochart即可。该命令会自动处理好依赖的开源项目：
+ https://github.com/zieckey/goini https://github.com/bitly/go-simplejson  使用方法  解压下载包后，进入解压目录，可以看到一个gochart的可执行文件和一些*.chart文件，这些chart文件是默认的一些数据文件样例。可以在这些chart文件的目录执行gochart，然后通过浏览器访问http://localhost:8000就可以看到图表了。 可以把gochart工具放到您的PATH中，在*.chart文件所在的目录执行gochart即可。 chart文件必须是.chart后缀名，内容可以参考源码examples目录中的例子。启动gochart的目录如果有多个chart文件，可以通过不断刷新网页来切换图表。  示例2:曲线图数据格式样例 该示例数据格式与曲线图、折线图、面积图、(横向/纵向)柱状图通用。通过改变ChartType可以展现不同类型的图，如下：
+ spline 曲线图 line 折线图 bar 横向柱状图 column 纵向柱状图 area 面积图  # The chart type , option : spline/line/bar/column/area ChartType = spline Title = Source: WorldClimate.com SubTitle = Monthly Average Temperature ValueSuffix = °C # The x Axis numbers. The count this numbers MUST be the same with the data series XAxisNumbers = 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 # The y Axis text YAxisText = Temperature (°C) # The data and the name of the lines Data|Tokyo = 7.</description>
+    </item>
+    
+    <item>
+      <title>Golang1.4资源下载</title>
+      <link>http://zieckey.github.io/2014/12/15/golang1.4-resource-download/</link>
+      <pubDate>Mon, 15 Dec 2014 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2014/12/15/golang1.4-resource-download/</guid>
+      <description>当前golang官方主页背墙，且有些golang.org/x下面的库也下载不到，因此我将这项资源统一放在这里供大家下载。
+golang.org/x打包下载</description>
+    </item>
+    
+    <item>
+      <title>Ubuntu中国源地址列表及更改方法</title>
+      <link>http://zieckey.github.io/2014/12/15/ubuntu-source-list-of-china/</link>
+      <pubDate>Mon, 15 Dec 2014 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2014/12/15/ubuntu-source-list-of-china/</guid>
+      <description>首先备份Ubuntu源列表
+sudo cp /etc/apt/sources.list /etc/apt/sources.list.backup （备份下当前的源列表） sudo vim /etc/apt/sources.list
+  将下面的代码粘贴进去（“#”开头的那一行为注释，可以直接复制进文件中）之后，再执行命令“sudo apt-get update”
+#deb cdrom:[Ubuntu-Server 14.04.1 LTS _Trusty Tahr_ - Release amd64 (20140722.3)]/ trusty main restricted # See http://help.ubuntu.com/community/UpgradeNotes for how to upgrade to # newer versions of the distribution. deb http://cn.archive.ubuntu.com/ubuntu/ trusty main restricted deb-src http://cn.archive.ubuntu.com/ubuntu/ trusty main restricted  ## Major bug fix updates produced after the final release of the ## distribution. deb http://cn.archive.ubuntu.com/ubuntu/ trusty-updates main restricted deb-src http://cn.</description>
+    </item>
+    
+    <item>
+      <title>C&#43;&#43;与Java垃圾回收的区别</title>
+      <link>http://zieckey.github.io/2014/12/14/gc-cpp-java/</link>
+      <pubDate>Sun, 14 Dec 2014 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2014/12/14/gc-cpp-java/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Jekyll在github上构建免费的Web应用</title>
+      <link>http://zieckey.github.io/2014/12/14/jekyll-install-on-win7/</link>
+      <pubDate>Sun, 14 Dec 2014 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2014/12/14/jekyll-install-on-win7/</guid>
+      <description>1. Jekyll介绍 Jekyll是一个静态站点生成器，它会根据网页源码生成静态文件。它提供了模板、变量、插件等功能，可以用来生成整个网站。
+Jekyll生成的站点，可以直接发布到github上面，这样我们就有了一个免费的，无限流量的，有人维护的属于我们的自己的web网站。Jekyll是基于Rub y的程序，可以通过gem来下载安装。
+Jekyll官方文档：http://jekyllrb.com/
+2. 安装Ruby 我的系统环境
+ win7 64bit   下载ruby页面 下面是两个链接： http://dl.bintray.com/oneclick/rubyinstaller/rubyinstaller-2.1.5-x64.exe?direct http://cdn.rubyinstaller.org/archives/devkits/DevKit-mingw64-64-4.7.2-20130224-1432-sfx.exe  安装Ruby到 D:\Ruby21-x64 ，再安装RubyGems
+$ ruby --version ruby 2.1.5p273 (2014-11-13 revision 48405) [x64-mingw32] $ gem update --system ERROR: While executing gem ... (Gem::RemoteFetcher::FetchError) SSL_connect returned=1 errno=0 state=SSLv3 read server certificate B: certificate verify failed (https://api.rubygems.org/specs.4.8.gz)  问题1：下载认证文件 $ curl http://curl.haxx.se/ca/cacert.pem -o cacert.pem % Total % Received % Xferd Average Speed Time Time Time Current Dload Upload Total Spent Left Speed 100 245k 100 245k 0 0 26428 0 0:00:09 0:00:09 --:--:-- 23662 # 移动到Ruby安装目录 $ mv cacert.</description>
+    </item>
+    
+    <item>
+      <title>Golang写的HTTP服务与Nginx对比</title>
+      <link>http://zieckey.github.io/2014/12/13/golang-vs-nginx-at-httpecho/</link>
+      <pubDate>Sat, 13 Dec 2014 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2014/12/13/golang-vs-nginx-at-httpecho/</guid>
+      <description>Golang写网络程序的确很简单，一个HTTP Echo服务，几行源码就可以搞定。Golang源码如下：
+package main import ( &amp;#34;log&amp;#34; &amp;#34;net/http&amp;#34; &amp;#34;io/ioutil&amp;#34; ) func handler(w http.ResponseWriter, r *http.Request) { buf, err := ioutil.ReadAll(r.Body) //Read the http body 	if err == nil { w.Write(buf) return } w.WriteHeader(403) } func main() { http.HandleFunc(&amp;#34;/echo&amp;#34;, handler) log.Fatal(http.ListenAndServe(&amp;#34;:8091&amp;#34;, nil)) } Nginx直接使用echo module,配置文件如下：
+worker_processes 24; #daemon off; events { worker_connections 4096; } http { include mime.types; default_type application/octet-stream; sendfile on; keepalive_timeout 65; server { listen 8090; server_name localhost; location /echo { echo_read_request_body; echo_request_body; } location / { root html; index index.</description>
+    </item>
+    
+    <item>
+      <title>你好，编码哥</title>
+      <link>http://zieckey.github.io/2014/12/13/Hello-CodeG/</link>
+      <pubDate>Sat, 13 Dec 2014 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2014/12/13/Hello-CodeG/</guid>
+      <description>哥都不记得上次写博客的具体时间了，中间一直说写点什么，就是没有动手。原因有几：
+ 哥的文笔不太好 总觉得技术水平不够高，文章写起来总没深度，不好意思写 哥比较懒  现在来看，前面两点都是扯淡的，懒惰才是重点。好吧，哥承认了。哥决定从今个起，找一个好的博客托管服务器，好好写点文章，尤其是多写点技术文章，用来记录哥的学习、工作中值得记录的点滴，而不论高深或浅薄与否。
+插，从此以后，请叫我编码哥。</description>
+    </item>
+    
+    <item>
+      <title>使用Github Pages建独立博客</title>
+      <link>http://zieckey.github.io/2014/12/13/github-pages/</link>
+      <pubDate>Sat, 13 Dec 2014 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2014/12/13/github-pages/</guid>
+      <description>本博客框架是直接在 BeiYuu：使用Github Pages建独立博客 上改造而来的。增加了下列特性：
+ 文章Tags Tags聚合 时间显示 作者显示  感谢 BeiYuu，非常感谢~</description>
+    </item>
+    
+  </channel>
+</rss>

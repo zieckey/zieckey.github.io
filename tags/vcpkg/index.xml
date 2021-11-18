@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>vcpkg on CodeG Blog</title>
+    <link>http://zieckey.github.io/tags/vcpkg/</link>
+    <description>Recent content in vcpkg on CodeG Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 28 May 2017 18:11:01 +0000</lastBuildDate><atom:link href="http://zieckey.github.io/tags/vcpkg/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>手把手制作一个vcpkg的安装包及port file相关说明</title>
+      <link>http://zieckey.github.io/post/2017-05-28-how-to-build-a-vcpkg/</link>
+      <pubDate>Sun, 28 May 2017 18:11:01 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/post/2017-05-28-how-to-build-a-vcpkg/</guid>
+      <description>0. 前言 Windows平台的程序包的依赖管理一直以来都是个大难题。之前有NuGet，现在有vcpkg。 本文的重点是先介绍一下vcpkg的特性，然后以一个实际例子说明，说明如何创建一个vcpkg安装包。
+1. vcpkg简介 vcpkg是为了在windows平台能够方便获取一个C或者C++库。当前还处于预览版状态。不过已经有很多常见的库了，例如：
+ openssl boost zlib glog libevent curl  等等，很多知名的C/C++库都已经提供vcpkg安装包。
+2. vcpkg安装 首先，我们的windows系统必须安装有下列软件
+ Visual Studio 2015 Update 3 or Visual Studio 2017 CMake 3.8.0 or higher (note: downloaded automatically if not found) git.exe available in your path  然后，我们在windows命令行终端上运行：
+d:\git&amp;gt; git clone https://github.com/Microsoft/vcpkg d:\git&amp;gt; cd vcpkg d:\git\vcpkg&amp;gt; .\bootstrap-vcpkg.bat d:\git\vcpkg&amp;gt; .\vcpkg integrate install  3. 使用vcpkg获取C/C++库 使用vcpkg --help命令查看联席帮助文档：
+D:\git\vcpkg&amp;gt;.\vcpkg --help Commands: vcpkg search [pat] Search for packages available to be built vcpkg install &amp;lt;pkg&amp;gt;.</description>
+    </item>
+    
+  </channel>
+</rss>

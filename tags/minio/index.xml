@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>minio on CodeG Blog</title>
+    <link>http://zieckey.github.io/tags/minio/</link>
+    <description>Recent content in minio on CodeG Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 06 Sep 2016 11:52:00 +0000</lastBuildDate><atom:link href="http://zieckey.github.io/tags/minio/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>minio源码阅读</title>
+      <link>http://zieckey.github.io/post/2016-09-06-minio-source-code-reading/</link>
+      <pubDate>Tue, 06 Sep 2016 11:52:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/post/2016-09-06-minio-source-code-reading/</guid>
+      <description>简介 minio是Go实现的一个完全兼容S3的服务，和大多Go项目一样，干净小巧，没有依赖，编译运行一键搞定，便利之极。
+源码阅读 HTTP事件注册 启动阶段的初始化工作还是相当繁琐，没戏看。重点看一下运行期间的功能。
+minio进程起来了，对外提供HTTP服务，那么找到HTTP的事件注册的函数就是最好的入口点。事件处理函数的注册代码路径为：serverMain -&amp;gt; configureServerHandler -&amp;gt; api-router.go:registerAPIRouter
+在registerAPIRouter这个函数中，注册了所有HTTP相关的事件处理回调函数。事件分发使用了github.com/gorilla/mux库。这个mux库，在Golang的项目中，使用率还是蛮多的，上次我在Trafix项目中也看到是使用mux库来处理HTTP事件注册和分发处理。
+PutObject：上传一个对象 注册回调函数为bucket.Methods(&amp;quot;PUT&amp;quot;).Path(&amp;quot;/{object:.+}&amp;quot;).HandlerFunc(api.PutObjectHandler)
+下面我们来分析一下func (api objectAPIHandlers) PutObjectHandler(w http.ResponseWriter, r *http.Request)函数的实现。
+ 首先，检测HTTP HEADER中是否有设置 X-Amz-Copy-Source 检测HTTP HEADER中的Content-Md5，并获取该MD5（注意：该MD5是16进制数Base64Encode之后的结果） 检测是否有相应权限 检测是否超过最大大小限制 根据权限，调用相应的函数。这里我们重点介绍api.ObjectAPI.PutObject(bucket, object, size, r.Body, metadata) 如果是单机版本，会进入func (fs fsObjects) PutObject(bucket string, object string, size int64, data io.Reader, metadata map[string]string) (string, error)函数中  继续分析func (fs fsObjects) PutObject(...)函数
+ 首先检测 BucketName、ObjectName 是否合法 生成一个UUID，然后根据UUID生成一个唯一的临时的obj路径tempObj new一个MD5对象，用来计算上传的数据的MD5 根据HTTP请求的Reader生成一个io.TeeReader对象，用来读取数据的同时，顺便计算一下MD5值 调用func fsCreateFile(...)来创建一个临时的对象文件 再检查计算出来的MD5是否与HTTP HEADER中的MD5完全一致 如果MD5不一致就删除临时文件，返回错误。如果MD5完全一致，就将临时文件Rename为目标文件 最后，如果HTTP HEADER中有额外的meta数据需要写入，就调用writeFSMetadata写入meta文件中 最最后，返回数据的MD5值  上面func fsCreateFile(.</description>
+    </item>
+    
+  </channel>
+</rss>

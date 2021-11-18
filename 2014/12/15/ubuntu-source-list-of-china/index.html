@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<head>
+  <link href="https://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="generator" content="Hugo 0.89.4" />
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Ubuntu中国源地址列表及更改方法 &middot; CodeG Blog</title>
+  <meta name="description" content="这里贴出ubuntu系统中国源的list，更新速度超快" />
+
+  
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/print.css" media="print">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/poole.css">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/syntax.css">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/hyde.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
+
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/favicon.png">
+
+  
+  
+</head>
+
+  <body class=" ">
+  <aside class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <a href="http://zieckey.github.io/"><h1>CodeG Blog</h1></a>
+      <p class="lead">
+      An elegant open source and mobile first theme for <a href="http://hugo.spf13.com">hugo</a> made by <a href="http://twitter.com/mdo">@mdo</a>. Originally made for Jekyll.
+      </p>
+    </div>
+
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="http://zieckey.github.io/">Home</a> </li>
+        
+      </ul>
+    </nav>
+
+    <p>&copy; 2021. All rights reserved. </p>
+  </div>
+</aside>
+
+    <main class="content container">
+    <div class="post">
+  <h1>Ubuntu中国源地址列表及更改方法</h1>
+  <time datetime=2014-12-15T00:00:00Z class="post-date">Mon, Dec 15, 2014</time>
+  <ol>
+<li>
+<p>首先备份Ubuntu源列表</p>
+<p>sudo cp /etc/apt/sources.list /etc/apt/sources.list.backup （备份下当前的源列表）
+sudo vim /etc/apt/sources.list</p>
+</li>
+</ol>
+<p>将下面的代码粘贴进去（“#”开头的那一行为注释，可以直接复制进文件中）之后，再执行命令“sudo apt-get update”</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">
+
+<span style="color:#960050;background-color:#1e0010">#</span><span style="color:#a6e22e">deb</span> <span style="color:#a6e22e">cdrom</span>:[<span style="color:#a6e22e">Ubuntu</span><span style="color:#f92672">-</span><span style="color:#a6e22e">Server</span> <span style="color:#ae81ff">14.04.1</span> <span style="color:#a6e22e">LTS</span> <span style="color:#a6e22e">_Trusty</span> <span style="color:#a6e22e">Tahr_</span> <span style="color:#f92672">-</span> <span style="color:#a6e22e">Release</span> <span style="color:#a6e22e">amd64</span> (<span style="color:#ae81ff">20140722.3</span>)]<span style="color:#f92672">/</span> <span style="color:#a6e22e">trusty</span> <span style="color:#a6e22e">main</span> <span style="color:#a6e22e">restricted</span>
+
+<span style="color:#960050;background-color:#1e0010">#</span> <span style="color:#a6e22e">See</span> <span style="color:#a6e22e">http</span>:<span style="color:#75715e">//help.ubuntu.com/community/UpgradeNotes for how to upgrade to
+</span><span style="color:#75715e"></span><span style="color:#960050;background-color:#1e0010">#</span> <span style="color:#a6e22e">newer</span> <span style="color:#a6e22e">versions</span> <span style="color:#a6e22e">of</span> <span style="color:#a6e22e">the</span> <span style="color:#a6e22e">distribution</span>.
+<span style="color:#a6e22e">deb</span> <span style="color:#a6e22e">http</span>:<span style="color:#75715e">//cn.archive.ubuntu.com/ubuntu/ trusty main restricted
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">deb</span><span style="color:#f92672">-</span><span style="color:#a6e22e">src</span> <span style="color:#a6e22e">http</span>:<span style="color:#75715e">//cn.archive.ubuntu.com/ubuntu/ trusty main restricted
+</span><span style="color:#75715e"></span>
+<span style="color:#960050;background-color:#1e0010">##</span> <span style="color:#a6e22e">Major</span> <span style="color:#a6e22e">bug</span> <span style="color:#a6e22e">fix</span> <span style="color:#a6e22e">updates</span> <span style="color:#a6e22e">produced</span> <span style="color:#a6e22e">after</span> <span style="color:#a6e22e">the</span> <span style="color:#a6e22e">final</span> <span style="color:#a6e22e">release</span> <span style="color:#a6e22e">of</span> <span style="color:#a6e22e">the</span>
+<span style="color:#960050;background-color:#1e0010">##</span> <span style="color:#a6e22e">distribution</span>.
+<span style="color:#a6e22e">deb</span> <span style="color:#a6e22e">http</span>:<span style="color:#75715e">//cn.archive.ubuntu.com/ubuntu/ trusty-updates main restricted
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">deb</span><span style="color:#f92672">-</span><span style="color:#a6e22e">src</span> <span style="color:#a6e22e">http</span>:<span style="color:#75715e">//cn.archive.ubuntu.com/ubuntu/ trusty-updates main restricted
+</span><span style="color:#75715e"></span>
+<span style="color:#960050;background-color:#1e0010">##</span> <span style="color:#a6e22e">N</span>.<span style="color:#a6e22e">B</span>. <span style="color:#a6e22e">software</span> <span style="color:#a6e22e">from</span> <span style="color:#a6e22e">this</span> <span style="color:#a6e22e">repository</span> <span style="color:#a6e22e">is</span> <span style="color:#a6e22e">ENTIRELY</span> <span style="color:#a6e22e">UNSUPPORTED</span> <span style="color:#a6e22e">by</span> <span style="color:#a6e22e">the</span> <span style="color:#a6e22e">Ubuntu</span>
+<span style="color:#960050;background-color:#1e0010">##</span> <span style="color:#a6e22e">team</span>. <span style="color:#a6e22e">Also</span>, <span style="color:#a6e22e">please</span> <span style="color:#a6e22e">note</span> <span style="color:#a6e22e">that</span> <span style="color:#a6e22e">software</span> <span style="color:#a6e22e">in</span> <span style="color:#a6e22e">universe</span> <span style="color:#a6e22e">WILL</span> <span style="color:#a6e22e">NOT</span> <span style="color:#a6e22e">receive</span> <span style="color:#a6e22e">any</span>
+<span style="color:#960050;background-color:#1e0010">##</span> <span style="color:#a6e22e">review</span> <span style="color:#a6e22e">or</span> <span style="color:#a6e22e">updates</span> <span style="color:#a6e22e">from</span> <span style="color:#a6e22e">the</span> <span style="color:#a6e22e">Ubuntu</span> <span style="color:#a6e22e">security</span> <span style="color:#a6e22e">team</span>.
+<span style="color:#a6e22e">deb</span> <span style="color:#a6e22e">http</span>:<span style="color:#75715e">//cn.archive.ubuntu.com/ubuntu/ trusty universe
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">deb</span><span style="color:#f92672">-</span><span style="color:#a6e22e">src</span> <span style="color:#a6e22e">http</span>:<span style="color:#75715e">//cn.archive.ubuntu.com/ubuntu/ trusty universe
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">deb</span> <span style="color:#a6e22e">http</span>:<span style="color:#75715e">//cn.archive.ubuntu.com/ubuntu/ trusty-updates universe
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">deb</span><span style="color:#f92672">-</span><span style="color:#a6e22e">src</span> <span style="color:#a6e22e">http</span>:<span style="color:#75715e">//cn.archive.ubuntu.com/ubuntu/ trusty-updates universe
+</span><span style="color:#75715e"></span>
+<span style="color:#960050;background-color:#1e0010">##</span> <span style="color:#a6e22e">N</span>.<span style="color:#a6e22e">B</span>. <span style="color:#a6e22e">software</span> <span style="color:#a6e22e">from</span> <span style="color:#a6e22e">this</span> <span style="color:#a6e22e">repository</span> <span style="color:#a6e22e">is</span> <span style="color:#a6e22e">ENTIRELY</span> <span style="color:#a6e22e">UNSUPPORTED</span> <span style="color:#a6e22e">by</span> <span style="color:#a6e22e">the</span> <span style="color:#a6e22e">Ubuntu</span> 
+<span style="color:#960050;background-color:#1e0010">##</span> <span style="color:#a6e22e">team</span>, <span style="color:#a6e22e">and</span> <span style="color:#a6e22e">may</span> <span style="color:#a6e22e">not</span> <span style="color:#a6e22e">be</span> <span style="color:#a6e22e">under</span> <span style="color:#a6e22e">a</span> <span style="color:#a6e22e">free</span> <span style="color:#a6e22e">licence</span>. <span style="color:#a6e22e">Please</span> <span style="color:#a6e22e">satisfy</span> <span style="color:#a6e22e">yourself</span> <span style="color:#a6e22e">as</span> <span style="color:#a6e22e">to</span> 
+<span style="color:#960050;background-color:#1e0010">##</span> <span style="color:#a6e22e">your</span> <span style="color:#a6e22e">rights</span> <span style="color:#a6e22e">to</span> <span style="color:#a6e22e">use</span> <span style="color:#a6e22e">the</span> <span style="color:#a6e22e">software</span>. <span style="color:#a6e22e">Also</span>, <span style="color:#a6e22e">please</span> <span style="color:#a6e22e">note</span> <span style="color:#a6e22e">that</span> <span style="color:#a6e22e">software</span> <span style="color:#a6e22e">in</span> 
+<span style="color:#960050;background-color:#1e0010">##</span> <span style="color:#a6e22e">multiverse</span> <span style="color:#a6e22e">WILL</span> <span style="color:#a6e22e">NOT</span> <span style="color:#a6e22e">receive</span> <span style="color:#a6e22e">any</span> <span style="color:#a6e22e">review</span> <span style="color:#a6e22e">or</span> <span style="color:#a6e22e">updates</span> <span style="color:#a6e22e">from</span> <span style="color:#a6e22e">the</span> <span style="color:#a6e22e">Ubuntu</span>
+<span style="color:#960050;background-color:#1e0010">##</span> <span style="color:#a6e22e">security</span> <span style="color:#a6e22e">team</span>.
+<span style="color:#a6e22e">deb</span> <span style="color:#a6e22e">http</span>:<span style="color:#75715e">//cn.archive.ubuntu.com/ubuntu/ trusty multiverse
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">deb</span><span style="color:#f92672">-</span><span style="color:#a6e22e">src</span> <span style="color:#a6e22e">http</span>:<span style="color:#75715e">//cn.archive.ubuntu.com/ubuntu/ trusty multiverse
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">deb</span> <span style="color:#a6e22e">http</span>:<span style="color:#75715e">//cn.archive.ubuntu.com/ubuntu/ trusty-updates multiverse
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">deb</span><span style="color:#f92672">-</span><span style="color:#a6e22e">src</span> <span style="color:#a6e22e">http</span>:<span style="color:#75715e">//cn.archive.ubuntu.com/ubuntu/ trusty-updates multiverse
+</span><span style="color:#75715e"></span>
+<span style="color:#960050;background-color:#1e0010">##</span> <span style="color:#a6e22e">N</span>.<span style="color:#a6e22e">B</span>. <span style="color:#a6e22e">software</span> <span style="color:#a6e22e">from</span> <span style="color:#a6e22e">this</span> <span style="color:#a6e22e">repository</span> <span style="color:#a6e22e">may</span> <span style="color:#a6e22e">not</span> <span style="color:#a6e22e">have</span> <span style="color:#a6e22e">been</span> <span style="color:#a6e22e">tested</span> <span style="color:#a6e22e">as</span>
+<span style="color:#960050;background-color:#1e0010">##</span> <span style="color:#a6e22e">extensively</span> <span style="color:#a6e22e">as</span> <span style="color:#a6e22e">that</span> <span style="color:#a6e22e">contained</span> <span style="color:#a6e22e">in</span> <span style="color:#a6e22e">the</span> <span style="color:#a6e22e">main</span> <span style="color:#a6e22e">release</span>, <span style="color:#a6e22e">although</span> <span style="color:#a6e22e">it</span> <span style="color:#a6e22e">includes</span>
+<span style="color:#960050;background-color:#1e0010">##</span> <span style="color:#a6e22e">newer</span> <span style="color:#a6e22e">versions</span> <span style="color:#a6e22e">of</span> <span style="color:#a6e22e">some</span> <span style="color:#a6e22e">applications</span> <span style="color:#a6e22e">which</span> <span style="color:#a6e22e">may</span> <span style="color:#a6e22e">provide</span> <span style="color:#a6e22e">useful</span> <span style="color:#a6e22e">features</span>.
+<span style="color:#960050;background-color:#1e0010">##</span> <span style="color:#a6e22e">Also</span>, <span style="color:#a6e22e">please</span> <span style="color:#a6e22e">note</span> <span style="color:#a6e22e">that</span> <span style="color:#a6e22e">software</span> <span style="color:#a6e22e">in</span> <span style="color:#a6e22e">backports</span> <span style="color:#a6e22e">WILL</span> <span style="color:#a6e22e">NOT</span> <span style="color:#a6e22e">receive</span> <span style="color:#a6e22e">any</span> <span style="color:#a6e22e">review</span>
+<span style="color:#960050;background-color:#1e0010">##</span> <span style="color:#a6e22e">or</span> <span style="color:#a6e22e">updates</span> <span style="color:#a6e22e">from</span> <span style="color:#a6e22e">the</span> <span style="color:#a6e22e">Ubuntu</span> <span style="color:#a6e22e">security</span> <span style="color:#a6e22e">team</span>.
+<span style="color:#a6e22e">deb</span> <span style="color:#a6e22e">http</span>:<span style="color:#75715e">//cn.archive.ubuntu.com/ubuntu/ trusty-backports main restricted universe multiverse
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">deb</span><span style="color:#f92672">-</span><span style="color:#a6e22e">src</span> <span style="color:#a6e22e">http</span>:<span style="color:#75715e">//cn.archive.ubuntu.com/ubuntu/ trusty-backports main restricted universe multiverse
+</span><span style="color:#75715e"></span>
+<span style="color:#a6e22e">deb</span> <span style="color:#a6e22e">http</span>:<span style="color:#75715e">//security.ubuntu.com/ubuntu trusty-security main restricted
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">deb</span><span style="color:#f92672">-</span><span style="color:#a6e22e">src</span> <span style="color:#a6e22e">http</span>:<span style="color:#75715e">//security.ubuntu.com/ubuntu trusty-security main restricted
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">deb</span> <span style="color:#a6e22e">http</span>:<span style="color:#75715e">//security.ubuntu.com/ubuntu trusty-security universe
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">deb</span><span style="color:#f92672">-</span><span style="color:#a6e22e">src</span> <span style="color:#a6e22e">http</span>:<span style="color:#75715e">//security.ubuntu.com/ubuntu trusty-security universe
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">deb</span> <span style="color:#a6e22e">http</span>:<span style="color:#75715e">//security.ubuntu.com/ubuntu trusty-security multiverse
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">deb</span><span style="color:#f92672">-</span><span style="color:#a6e22e">src</span> <span style="color:#a6e22e">http</span>:<span style="color:#75715e">//security.ubuntu.com/ubuntu trusty-security multiverse
+</span><span style="color:#75715e"></span>
+<span style="color:#960050;background-color:#1e0010">##</span> <span style="color:#a6e22e">Uncomment</span> <span style="color:#a6e22e">the</span> <span style="color:#a6e22e">following</span> <span style="color:#a6e22e">two</span> <span style="color:#a6e22e">lines</span> <span style="color:#a6e22e">to</span> <span style="color:#a6e22e">add</span> <span style="color:#a6e22e">software</span> <span style="color:#a6e22e">from</span> <span style="color:#a6e22e">Canonical</span><span style="color:#960050;background-color:#1e0010">&#39;</span><span style="color:#a6e22e">s</span>
+<span style="color:#960050;background-color:#1e0010">##</span> <span style="color:#960050;background-color:#1e0010">&#39;</span><span style="color:#a6e22e">partner</span><span style="color:#960050;background-color:#1e0010">&#39;</span> <span style="color:#a6e22e">repository</span>.
+<span style="color:#960050;background-color:#1e0010">##</span> <span style="color:#a6e22e">This</span> <span style="color:#a6e22e">software</span> <span style="color:#a6e22e">is</span> <span style="color:#a6e22e">not</span> <span style="color:#a6e22e">part</span> <span style="color:#a6e22e">of</span> <span style="color:#a6e22e">Ubuntu</span>, <span style="color:#a6e22e">but</span> <span style="color:#a6e22e">is</span> <span style="color:#a6e22e">offered</span> <span style="color:#a6e22e">by</span> <span style="color:#a6e22e">Canonical</span> <span style="color:#a6e22e">and</span> <span style="color:#a6e22e">the</span>
+<span style="color:#960050;background-color:#1e0010">##</span> <span style="color:#a6e22e">respective</span> <span style="color:#a6e22e">vendors</span> <span style="color:#a6e22e">as</span> <span style="color:#a6e22e">a</span> <span style="color:#a6e22e">service</span> <span style="color:#a6e22e">to</span> <span style="color:#a6e22e">Ubuntu</span> <span style="color:#a6e22e">users</span>.
+<span style="color:#960050;background-color:#1e0010">#</span> <span style="color:#a6e22e">deb</span> <span style="color:#a6e22e">http</span>:<span style="color:#75715e">//archive.canonical.com/ubuntu trusty partner
+</span><span style="color:#75715e"></span><span style="color:#960050;background-color:#1e0010">#</span> <span style="color:#a6e22e">deb</span><span style="color:#f92672">-</span><span style="color:#a6e22e">src</span> <span style="color:#a6e22e">http</span>:<span style="color:#75715e">//archive.canonical.com/ubuntu trusty partner
+</span><span style="color:#75715e"></span>
+<span style="color:#960050;background-color:#1e0010">##</span> <span style="color:#a6e22e">Uncomment</span> <span style="color:#a6e22e">the</span> <span style="color:#a6e22e">following</span> <span style="color:#a6e22e">two</span> <span style="color:#a6e22e">lines</span> <span style="color:#a6e22e">to</span> <span style="color:#a6e22e">add</span> <span style="color:#a6e22e">software</span> <span style="color:#a6e22e">from</span> <span style="color:#a6e22e">Ubuntu</span><span style="color:#960050;background-color:#1e0010">&#39;</span><span style="color:#a6e22e">s</span>
+<span style="color:#960050;background-color:#1e0010">##</span> <span style="color:#960050;background-color:#1e0010">&#39;</span><span style="color:#a6e22e">extras</span><span style="color:#960050;background-color:#1e0010">&#39;</span> <span style="color:#a6e22e">repository</span>.
+<span style="color:#960050;background-color:#1e0010">##</span> <span style="color:#a6e22e">This</span> <span style="color:#a6e22e">software</span> <span style="color:#a6e22e">is</span> <span style="color:#a6e22e">not</span> <span style="color:#a6e22e">part</span> <span style="color:#a6e22e">of</span> <span style="color:#a6e22e">Ubuntu</span>, <span style="color:#a6e22e">but</span> <span style="color:#a6e22e">is</span> <span style="color:#a6e22e">offered</span> <span style="color:#a6e22e">by</span> <span style="color:#a6e22e">third</span><span style="color:#f92672">-</span><span style="color:#a6e22e">party</span>
+<span style="color:#960050;background-color:#1e0010">##</span> <span style="color:#a6e22e">developers</span> <span style="color:#a6e22e">who</span> <span style="color:#a6e22e">want</span> <span style="color:#a6e22e">to</span> <span style="color:#a6e22e">ship</span> <span style="color:#a6e22e">their</span> <span style="color:#a6e22e">latest</span> <span style="color:#a6e22e">software</span>.
+<span style="color:#960050;background-color:#1e0010">#</span> <span style="color:#a6e22e">deb</span> <span style="color:#a6e22e">http</span>:<span style="color:#75715e">//extras.ubuntu.com/ubuntu trusty main
+</span><span style="color:#75715e"></span><span style="color:#960050;background-color:#1e0010">#</span> <span style="color:#a6e22e">deb</span><span style="color:#f92672">-</span><span style="color:#a6e22e">src</span> <span style="color:#a6e22e">http</span>:<span style="color:#75715e">//extras.ubuntu.com/ubuntu trusty main
+</span></code></pre></div><p>如果还觉得不快，可以参考 <a href="http://blog.csdn.net/fly542/article/details/6758342">http://blog.csdn.net/fly542/article/details/6758342 </a></p>
+
+</div>
+
+
+    </main>
+
+    
+      
+    
+  </body>
+</html>

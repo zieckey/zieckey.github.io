@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<head>
+  <link href="https://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="generator" content="Hugo 0.89.4" />
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Nginx源码研究（7）——内存池结构ngx_pool_t &middot; CodeG Blog</title>
+  <meta name="description" content="本文主要介绍Nginx内存池结构`ngx_pool_t`这一重要的数据结构的使用方法和具体实现。同时为了方便学习和研究，还从`ngx_pool_t`抽取了一个完全独立的`cg_pool_t`结构，不依赖Nginx，也不依赖任何第三方类库，可以直接将源码拿走集成进现有系统中。" />
+
+  
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/print.css" media="print">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/poole.css">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/syntax.css">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/hyde.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
+
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/favicon.png">
+
+  
+  
+</head>
+
+  <body class=" ">
+  <aside class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <a href="http://zieckey.github.io/"><h1>CodeG Blog</h1></a>
+      <p class="lead">
+      An elegant open source and mobile first theme for <a href="http://hugo.spf13.com">hugo</a> made by <a href="http://twitter.com/mdo">@mdo</a>. Originally made for Jekyll.
+      </p>
+    </div>
+
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="http://zieckey.github.io/">Home</a> </li>
+        
+      </ul>
+    </nav>
+
+    <p>&copy; 2021. All rights reserved. </p>
+  </div>
+</aside>
+
+    <main class="content container">
+    <div class="post">
+  <h1>Nginx源码研究（7）——内存池结构ngx_pool_t</h1>
+  <time datetime=2015-01-06T00:00:00Z class="post-date">Tue, Jan 6, 2015</time>
+  <h2 id="简介">简介</h2>
+<p>本文主要介绍Nginx内存池结构<code>ngx_pool_t</code>这一重要的数据结构的使用方法和具体实现。同时为了方便学习和研究，还从<code>ngx_pool_t</code>抽取了一个完全独立的<code>cg_pool_t</code>结构，不依赖Nginx，也不依赖任何第三方类库，可以直接将源码拿走集成进现有系统中。</p>
+<p>典型的应用场景是这样的，假如你有一个nginx扩展，用到了ngx_pool_t这个数据结构，但是现在有一个需求是需要将这份扩展代码独立出来，不依赖nginx运行，那么这个<code>cg_pool_t</code>是你的好帮手，你几乎只需要将头文件从<code>ngx_palloc.h</code>换为<code>cg_pool.h</code>即可，代码完全不用修改即可完成移植。</p>
+<p>Nginx的内存池在大量的小块内存的申请和释放的时候，能更快地进行内存分配（对比malloc和free），同时减少内存碎片，防止内存泄露。尤其是在防止内存泄露方面，Nginx的内存池的设计可谓非常巧妙。调用者可以一直在一个<code>ngx_pool_t</code>上调用ngx_palloc申请内存，而只需在最后释放这个<code>ngx_pool_t</code>对象即可将中途所有申请的内存统统一块释放掉。从而大大减少内存泄露的可能性，也大大简化c程序的开发逻辑流程。</p>
+<h2 id="nginx内存池源代码位置">Nginx内存池源代码位置</h2>
+<p>src/core/ngx_palloc.{h,c}</p>
+<h2 id="cg_pool_t内存池的源码位置">cg_pool_t内存池的源码位置</h2>
+<p><a href="https://github.com/zieckey/nginx-research/tree/master/libnginx/pool">https://github.com/zieckey/nginx-research/tree/master/libnginx/pool</a></p>
+<h2 id="源码分析">源码分析</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">
+<span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> ngx_pool_large_s  ngx_pool_large_t;
+<span style="color:#75715e">//大内存结构
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">struct</span> ngx_pool_large_s {
+    ngx_pool_large_t     <span style="color:#f92672">*</span>next; <span style="color:#75715e">//下一个大块内存
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">void</span>                 <span style="color:#f92672">*</span>alloc;<span style="color:#75715e">//nginx分配的大块内存空间
+</span><span style="color:#75715e"></span>};
+
+<span style="color:#75715e">//该结构用来维护内存池的数据块，供用户分配之用
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> {
+    u_char               <span style="color:#f92672">*</span>last;  <span style="color:#75715e">//当前内存分配结束位置，即下一段可分配内存的起始位置
+</span><span style="color:#75715e"></span>    u_char               <span style="color:#f92672">*</span>end;   <span style="color:#75715e">//内存池结束位置
+</span><span style="color:#75715e"></span>    ngx_pool_t           <span style="color:#f92672">*</span>next;  <span style="color:#75715e">//链接到下一个内存池
+</span><span style="color:#75715e"></span>    ngx_uint_t            failed;<span style="color:#75715e">//统计该内存池不能满足分配请求的次数
+</span><span style="color:#75715e"></span>} ngx_pool_data_t;
+
+<span style="color:#75715e">//该结构维护整个内存池的头部信息
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">struct</span> ngx_pool_s {
+    ngx_pool_data_t       d;       <span style="color:#75715e">//数据块
+</span><span style="color:#75715e"></span>    size_t                max;     <span style="color:#75715e">//数据块大小，即小块内存的最大值
+</span><span style="color:#75715e"></span>    ngx_pool_t           <span style="color:#f92672">*</span>current; <span style="color:#75715e">//保存当前内存值
+</span><span style="color:#75715e"></span>    ngx_chain_t          <span style="color:#f92672">*</span>chain;   <span style="color:#75715e">//可以挂一个chain结构
+</span><span style="color:#75715e"></span>    ngx_pool_large_t     <span style="color:#f92672">*</span>large;   <span style="color:#75715e">//分配大块内存用，即超过max的内存请求
+</span><span style="color:#75715e"></span>    ngx_pool_cleanup_t   <span style="color:#f92672">*</span>cleanup; <span style="color:#75715e">//挂载一些内存池释放的时候，同时释放的资源
+</span><span style="color:#75715e"></span>    ngx_log_t            <span style="color:#f92672">*</span>log;
+};
+</code></pre></div><h2 id="内存结构图">内存结构图</h2>
+<p><a href="/images/githubpages/nginx/ngx_pool_t_xiekeli.png"><img src="/images/githubpages/nginx/ngx_pool_t_xiekeli.png" alt=""></a>
+备注：从参考博客5摘录</p>
+<p><a href="/images/githubpages/nginx/ngx_pool_t_rainx.png"><img src="/images/githubpages/nginx/ngx_pool_t_rainx.png" alt=""></a>
+备注：从参考文档6摘录</p>
+<h2 id="测试代码">测试代码</h2>
+<p>该测试代码的完整工程的编译和运行方式请参考 <a href="https://github.com/zieckey/nginx-research">https://github.com/zieckey/nginx-research项目</a>。Linux&amp;Windows都测试通过。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">TEST_UNIT(ngx_pool) {
+    ngx_pool_t<span style="color:#f92672">*</span> pool <span style="color:#f92672">=</span> ngx_create_pool(<span style="color:#ae81ff">1024</span>, NULL);
+    <span style="color:#66d9ef">char</span><span style="color:#f92672">*</span> p <span style="color:#f92672">=</span> (<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span>)ngx_palloc(pool, <span style="color:#ae81ff">32</span>);
+    <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span><span style="color:#f92672">*</span> s <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;hello world</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>;
+    strcpy(p, s);
+    H_TEST_ASSERT(strcmp(p, s) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>);
+
+    p <span style="color:#f92672">=</span> (<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span>)ngx_palloc(pool, <span style="color:#ae81ff">4096</span>); <span style="color:#75715e">// alloc a large block
+</span><span style="color:#75715e"></span>
+    ngx_destroy_pool(pool);
+}
+</code></pre></div><h2 id="参考">参考：</h2>
+<ol>
+<li><a href="http://tengine.taobao.org/book/chapter_02.html#ngx-palloc-t-100">淘宝：Nginx开发从入门到精通 http://tengine.taobao.org/book/chapter_02.html#ngx-queue-t-100</a></li>
+<li><a href="https://github.com/zieckey/nginx-1.0.14_comment/blob/master/src/core/ngx_palloc.h">nginx源码注释 https://github.com/zieckey/nginx-1.0.14_comment/blob/master/src/core/ngx_palloc.h</a></li>
+<li><a href="https://github.com/zieckey/nginx-1.0.14_comment/blob/master/src/core/ngx_palloc.c">nginx源码注释 https://github.com/zieckey/nginx-1.0.14_comment/blob/master/src/core/ngx_palloc.c</a></li>
+<li><a href="http://blog.csdn.net/v_july_v/article/details/7040425">Nginx源码剖析之内存池，与内存管理 http://blog.csdn.net/v_july_v/article/details/7040425</a></li>
+<li><a href="http://www.cnblogs.com/xiekeli/archive/2012/10/17/2727432.html">nginx源码学习&mdash;-内存池 http://www.cnblogs.com/xiekeli/archive/2012/10/17/2727432.html</a></li>
+<li><a href="https://code.google.com/p/nginxsrp/wiki/NginxCodeReview">nginx源码研究 https://code.google.com/p/nginxsrp/wiki/NginxCodeReview</a></li>
+</ol>
+
+</div>
+
+
+    </main>
+
+    
+      
+    
+  </body>
+</html>

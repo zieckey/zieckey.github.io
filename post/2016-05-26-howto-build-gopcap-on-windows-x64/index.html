@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<head>
+  <link href="https://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="generator" content="Hugo 0.89.4" />
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>如何在win7 64位系统下安装gopcap包及使用 &middot; CodeG Blog</title>
+  <meta name="description" content="" />
+
+  
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/print.css" media="print">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/poole.css">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/syntax.css">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/hyde.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
+
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/favicon.png">
+
+  
+  
+</head>
+
+  <body class=" ">
+  <aside class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <a href="http://zieckey.github.io/"><h1>CodeG Blog</h1></a>
+      <p class="lead">
+      An elegant open source and mobile first theme for <a href="http://hugo.spf13.com">hugo</a> made by <a href="http://twitter.com/mdo">@mdo</a>. Originally made for Jekyll.
+      </p>
+    </div>
+
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="http://zieckey.github.io/">Home</a> </li>
+        
+      </ul>
+    </nav>
+
+    <p>&copy; 2021. All rights reserved. </p>
+  </div>
+</aside>
+
+    <main class="content container">
+    <div class="post">
+  <h1>如何在win7 64位系统下安装gopcap包及使用</h1>
+  <time datetime=2016-05-25T20:12:01Z class="post-date">Wed, May 25, 2016</time>
+  <p><code>gopcap</code>是libpcap库的Golang封装，其项目地址在这里 <a href="https://github.com/akrennmair/gopcap">https://github.com/akrennmair/gopcap</a> 。
+本文简要介绍一下如何在win7 64位系统平台上使用 <code>gopcap</code> 库。</p>
+<p>安装步骤如下：</p>
+<ol>
+<li>安装Golang 64位版本</li>
+<li>安装mingw 64位版本，注意导入到windows环境变量中。让命令行能自动找到 gcc 命令</li>
+<li>在 <a href="http://www.tcpdump.org/">http://www.tcpdump.org/</a> 下载 libpcap-1.7.4.tar.gz，从这个包中得到libpcap的C语言头文件</li>
+<li>在 <a href="https://www.winpcap.org/install/">https://www.winpcap.org/install/</a> 下载winpcap并安装，从这里可以得到libpcap的windows DLL文件 wpcap.dll，用于运行</li>
+<li>在 <a href="http://www.winpcap.org/archive/">http://www.winpcap.org/archive/</a> 下载 4.1.1-WpdPack.zip，从其中的x64目录下找到 wpcap.lib 库，用于编译</li>
+<li>执行下列命令：</li>
+</ol>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>这里，将相关头文库、库文件都放在 <code>C:\wpdpcak</code> 目录下，是因为 gopcap 库的cgo编译选择是这么设置，当然你也可以修改源码的方式来重新设置目录。</p>
+<ol>
+<li>编译过程中如果出现下列错误</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"> $ go build
+ <span style="color:#75715e"># github.com/akrennmair/gopcap</span>
+ In file included from C:/WpdPack/Include/pcap.h:43:0,
+              from ..<span style="color:#ae81ff">\.</span>.<span style="color:#ae81ff">\.</span>.<span style="color:#ae81ff">\a</span>krennmair<span style="color:#ae81ff">\g</span>opcap<span style="color:#ae81ff">\p</span>cap.go:12:
+ C:/WpdPack/Include/pcap/pcap.h:450:1: error: unknown type name <span style="color:#e6db74">&#39;Adapter&#39;</span>
+ Adapter *pcap_get_adapter<span style="color:#f92672">(</span>pcap_t *p<span style="color:#f92672">)</span>;
+ ^
+</code></pre></div><pre><code>就将 pcap/pcap.h 中这一行注释掉。
+</code></pre>
+<ol>
+<li>至此，应该再不会有问题了，编译成功。 gopcap 库的toots目录有很多使用用例，可以看看以了解如何使用。</li>
+</ol>
+<h2 id="参考">参考</h2>
+<ol>
+<li><a href="http://blog.golang.org/c-go-cgo">http://blog.golang.org/c-go-cgo</a></li>
+<li><a href="https://github.com/akrennmair/gopcap">https://github.com/akrennmair/gopcap</a></li>
+</ol>
+
+</div>
+
+
+    </main>
+
+    
+      
+    
+  </body>
+</html>

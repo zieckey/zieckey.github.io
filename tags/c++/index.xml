@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>C&#43;&#43; on CodeG Blog</title>
+    <link>http://zieckey.github.io/tags/c&#43;&#43;/</link>
+    <description>Recent content in C&#43;&#43; on CodeG Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 19 Feb 2016 00:00:00 +0000</lastBuildDate><atom:link href="http://zieckey.github.io/tags/c++/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>编译Golang包为C语言库文件</title>
+      <link>http://zieckey.github.io/2016/02/19/sharing-golang-package-to-C/</link>
+      <pubDate>Fri, 19 Feb 2016 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2016/02/19/sharing-golang-package-to-C/</guid>
+      <description>Go 1.5发布后，其包含一个特性：可以编译生成C语言动态链接库或静态库。本文给出了示例代码和用法。
+go build和go install命令，可以使用参数 -buildmode 来指定生成哪种类型的二进制目标文件。请见https://golang.org/cmd/go/#Description of build modes 详细说明。
+当前我们使用 -buildmode=c-archive 来示例和测试。
+Golang源文件：
+// file hello.go package main port &amp;#34;C&amp;#34; import &amp;#34;fmt&amp;#34; //export SayHello func SayHello(name string) { fmt.Printf(&amp;#34;func in Golang SayHello says: Hello, %s!\n&amp;#34;, name) } //export SayHelloByte func SayHelloByte(name []byte) { fmt.Printf(&amp;#34;func in Golang SayHelloByte says: Hello, %s!\n&amp;#34;, string(name)) } //export SayBye func SayBye() { fmt.Println(&amp;#34;func in Golang SayBye says: Bye!&amp;#34;) } func main() { // We need the main function to make possible  // CGO compiler to compile the package as C shared library } 使用命令go build -buildmode=c-archive -o libhello.</description>
+    </item>
+    
+    <item>
+      <title>应用双缓冲技术完美解决资源数据优雅无损的热加载问题</title>
+      <link>http://zieckey.github.io/2016/01/27/double-buffering/</link>
+      <pubDate>Wed, 27 Jan 2016 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2016/01/27/double-buffering/</guid>
+      <description>简介 在一个网络服务器不间断运行过程中，有一些资源数据需要实时更新，例如需要及时更新一份白名单列表，怎么做才能做到优雅无损的更新到服务的进程空间内？这里我们提出一种叫“双缓冲”的技术来解决这种问题。
+这里的双缓冲技术是借鉴了计算机屏幕绘图领域的概念。双缓冲技术绘图即在内存中创建一个与屏幕绘图区域一致的对象，先将图形绘制到内存中的这个对象上，再一次性将这个对象上的图形拷贝到屏幕上，这样能大大加快绘图的速度。
+问题抽象 假设我们有一个查询服务，为了方便描述，我们将数据加密传输等一些不必要的细节都省去后，请求报文可以抽象成两个参数：一个是id，用来唯一标识一台设备（例如手机或电脑）；另一个查询主体query。服务端业务逻辑是通过query查询数据库/NoSQL等数据引擎然后返回相应的数据，同时记录一条请求日志。
+用Golang来实现这个逻辑如下：
+package main import ( &amp;#34;net/http&amp;#34; &amp;#34;log&amp;#34; &amp;#34;os&amp;#34; &amp;#34;fmt&amp;#34; ) func Query(r *http.Request) string { id := r.FormValue(&amp;#34;id&amp;#34;) query := r.FormValue(&amp;#34;query&amp;#34;) //参数合法性检查  //具体的业务逻辑，查询数据库/NoSQL等数据引擎，然后做逻辑计算，然后合并结果 	//这里简单抽象，直接返回欢迎语 	result := fmt.Sprintf(&amp;#34;hello, %v&amp;#34;, id) // 记录一条查询日志，用于离线统计和分析 	log.Printf(&amp;#34;&amp;lt;id=%v&amp;gt;&amp;lt;query=%v&amp;gt;&amp;lt;result=%v&amp;gt;&amp;lt;ip=%v&amp;gt;&amp;#34;, id, query, result, r.RemoteAddr) return result } func Handler(w http.ResponseWriter, r *http.Request) { r.ParseForm() result := Query(r) w.Write([]byte(result)) } func main() { http.HandleFunc(&amp;#34;/q&amp;#34;, Handler) hostname, _ := os.Hostname() log.Printf(&amp;#34;start http://%s:8091/q&amp;#34;, hostname) log.</description>
+    </item>
+    
+    <item>
+      <title>C&#43;&#43;11中std::move示例</title>
+      <link>http://zieckey.github.io/2015/01/01/c&#43;&#43;11-move/</link>
+      <pubDate>Thu, 01 Jan 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/01/01/c&#43;&#43;11-move/</guid>
+      <description>std::move作用：如果其类型支持移动的话，会无条件的将其参数（可能是左值）强制转换为右值引用，从而表示其可以移动，它使得编译器随后能够移动（而不是复制）在参数中传递的值。如果其类型不支持移动，则将进行复制。
+因此可以将std::move看着是一个用于提示编译器优化的函数，过去的c++98中，由于无法将作为右值的临时变量从左值当中区别出来，所以程序运行时有大量临时变量白白的创建后又立刻销毁。
+std::move定义 template&amp;lt;class Type&amp;gt; typename remove_reference&amp;lt;Type&amp;gt;::type&amp;amp;&amp;amp; move(Type&amp;amp;&amp;amp; Arg) noexcept; 参数说明：  Type 一种从 Arg 中传递的参数类型推导出的类型（与引用折叠规则一起）。 Arg 要强制转换的参数。虽然 Arg 的类型看起来指定为右值引用，但 move 也接受左值参数，原因是左值引用可以绑定到右值引用。  返回值 返回Arg的右值引用，而无论其类型是否是引用类型。
+示例代码 #include &amp;lt;iostream&amp;gt;#include &amp;lt;utility&amp;gt; class Moveable{ public: Moveable() : i(new int(3)) { std::cout &amp;lt;&amp;lt; &amp;#34;Moveable::Moveable() 构造函数 : ptr(i)=&amp;#34; &amp;lt;&amp;lt; i &amp;lt;&amp;lt; std::endl; } ~Moveable() { std::cout &amp;lt;&amp;lt; &amp;#34;Moveable::~Moveable() 析构函数 ptr(i)=&amp;#34; &amp;lt;&amp;lt; i &amp;lt;&amp;lt; std::endl; if (i) { delete i; i = nullptr; } } Moveable(const Moveable &amp;amp; m) : i(new int(*m.</description>
+    </item>
+    
+    <item>
+      <title>C&#43;&#43;与Java垃圾回收的区别</title>
+      <link>http://zieckey.github.io/2014/12/14/gc-cpp-java/</link>
+      <pubDate>Sun, 14 Dec 2014 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2014/12/14/gc-cpp-java/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>

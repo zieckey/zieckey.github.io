@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>分布式 on CodeG Blog</title>
+    <link>http://zieckey.github.io/tags/%E5%88%86%E5%B8%83%E5%BC%8F/</link>
+    <description>Recent content in 分布式 on CodeG Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 24 Feb 2016 20:43:00 +0000</lastBuildDate><atom:link href="http://zieckey.github.io/tags/%E5%88%86%E5%B8%83%E5%BC%8F/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>使用Golang利用ectd实现一个分布式锁</title>
+      <link>http://zieckey.github.io/post/2016-02-24-distrubute-lock-over-etcd/</link>
+      <pubDate>Wed, 24 Feb 2016 20:43:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/post/2016-02-24-distrubute-lock-over-etcd/</guid>
+      <description>etcd是随着CoreOS项目一起成长起来的，随着Golang和CoreOS等项目在开源社区日益火热， etcd作为一个高可用、强一致性的分布式Key-Value存储系统被越来越多的开发人员关注和使用。
+这篇文章全方位介绍了etcd的应用场景，这里简单摘要如下：
+ 服务发现（Service Discovery） 消息发布与订阅 负载均衡 分布式通知与协调 分布式锁 分布式队列 集群监控与Leader竞选 为什么用etcd而不用ZooKeeper  本文重点介绍如何利用ectd实现一个分布式锁。 锁的概念大家都熟悉，当我们希望某一事件在同一时间点只有一个线程(goroutine)在做，或者某一个资源在同一时间点只有一个服务能访问，这个时候我们就需要用到锁。 例如我们要实现一个分布式的id生成器，多台服务器之间的协调就非常麻烦。分布式锁就正好派上用场。
+其基本实现原理为：
+ 在ectd系统里创建一个key 如果创建失败，key存在，则监听该key的变化事件，直到该key被删除，回到1 如果创建成功，则认为我获得了锁  具体代码如下：
+package etcdsync import ( &amp;#34;fmt&amp;#34; &amp;#34;io&amp;#34; &amp;#34;os&amp;#34; &amp;#34;sync&amp;#34; &amp;#34;time&amp;#34; &amp;#34;github.com/coreos/etcd/client&amp;#34; &amp;#34;github.com/coreos/etcd/Godeps/_workspace/src/golang.org/x/net/context&amp;#34; ) const ( defaultTTL = 60 defaultTry = 3 deleteAction = &amp;#34;delete&amp;#34; expireAction = &amp;#34;expire&amp;#34; ) // A Mutex is a mutual exclusion lock which is distributed across a cluster. type Mutex struct { key string id string // The identity of the caller 	client client.</description>
+    </item>
+    
+    <item>
+      <title>serf介绍</title>
+      <link>http://zieckey.github.io/2015/12/20/serf/</link>
+      <pubDate>Sun, 20 Dec 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/12/20/serf/</guid>
+      <description>简介 Serf是一个无中心化的服务调度和服务发现工具。它容错性极好、无中心化设计、没有单点故障。Serf是建立在Gossip协议之上的，Gossip协议就是为无中心化通信而设计的。为了让一个新节点加入Serf集群，只需要知道集群中的任意一个节点即可，一旦新节点加入进来，它将获得集群中所有的成员信息。Gossip协议让Serf的配置和启动变得非常容易。
+如何使用 在官方网站 https://www.serfdom.io/downloads.html 下载合适的版本。
+简单使用 新建一个事件处理器脚本，例如 handler.sh ：
+#!/bin/bash if [ &amp;#34;${SERF_USER_EVENT}&amp;#34; = &amp;#34;memresponse&amp;#34; ]; then cat &amp;gt;&amp;gt; /tmp/mem.txt echo &amp;#34;\n&amp;#34; &amp;gt;&amp;gt; /tmp/mem.txt fi 再启动 serf 服务，绑定handler.sh为默认的事件处理器： ./serf agent -bind=133.130.106.57:5001 -rpc-addr=133.130.106.57:7373 -log-level=debug -event-handler=./handler.sh
+再再再另一个console窗口利用serf命令发送一个事件到之前启动的serf： ./serf event -rpc-addr=133.130.106.57:7373 memresponse xcxx
+我们可以到serf服务的窗口输出：
+$ ./serf agent -bind=133.130.106.57:5001 -rpc-addr=133.130.106.57:7373 -log-level=debug -event-handler=./handler.sh ==&amp;gt; Starting Serf agent... ==&amp;gt; Starting Serf agent RPC... ==&amp;gt; Serf agent running! Node name: &#39;133-130-106-57&#39; Bind addr: &#39;133.130.106.57:5001&#39; RPC addr: &#39;133.</description>
+    </item>
+    
+    <item>
+      <title>nsq介绍及源码阅读</title>
+      <link>http://zieckey.github.io/2015/10/22/nsq/</link>
+      <pubDate>Thu, 22 Oct 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/10/22/nsq/</guid>
+      <description>简介 nsq客户端逻辑 nsq消费者 主要请参考nsq_tail代码。nsqd的回应消息处理代码为func (c *Conn) readLoop()。
+TCP消息流的二进制结构请参考官方文档：http://nsq.io/clients/tcp_protocol_spec.html
+nsq消费者与nsqd建立连接的流程如下：
+ 当建立好TCP连接后，客户端必须发送一个 4 字节的 &amp;ldquo;magic&amp;rdquo; 标识码，表示通讯协议的版本。 V2(4 个字节的 ASCII [space][space][V][2]) 消费用到的推送流协议（和发布用到的请求/响应协议） 认证后，客户端可以发送IDENTIFY命令来停供常用的元数据（比如，更多的描述标识码）和协商特性。服务器会根据客户端请求的内容返回一个JSON数据或直接返回OK 然后，客户端还必须使用SUB命令订阅一个话题(Topic)和通道(Channel)。成功后服务器会返回OK 最后，还需要设置RDY状态。如果RDY状态为 0 ，意味着客户端不会收到任何消息。因此需要设置一个RDY状态值，例如设置100，不需要任何附加命令，将会有 100 条消息推送到客户端  消费消息数据时，需要给NSQD返回该消息是否成功被处理。只有成功被处理的消息，才真正从NSQ队列中删除不会再投递到任何消费者。
+nsq生产者 主要参考https://github.com/nsqio/go-nsq项目中Producer类的实现。
+nsq生产者与nsqd建立连接的流程如下：
+ 当建立好TCP连接后，客户端必须发送一个 4 字节的 &amp;ldquo;magic&amp;rdquo; 标识码，表示通讯协议的版本。 V2(4 个字节的 ASCII [space][space][V][2]) 消费用到的推送流协议（和发布用到的请求/响应协议） 认证后，客户端可以发送IDENTIFY命令来停供常用的元数据（比如，更多的描述标识码）和协商特性。服务器会根据客户端请求的内容返回一个JSON数据或直接返回OK，表明连接建立成功。  将消息投递到NSQD时，成功后NSQD会返回OK。由于返回消息上没有ID，表明上看是不能做pipeline操作的。 不过由于在一条连接上NSQD的返回消息肯定与接收到的消息顺序一一对应，因此可以做pipeline操作，可以连续调用多次PUB/MPUB命令， 但需要将这些命令保存下来，等待NSQD返回数据后再决定是否将这些命令标记完成还是标记为需要重新投递。
+实现时，可以借用TCP的滑动窗口概念。如果滑动窗口为1，相当于每次调用PUB/MPUB命令都需要等待服务器返回后才决定下一步操作，这就退化为同步操作。
+nsqd内部处理逻辑 一个Topic可以有多Channel，每个消息都会复制一份放入Channel中，也就是说每个Channel的数据都是独立的。如果消费速度更不上生产的速度，那么每个Channel上的数据都会序列化到磁盘上，这里是一个坑，有可能会因此导致数据写磁盘多份。
+另外，NSQ不能保证数据的消费顺序与生产顺序完全一致。
+与nsqlookupd交互 代码调用路径如下：
+nsqd.Main() n.waitGroup.Wrap(func() { n.lookupLoop() }) func (n *NSQD) lookupLoop() : 91行： case val := &amp;lt;-n.notifyChan: 消息分发 func (t *Topic) messagePump() 这里进行消息的分发，直接将该topic下的消息推送给所有的channel上。</description>
+    </item>
+    
+  </channel>
+</rss>

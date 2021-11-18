@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<head>
+  <link href="https://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="generator" content="Hugo 0.89.4" />
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>golang学习之如何构造一个multipart/form格式的HTTP请求 &middot; CodeG Blog</title>
+  <meta name="description" content="使用PHP里面的curl扩展库可以方便的从一个php array来构造一个`multipart/form`格式的HTTP请求，但golang里构造起来稍稍麻烦一点，下面我们来介绍具体的构造方法。" />
+
+  
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/print.css" media="print">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/poole.css">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/syntax.css">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/hyde.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
+
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/favicon.png">
+
+  
+  
+</head>
+
+  <body class=" ">
+  <aside class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <a href="http://zieckey.github.io/"><h1>CodeG Blog</h1></a>
+      <p class="lead">
+      An elegant open source and mobile first theme for <a href="http://hugo.spf13.com">hugo</a> made by <a href="http://twitter.com/mdo">@mdo</a>. Originally made for Jekyll.
+      </p>
+    </div>
+
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="http://zieckey.github.io/">Home</a> </li>
+        
+      </ul>
+    </nav>
+
+    <p>&copy; 2021. All rights reserved. </p>
+  </div>
+</aside>
+
+    <main class="content container">
+    <div class="post">
+  <h1>golang学习之如何构造一个multipart/form格式的HTTP请求</h1>
+  <time datetime=2015-03-18T00:00:00Z class="post-date">Wed, Mar 18, 2015</time>
+  <p>使用PHP里面的curl扩展库可以方便的从一个php array来构造一个<code>multipart/form</code>格式的HTTP请求，但golang里构造起来稍稍麻烦一点，下面我们来介绍具体的构造方法。</p>
+<h2 id="具体代码实现">具体代码实现</h2>
+<p>实际代码中用到 <code>multipart.Writer</code>，并调用其 <code>writer.WriteField(key, val)</code> 方法来构造。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#f92672">package</span> <span style="color:#a6e22e">main</span>
+
+<span style="color:#f92672">import</span> (
+	<span style="color:#e6db74">&#34;bytes&#34;</span>
+	<span style="color:#e6db74">&#34;fmt&#34;</span>
+	<span style="color:#e6db74">&#34;log&#34;</span>
+	<span style="color:#e6db74">&#34;mime/multipart&#34;</span>
+	<span style="color:#e6db74">&#34;net/http&#34;</span>
+)
+
+<span style="color:#75715e">// Creates a new file upload http request with optional extra params
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">newMultipartRequest</span>(<span style="color:#a6e22e">url</span> <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">params</span> <span style="color:#66d9ef">map</span>[<span style="color:#66d9ef">string</span>]<span style="color:#66d9ef">string</span>) (<span style="color:#f92672">*</span><span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">Request</span>, <span style="color:#66d9ef">error</span>) {
+	<span style="color:#a6e22e">body</span> <span style="color:#f92672">:=</span> <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">bytes</span>.<span style="color:#a6e22e">Buffer</span>{}
+	<span style="color:#a6e22e">writer</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">multipart</span>.<span style="color:#a6e22e">NewWriter</span>(<span style="color:#a6e22e">body</span>)
+	<span style="color:#66d9ef">for</span> <span style="color:#a6e22e">key</span>, <span style="color:#a6e22e">val</span> <span style="color:#f92672">:=</span> <span style="color:#66d9ef">range</span> <span style="color:#a6e22e">params</span> {
+		<span style="color:#a6e22e">_</span> = <span style="color:#a6e22e">writer</span>.<span style="color:#a6e22e">WriteField</span>(<span style="color:#a6e22e">key</span>, <span style="color:#a6e22e">val</span>)
+	}
+	<span style="color:#a6e22e">writer</span>.<span style="color:#a6e22e">Close</span>()
+	<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">NewRequest</span>(<span style="color:#e6db74">&#34;POST&#34;</span>, <span style="color:#a6e22e">url</span>, <span style="color:#a6e22e">body</span>)
+}
+
+<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
+	<span style="color:#a6e22e">extraParams</span> <span style="color:#f92672">:=</span> <span style="color:#66d9ef">map</span>[<span style="color:#66d9ef">string</span>]<span style="color:#66d9ef">string</span>{
+		<span style="color:#e6db74">&#34;title&#34;</span>:       <span style="color:#e6db74">&#34;My Document&#34;</span>,
+		<span style="color:#e6db74">&#34;author&#34;</span>:      <span style="color:#e6db74">&#34;zieckey&#34;</span>,
+		<span style="color:#e6db74">&#34;description&#34;</span>: <span style="color:#e6db74">&#34;A document with all the Go programming language secrets&#34;</span>,
+	}
+	<span style="color:#a6e22e">request</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">newMultipartRequest</span>(<span style="color:#e6db74">&#34;http://127.0.0.1:8091/echo&#34;</span>, <span style="color:#a6e22e">extraParams</span>)
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+		<span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Fatal</span>(<span style="color:#a6e22e">err</span>)
+	}
+	<span style="color:#a6e22e">client</span> <span style="color:#f92672">:=</span> <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">Client</span>{}
+	<span style="color:#a6e22e">resp</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">client</span>.<span style="color:#a6e22e">Do</span>(<span style="color:#a6e22e">request</span>)
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+		<span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Fatal</span>(<span style="color:#a6e22e">err</span>)
+	} <span style="color:#66d9ef">else</span> {
+		<span style="color:#a6e22e">body</span> <span style="color:#f92672">:=</span> <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">bytes</span>.<span style="color:#a6e22e">Buffer</span>{}
+		<span style="color:#a6e22e">_</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">body</span>.<span style="color:#a6e22e">ReadFrom</span>(<span style="color:#a6e22e">resp</span>.<span style="color:#a6e22e">Body</span>)
+		<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+			<span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Fatal</span>(<span style="color:#a6e22e">err</span>)
+		}
+		<span style="color:#a6e22e">resp</span>.<span style="color:#a6e22e">Body</span>.<span style="color:#a6e22e">Close</span>()
+		<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#a6e22e">resp</span>.<span style="color:#a6e22e">StatusCode</span>)
+		<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#a6e22e">resp</span>.<span style="color:#a6e22e">Header</span>)
+		<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#a6e22e">body</span>)
+	}
+}
+</code></pre></div><h2 id="报文示例">报文示例</h2>
+<p>上述代码构造的HTTP报文如下：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#f92672">--</span><span style="color:#a6e22e">f1f6c2b63373057a4439aa01f678d51850567c50b51e0523bb445d911d1d</span>
+<span style="color:#a6e22e">Content</span><span style="color:#f92672">-</span><span style="color:#a6e22e">Disposition</span>: <span style="color:#a6e22e">form</span><span style="color:#f92672">-</span><span style="color:#a6e22e">data</span>; <span style="color:#a6e22e">name</span>=<span style="color:#e6db74">&#34;title&#34;</span>
+
+<span style="color:#a6e22e">My</span> <span style="color:#a6e22e">Document</span>
+<span style="color:#f92672">--</span><span style="color:#a6e22e">f1f6c2b63373057a4439aa01f678d51850567c50b51e0523bb445d911d1d</span>
+<span style="color:#a6e22e">Content</span><span style="color:#f92672">-</span><span style="color:#a6e22e">Disposition</span>: <span style="color:#a6e22e">form</span><span style="color:#f92672">-</span><span style="color:#a6e22e">data</span>; <span style="color:#a6e22e">name</span>=<span style="color:#e6db74">&#34;author&#34;</span>
+
+<span style="color:#a6e22e">zieckey</span>
+<span style="color:#f92672">--</span><span style="color:#a6e22e">f1f6c2b63373057a4439aa01f678d51850567c50b51e0523bb445d911d1d</span>
+<span style="color:#a6e22e">Content</span><span style="color:#f92672">-</span><span style="color:#a6e22e">Disposition</span>: <span style="color:#a6e22e">form</span><span style="color:#f92672">-</span><span style="color:#a6e22e">data</span>; <span style="color:#a6e22e">name</span>=<span style="color:#e6db74">&#34;description&#34;</span>
+
+<span style="color:#a6e22e">A</span> <span style="color:#a6e22e">document</span> <span style="color:#a6e22e">with</span> <span style="color:#a6e22e">all</span> <span style="color:#a6e22e">the</span> <span style="color:#a6e22e">Go</span> <span style="color:#a6e22e">programming</span> <span style="color:#a6e22e">language</span> <span style="color:#a6e22e">secrets</span>
+<span style="color:#f92672">--</span><span style="color:#a6e22e">f1f6c2b63373057a4439aa01f678d51850567c50b51e0523bb445d911d1d</span><span style="color:#f92672">--</span>
+
+</code></pre></div><h2 id="参考">参考</h2>
+<p><a href="http://matt.aimonetti.net/posts/2013/07/01/golang-multipart-file-upload-example/">http://matt.aimonetti.net/posts/2013/07/01/golang-multipart-file-upload-example/</a></p>
+
+</div>
+
+
+    </main>
+
+    
+      
+    
+  </body>
+</html>

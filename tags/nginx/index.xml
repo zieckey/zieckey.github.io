@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Nginx on CodeG Blog</title>
+    <link>http://zieckey.github.io/tags/nginx/</link>
+    <description>Recent content in Nginx on CodeG Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 06 Jan 2015 00:00:00 +0000</lastBuildDate><atom:link href="http://zieckey.github.io/tags/nginx/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Nginx源码研究（7）——内存池结构ngx_pool_t</title>
+      <link>http://zieckey.github.io/2015/01/06/ngx_pool_t/</link>
+      <pubDate>Tue, 06 Jan 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/01/06/ngx_pool_t/</guid>
+      <description>简介 本文主要介绍Nginx内存池结构ngx_pool_t这一重要的数据结构的使用方法和具体实现。同时为了方便学习和研究，还从ngx_pool_t抽取了一个完全独立的cg_pool_t结构，不依赖Nginx，也不依赖任何第三方类库，可以直接将源码拿走集成进现有系统中。
+典型的应用场景是这样的，假如你有一个nginx扩展，用到了ngx_pool_t这个数据结构，但是现在有一个需求是需要将这份扩展代码独立出来，不依赖nginx运行，那么这个cg_pool_t是你的好帮手，你几乎只需要将头文件从ngx_palloc.h换为cg_pool.h即可，代码完全不用修改即可完成移植。
+Nginx的内存池在大量的小块内存的申请和释放的时候，能更快地进行内存分配（对比malloc和free），同时减少内存碎片，防止内存泄露。尤其是在防止内存泄露方面，Nginx的内存池的设计可谓非常巧妙。调用者可以一直在一个ngx_pool_t上调用ngx_palloc申请内存，而只需在最后释放这个ngx_pool_t对象即可将中途所有申请的内存统统一块释放掉。从而大大减少内存泄露的可能性，也大大简化c程序的开发逻辑流程。
+Nginx内存池源代码位置 src/core/ngx_palloc.{h,c}
+cg_pool_t内存池的源码位置 https://github.com/zieckey/nginx-research/tree/master/libnginx/pool
+源码分析 typedef struct ngx_pool_large_s ngx_pool_large_t; //大内存结构 struct ngx_pool_large_s { ngx_pool_large_t *next; //下一个大块内存  void *alloc;//nginx分配的大块内存空间 }; //该结构用来维护内存池的数据块，供用户分配之用 typedef struct { u_char *last; //当前内存分配结束位置，即下一段可分配内存的起始位置  u_char *end; //内存池结束位置  ngx_pool_t *next; //链接到下一个内存池  ngx_uint_t failed;//统计该内存池不能满足分配请求的次数 } ngx_pool_data_t; //该结构维护整个内存池的头部信息 struct ngx_pool_s { ngx_pool_data_t d; //数据块  size_t max; //数据块大小，即小块内存的最大值  ngx_pool_t *current; //保存当前内存值  ngx_chain_t *chain; //可以挂一个chain结构  ngx_pool_large_t *large; //分配大块内存用，即超过max的内存请求  ngx_pool_cleanup_t *cleanup; //挂载一些内存池释放的时候，同时释放的资源  ngx_log_t *log; }; 内存结构图  备注：从参考博客5摘录</description>
+    </item>
+    
+    <item>
+      <title>Nginx源码研究（5）——单向链表结构ngx_list_t</title>
+      <link>http://zieckey.github.io/2015/01/04/ngx_list_t/</link>
+      <pubDate>Sun, 04 Jan 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/01/04/ngx_list_t/</guid>
+      <description>简介 本文主要介绍Nginx单向链表结构ngx_list_t这一重要的数据结构的使用方法和具体实现。
+该链表结构与我们常说的链表结构(例如std::list)不太一样。它虽然符合list类型数据结构的一些特点，比如可以添加元素，实现动态自增长，不会像数组类型的数据结构，受到初始设定的数组容量的限制，但不同点在于它的节点，std::list每个节点只能存放一个元素，ngx_list_t的节点却是一个固定大小的数组，可以存放多个元素。当添加元素到这个list里面的时候，会在最尾部的节点里的数组上添加元素，如果这个节点的数组存满了，就再增加一个新的节点到这个list里面去。
+源代码位置 src/core/ngx_list.{h,c}
+数据结构 // ngx_list_part_s是代表ngx_list_t链表的一个节点。 // 它自身包含了一个数组，用来存放最终的元素 struct ngx_list_part_s { void *elts; //链表元素elts数组,数组申请的空间大小为size*nalloc  ngx_uint_t nelts; //当前已使用的elts个数，一定要小于等于nalloc  ngx_list_part_t *next; //指向ngx_list_t中的下个链表part }; // ngx_list_t结构是一个链表，链表中每个节点是ngx_list_part_t结构。 // 而ngx_list_part_t中有个elts是一个数组，储存了任意大小固定的元素，它是由ngx_pool_t分配的连续空间 typedef struct { ngx_list_part_t *last; //指向链表中最后一个元素，其作用相当于尾指针。插入新的节点时，从此开始。  ngx_list_part_t part; //链表中第一个元素，其作用相当于头指针。遍历时，从此开始。  size_t size; //链表中每个元素的大小  ngx_uint_t nalloc; //链表的每个ngx_list_part_t中elts数组的所能容纳的最大元素个数  ngx_pool_t *pool; //当前list数据存放的内存池 } ngx_list_t; // 具体实现比较简单，就不在累述。  内存结构图 阅读源码时，请参考下方的内存结构。
+ 备注：从参考博客4摘录
+测试代码 该测试代码的完整工程的编译和运行方式请参考 https://github.com/zieckey/nginx-research项目。Linux&amp;amp;Windows都测试通过。
+#include &amp;#34;allinc.h&amp;#34; namespace { struct ListElement { ngx_str_t name; int id; }; static const char* names[] = { &amp;#34;codeg&amp;#34;, &amp;#34;jane&amp;#34;, &amp;#34;zieckey&amp;#34;, &amp;#34;codeg4&amp;#34;, &amp;#34;codeg5&amp;#34;, &amp;#34;codeg6&amp;#34;, &amp;#34;codeg7&amp;#34;, &amp;#34;codeg8&amp;#34;, &amp;#34;codeg9&amp;#34;, &amp;#34;codeg10&amp;#34; }; } TEST_UNIT(ngx_list) { ngx_uint_t nalloc = 4; ngx_list_t *list = ngx_list_create(g_pool, nalloc, sizeof(ListElement)); // insert element to the list  for (size_t i = 0; i &amp;lt; H_ARRAYSIZE(names); i++) { ListElement* u = (ListElement*)ngx_list_push(list); u-&amp;gt;id = i; u-&amp;gt;name.</description>
+    </item>
+    
+    <item>
+      <title>Nginx源码研究（6）——双向链表结构ngx_queue_t</title>
+      <link>http://zieckey.github.io/2015/01/04/ngx_queue_t/</link>
+      <pubDate>Sun, 04 Jan 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/01/04/ngx_queue_t/</guid>
+      <description>简介 本文主要介绍Nginx双向链表结构ngx_queue_t这一重要的数据结构的使用方法和具体实现。
+ngx_queue_t 是Nginx提供的一个轻量级双向链表容器，它不负责分配内存来存放链表元素。 其具备下列特点：
+ 可以高效的执行插入、删除、合并等操作 具有排序功能 支持两个链表间的合并 支持将一个链表一分为二的拆分动作  不同于教科书中将链表节点的数据成员声明在链表节点的结构体中，ngx_queue_t只是声明了前向和后向指针。在使用的时候，我们首先需要定义一个哨兵节点(对于后续具体存放数据的节点，我们称之为数据节点)，比如：
+ngx_queue_t head;  接下来需要进行初始化，通过宏ngx_queue_init()来实现：
+ngx_queue_init(&amp;amp;head);  ngx_queue_init()的宏定义如下：
+#define ngx_queue_init(q) \ (q)-&amp;gt;prev = q; \ (q)-&amp;gt;next = q;  可见初始的时候哨兵节点的 prev 和 next 都指向自己，因此其实是一个空链表。ngx_queue_empty()可以据此来判断一个链表是否为空。
+源代码位置 src/core/ngx_queue.{h,c}
+源码分析 除了ngx_queue_data值得一说外，其他都是双向链表的基本操作，与教科书里的定义完全一致，不在累述。
+//获取队列中节点数据， q是队列中的节点，type队列类型，field是队列类型中ngx_queue_t的元素名 #define ngx_queue_data(q, type, field) \ (type *) ((u_char *) q - offsetof(type, field))  //offsetof也是一个宏定义，如下： #define offsetof(p_type,field) ((size_t)&amp;amp;(((p_type *)0)-&amp;gt;field)) 测试代码 该测试代码的完整工程的编译和运行方式请参考 https://github.com/zieckey/nginx-research项目。Linux&amp;amp;Windows都测试通过。
+#include &amp;#34;allinc.h&amp;#34; namespace { struct QueueElement { const char* name; int id; ngx_queue_t queue; }; static int ids[] = { 5, 8, 1, 9, 2, 6, 0, 3, 7, 4 }; static const char* names[] = { &amp;#34;codeg&amp;#34;, &amp;#34;jane&amp;#34;, &amp;#34;zieckey&amp;#34;, &amp;#34;codeg4&amp;#34;, &amp;#34;codeg5&amp;#34;, &amp;#34;codeg6&amp;#34;, &amp;#34;codeg7&amp;#34;, &amp;#34;codeg8&amp;#34;, &amp;#34;codeg9&amp;#34;, &amp;#34;codeg10&amp;#34; }; } void dump_queue_from_tail(ngx_queue_t *que) { ngx_queue_t *q = ngx_queue_last(que); printf(&amp;#34;(0x%p: (0x%p, 0x%p)) &amp;lt;==&amp;gt; \n&amp;#34;, que, que-&amp;gt;prev, que-&amp;gt;next); for (; q !</description>
+    </item>
+    
+    <item>
+      <title>Nginx源码研究（3）——Nginx数组ngx_array_t和示例</title>
+      <link>http://zieckey.github.io/2015/01/03/ngx_array_t/</link>
+      <pubDate>Sat, 03 Jan 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/01/03/ngx_array_t/</guid>
+      <description>本文主要介绍Nginx数组ngx_array_t这一重要的数据结构的使用方法和具体实现。
+ngx_array_t是nginx内部使用的数组结构。nginx的数组结构在存储上与大家认知的C语言内置的数组有相似性，比如实际上存储数据的区域也是一大块连续的内存。但是数组除了存储数据的内存以外还包含一些元信息来描述相关的一些信息。ngx_array_t的定义位于src/core/ngx_array.{c,h}里面。
+ngx_array.h实现和注释如下：
+#include &amp;lt;ngx_config.h&amp;gt;#include &amp;lt;ngx_core.h&amp;gt; // 动态数组 struct ngx_array_s { // elts指向数组的首地址  void *elts; // nelts是数组中已经使用的元素个数  ngx_uint_t nelts; // 每个数组元素占用的内存大小  size_t size; // 当前数组中能够容纳元素个数的总大小  ngx_uint_t nalloc; // 内存池对象  ngx_pool_t *pool; }; /* 从内存池中创建n个元素的数组，元素大小为size 创建一个新的数组对象，并返回这个对象。 p:	数组分配内存使用的内存池； n:	数组的初始容量大小，即在不扩容的情况下最多可以容纳的元素个数。 size:	单个元素的大小，单位是字节。 注意事项: 由于使用ngx_palloc分配内存，数组在扩容时，旧的内存不会被释放，会造成内存的浪费。 因此，最好能提前规划好数组的容量，在创建或者初始化的时候一次搞定，避免多次扩容，造成内存浪费。 */ ngx_array_t *ngx_array_create(ngx_pool_t *p, ngx_uint_t n, size_t size); // 销毁该数组对象，并释放其分配的内存回内存池。 void ngx_array_destroy(ngx_array_t *a); // 在数组a上新追加一个元素，并返回指向新元素的指针。 // 需要把返回的指针使用类型转换，转换为具体的类型，然后再给新元素本身或者是各字段（如果数组的元素是复杂类型）赋值。 // 如果数组已满，则重新分配两倍（nalloc*size)的内存空间，且nalloc更新为2*nalloc void *ngx_array_push(ngx_array_t *a); // 返回将要添加n个元素到数组中其首个元素的地址 void *ngx_array_push_n(ngx_array_t *a, ngx_uint_t n); // 如果一个数组对象是被分配在堆上的，那么当调用ngx_array_destroy销毁以后，如果想再次使用，就可以调用此函数。 // 如果一个数组对象是被分配在栈上的，那么就需要调用此函数，进行初始化的工作以后，才可以使用。 static ngx_inline ngx_int_t ngx_array_init(ngx_array_t *array, ngx_pool_t *pool, ngx_uint_t n, size_t size) { /* * set &amp;#34;array-&amp;gt;nelts&amp;#34; before &amp;#34;array-&amp;gt;elts&amp;#34;, otherwise MSVC thinks * that &amp;#34;array-&amp;gt;nelts&amp;#34; may be used without having been initialized */ array-&amp;gt;nelts = 0; array-&amp;gt;size = size; array-&amp;gt;nalloc = n; array-&amp;gt;pool = pool; array-&amp;gt;elts = ngx_palloc(pool, n * size); if (array-&amp;gt;elts == NULL) { return NGX_ERROR; } return NGX_OK; } 测试代码，完整的工程编译请参考 https://github.</description>
+    </item>
+    
+    <item>
+      <title>Nginx源码研究（4）——hash结构ngx_hash_t</title>
+      <link>http://zieckey.github.io/2015/01/03/ngx_hash_t/</link>
+      <pubDate>Sat, 03 Jan 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/01/03/ngx_hash_t/</guid>
+      <description>简介 本文主要介绍Nginx的hash结构ngx_hash_t这一重要的数据结构的使用方法和具体实现。nginx实现的hash表特点是构建一次, 初始化后无法动态的增删，之后就只用于&amp;lt;k,v&amp;gt;查找。之所以这么设计是为了使用最少的内存同时得到最快的查找速度。
+冲突解决 Nginx的ngx_hash_t采用开放地址法来解决冲突问题，即：插入的时候发现自己的位置f(key)已经被占了，就向后遍历，查看f(key)+1的位置是否被占用，如果没被占用，就占用它，否则继续相后，查询的时候，同样也如果f(key)不是需要的值，也依次向后遍历，一直找到需要的元素。
+源代码位置 src/core/ngx_hash.{h,c}
+数据结构 //hash结构 typedef struct { ngx_hash_elt_t **buckets; //hash桶(有size个桶)  ngx_uint_t size; //hash桶个数 } ngx_hash_t; // &amp;lt;key,value&amp;gt; 结构，初始化时候使用 typedef struct { ngx_str_t key; //key，为nginx的字符串结构  ngx_uint_t key_hash; //由该key计算出的hash值(通过hash函数如ngx_hash_key_lc())  void *value; //该key对应的值，组成一个键-值对&amp;lt;key,value&amp;gt; } ngx_hash_key_t; //hash元素结构 typedef struct { void *value; //value，即某个key对应的值，即&amp;lt;key,value&amp;gt;中的value  u_short len; //name长度  u_char name[1]; //某个要hash的数据(在nginx中表现为字符串)，即&amp;lt;key,value&amp;gt;中的key  // 这里数组长度为1，是一个小技巧。实现时，在具体分配ngx_hash_elt_t的大小时使用宏NGX_HASH_ELT_SIZE来确定(并且是内存对齐的)：  // #define NGX_HASH_ELT_SIZE(name) (sizeof(void *) + ngx_align((name)-&amp;gt;key.len + 2, sizeof(void *))) } ngx_hash_elt_t; //hash初始化结构，用来将其相关数据封装起来作为参数传递给ngx_hash_init()或ngx_hash_wildcard_init()函数 typedef struct { ngx_hash_t *hash; //指向待初始化的hash结构。  ngx_hash_key_pt key; //hash函数指针  // 散列表中槽的最大数目  ngx_uint_t max_size; //bucket的最大个数  // 散列表中一个槽的空间大小，它限制了每个散列表元素关键字的最大长度，通过NGX_HASH_ELT_SIZE(name)计算每个element的大小。  // 如果这个bucket_size设置较大，那么他就能够容纳多个element，这样一个bucket里存放多个element，进而导致查找速度下降。  // 为了更好的查找速度，请将bucket_size设置为所有element长度最大的那个。  ngx_uint_t bucket_size; // 散列表的名称  char *name; //该hash结构的名字(仅在错误日志中使用)  // 内存池，它分配散列表（最多3个，包括1个普通散列表，1个前置通配符散列表，1个后置通配符散列表）中的所有槽  ngx_pool_t *pool; //该hash结构从pool指向的内存池中分配  // 临时内存池，它仅存在于初始化散列表之前。它主要用于分配一些临时的动态数组，带通配符的元素在初始化时需要用到这些数组。  ngx_pool_t *temp_pool; //分配临时数据空间的内存池 } ngx_hash_init_t; 内存结构图  备注：从参考文档7摘录</description>
+    </item>
+    
+    <item>
+      <title>Nginx源码研究（1）——项目介绍</title>
+      <link>http://zieckey.github.io/2015/01/02/nginx-research-readme/</link>
+      <pubDate>Fri, 02 Jan 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/01/02/nginx-research-readme/</guid>
+      <description>nginx-research 本项目是为了研究Nginx源码而建立的。该项目有以下几点比较不错的优点：
+ VS2013源码编译和调试 将Nginx看做一个优秀的C库使用，已经将其编译为库了，并且有很多例子参考  项目地址：https://github.com/zieckey/nginx-research
+中文介绍页面：http://blog.codeg.cn/2015/01/02/nginx-research-readme
+1. Windows使用 打开nginx-win32-src\nginx.sln文件，可以看到两个工程：
+ nginx ： Nginx的Windows版本，可以直接编译运行。 nginxresearch : 将Nginx做为lib库使用的工程  Nginx二进制 直接编译运行nginx工程即可。目前包含下列几个示例Nginx扩展模块：
+ ngx_http hello world module ngx_http merge module ngx_http memcached module ngx_http upstream sample code  windows下运行起来后，监听80端口，在浏览器打开http://localhost/helloworld.html 会返回当前的时间和程序启动的时间，如下：
+startup: 2015-01-01 19:26:16 current: 2015-01-01 19:26:57  将Nginx做为C库使用 直接编译运行nginxresearch工程即可。自带gtest，方便写样例代码。目前包含下列几个示例程序：
+ ngx_encode_base64的使用 ngx_str_t ngx_pool_t ngx_hash_t ngx_list_t ngx_array_t ngx_queue_t ngx_pool_t  另外，还从ngx_pool_t抽取了一个完全独立的cg_pool_t结构，不依赖Nginx，也不依赖任何第三方类库，可以直接将源码拿走集成进现有系统中。典型的应用场景是这样的，假如你有一个nginx扩展，用到了ngx_pool_t这个数据结构，但是现在有一个需求是需要将这份扩展代码独立出来，不依赖nginx运行，那么这个cg_pool_t是你的好帮手，你几乎只需要将头文件从ngx_palloc.h换为cg_pool.h即可，代码完全不用修改即可完成移植。
+2. Linux 使用 Nginx二进制 进入各个模块的子目录，直接make即可
+将Nginx做为C库使用 进入libnginx目录，直接make即可
+3. 比较不错的资源  淘宝：Nginx开发从入门到精通  </description>
+    </item>
+    
+    <item>
+      <title>Nginx源码研究（2）——编译Nginx为静(动)态库以及验证</title>
+      <link>http://zieckey.github.io/2014/12/31/compile-nginx-to-static-lib-and-1st-usage/</link>
+      <pubDate>Wed, 31 Dec 2014 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2014/12/31/compile-nginx-to-static-lib-and-1st-usage/</guid>
+      <description>最近编码哥又开始阅读和研究Nginx源码，这一过程中做了一些笔记，从而形成本系列文章。
+本文主要介绍如何将nginx编译为一个动态库或静态库，这样我们可以更方便调用nginx提供的一系列高性能的C函数库，包括:
+ ngx_string_t ngx_array_t ngx_list_t ngx_buf_t ngx_pool_t ngx_hash_t ngx_queue_t ngx_rbtree_t  思路 Nginx项目本来是作为一个整体直接编译出一个二进制文件，要将其编译为库，有两个地方要修改：
+ 增加编译选项-fPIC使得库编译出来是地址无关的，这样方便被其他程序连接 将程序入口main函数修改了，例如修改为__xmain  上述两步做完，就可以轻松将nginx编译为一个动态库或静态库。
+编译脚本 关键内容如下：
+wget http://nginx.org/download/nginx-$(NGINX_VERSION).tar.gz tar zxvf $(NGINX_ROOT).tar.gz sed -i &amp;quot;s|-Werror|-Werror -fPIC|g&amp;quot; $(NGINX_ROOT)/auto/cc/gcc sed -i &amp;quot;s|main(int argc|__xmain(int argc|g&amp;quot; $(NGINX_ROOT)/src/core/nginx.c cd $(NGINX_ROOT); ./configure ; (make||echo) # 编译静态库 $(LIBNGINX) : $(NGINX_MAKEFILE) $(AR) $(ARFLAGS) $@ $(NGINX_OBJS) ranlib $@ # 编译动态库 libnginx.so : cc -static -o $@ $(LDFLAGS) $(NGINX_OBJS)  详情请见Makefile
+将该Makefile和build.mk两个文件保存到一个目录下，然后在该目录下执行make命令即可将最新的nginx-1.7.9.tar.gz（2014-12-23发布）下载下来，然后解压、编译为一个libnginx.a的静态库。
+写测试程序 #include &amp;lt;stdio.h&amp;gt;	#include &amp;#34;ngx_config.</description>
+    </item>
+    
+    <item>
+      <title>Golang写的HTTP服务与Nginx对比</title>
+      <link>http://zieckey.github.io/2014/12/13/golang-vs-nginx-at-httpecho/</link>
+      <pubDate>Sat, 13 Dec 2014 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2014/12/13/golang-vs-nginx-at-httpecho/</guid>
+      <description>Golang写网络程序的确很简单，一个HTTP Echo服务，几行源码就可以搞定。Golang源码如下：
+package main import ( &amp;#34;log&amp;#34; &amp;#34;net/http&amp;#34; &amp;#34;io/ioutil&amp;#34; ) func handler(w http.ResponseWriter, r *http.Request) { buf, err := ioutil.ReadAll(r.Body) //Read the http body 	if err == nil { w.Write(buf) return } w.WriteHeader(403) } func main() { http.HandleFunc(&amp;#34;/echo&amp;#34;, handler) log.Fatal(http.ListenAndServe(&amp;#34;:8091&amp;#34;, nil)) } Nginx直接使用echo module,配置文件如下：
+worker_processes 24; #daemon off; events { worker_connections 4096; } http { include mime.types; default_type application/octet-stream; sendfile on; keepalive_timeout 65; server { listen 8090; server_name localhost; location /echo { echo_read_request_body; echo_request_body; } location / { root html; index index.</description>
+    </item>
+    
+  </channel>
+</rss>

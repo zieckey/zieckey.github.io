@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<head>
+  <link href="https://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="generator" content="Hugo 0.89.4" />
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Trafik源代码阅读 &middot; CodeG Blog</title>
+  <meta name="description" content="" />
+
+  
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/print.css" media="print">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/poole.css">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/syntax.css">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/hyde.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
+
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/favicon.png">
+
+  
+  
+</head>
+
+  <body class=" ">
+  <aside class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <a href="http://zieckey.github.io/"><h1>CodeG Blog</h1></a>
+      <p class="lead">
+      An elegant open source and mobile first theme for <a href="http://hugo.spf13.com">hugo</a> made by <a href="http://twitter.com/mdo">@mdo</a>. Originally made for Jekyll.
+      </p>
+    </div>
+
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="http://zieckey.github.io/">Home</a> </li>
+        
+      </ul>
+    </nav>
+
+    <p>&copy; 2021. All rights reserved. </p>
+  </div>
+</aside>
+
+    <main class="content container">
+    <div class="post">
+  <h1>Trafik源代码阅读</h1>
+  <time datetime=2016-05-26T07:00:00Z class="post-date">Thu, May 26, 2016</time>
+  <h2 id="trafik介绍">Trafik介绍</h2>
+<p>其<a href="https://docs.traefik.io/">官网</a>是这么介绍的：</p>
+<pre tabindex="0"><code>Træfɪk is a modern HTTP reverse proxy and load balancer made to deploy microservices with ease. 
+It supports several backends (Docker, Swarm, Mesos/Marathon, Consul, Etcd, Zookeeper, BoltDB, Rest API, file...) 
+to manage its configuration automatically and dynamically.
+</code></pre><p>翻译过来就是：Træfɪk是一个现代的HTTP反向代理和易用的微服务负载平衡器，支持多种后端服务，
+例如 Docker、 Swarm、 Mesos/Marathon、 Kubernetes、 Consul、 Etcd、 Zookeeper、 BoltDB、 Rest API、 文件 等等，
+可以自动地动态管理和加载各种配置。</p>
+<p>特点如下：</p>
+<ol>
+<li>快速，benchmark显示，能够达到nginx的85%的性能</li>
+<li>没有依赖地狱，得益于Golang的特性，单个二进制文件就能运行</li>
+<li>Rest API</li>
+<li>监视后端，能够自动监听后端配置的变化。</li>
+<li>配置的热重加载，无需重新启动进程或服务器</li>
+<li>优雅地关闭Http连接</li>
+<li>后端的断路器Circuit breaker</li>
+<li>Round Robin rebalancer 负载平衡</li>
+<li>Rest测量</li>
+<li>包括小的官方docker</li>
+<li>SSL后端支持</li>
+<li>SSL前端支持</li>
+<li>干净的AngularJS Web UI</li>
+<li>支持Websocket</li>
+<li>支持Http/2</li>
+<li>如果网络错误重试请求</li>
+<li>自动Https支持(Let’s Encrypt)</li>
+</ol>
+<h2 id="用法">用法</h2>
+<p>最简单的用法当然是做一个HTTP反向代理用。</p>
+<p>假设我们有一个HTTP服务 <code>http://10.16.28.17:8091/echo</code>, 我们用Trafik做为反向代理的配置 <code>trafik.toml</code> 如下：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">logLevel <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;DEBUG&#34;</span>
+
+defaultEntryPoints <span style="color:#f92672">=</span> <span style="color:#f92672">[</span><span style="color:#e6db74">&#34;http&#34;</span><span style="color:#f92672">]</span>
+
+<span style="color:#f92672">[</span>entryPoints<span style="color:#f92672">]</span>
+  <span style="color:#f92672">[</span>entryPoints.http<span style="color:#f92672">]</span>
+  address <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;:8080&#34;</span>
+
+<span style="color:#f92672">[</span>file<span style="color:#f92672">]</span>
+  <span style="color:#f92672">[</span>backends<span style="color:#f92672">]</span>
+    <span style="color:#f92672">[</span>backends.httpecho<span style="color:#f92672">]</span>
+      <span style="color:#f92672">[</span>backends.httpecho.servers.server1<span style="color:#f92672">]</span>
+        url <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;http://10.16.28.17:8091&#34;</span>
+        weight <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
+  <span style="color:#f92672">[</span>frontends<span style="color:#f92672">]</span>
+    <span style="color:#f92672">[</span>frontends.fe1<span style="color:#f92672">]</span>
+    backend <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;httpecho&#34;</span>
+      <span style="color:#f92672">[</span>frontends.fe1.routes.rule1<span style="color:#f92672">]</span>
+      rule <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Path:/echo&#34;</span>
+</code></pre></div><p>参考Trafik官方文档说明，我们这个配置解释如下：</p>
+<ol>
+<li>将Trafik的日志级别 <code>logLevel</code> 定义为 <code>DEBUG</code></li>
+<li>默认的接入点 <code>defaultEntryPoints</code> 定义为 <code>http</code>，并且其端口为 <code>8080</code></li>
+<li>然后在 <code>[file]</code> 段定义 <code>backends</code> 和 <code>frontends</code>， 也就是Trafik的路由转发规则</li>
+<li><code>backends</code>段定义了一个后端服务，URL地址和权重都设置好了。</li>
+<li><code>frontends</code>段定义转发规则，即将URL路径为 /echo 的请求转发到合适的 <code>backend</code> 上。</li>
+<li>然后我们可以用 curl 来测试转发是否正常： <code>curl http://localhost:8080/echo -d xxxxxx</code></li>
+</ol>
+<h2 id="源码阅读">源码阅读</h2>
+<h3 id="源码编译">源码编译</h3>
+<p>按照官方文档的说明即可编译出来。其中几个需要的地方：</p>
+<ol>
+<li>提前下载好 go-bindata 的源码并编译出二进制出来安装的 $PATH 路径下</li>
+<li>提前下载好 glide 的源码并编译出二进制出来安装的 $PATH 路径下</li>
+<li>如果在windows下编译的话，trafik依赖的一个 <code>github.com/mailgun/log</code> 库支持unix系统，需要做一下修改。将<code>NewSysLogger</code>函数修改如下：</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">NewSysLogger</span>(<span style="color:#a6e22e">conf</span> <span style="color:#a6e22e">Config</span>) (<span style="color:#a6e22e">Logger</span>, <span style="color:#66d9ef">error</span>) {
+	<span style="color:#a6e22e">debugW</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">os</span>.<span style="color:#a6e22e">Stdout</span>
+	<span style="color:#a6e22e">infoW</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">os</span>.<span style="color:#a6e22e">Stdout</span>
+	<span style="color:#a6e22e">warnW</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">os</span>.<span style="color:#a6e22e">Stdout</span>
+	<span style="color:#a6e22e">errorW</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">os</span>.<span style="color:#a6e22e">Stdout</span>
+
+	<span style="color:#a6e22e">sev</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">SeverityFromString</span>(<span style="color:#a6e22e">conf</span>.<span style="color:#a6e22e">Severity</span>)
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>, <span style="color:#a6e22e">err</span>
+	}
+
+	<span style="color:#66d9ef">return</span> <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">sysLogger</span>{<span style="color:#a6e22e">sev</span>, <span style="color:#a6e22e">debugW</span>, <span style="color:#a6e22e">infoW</span>, <span style="color:#a6e22e">warnW</span>, <span style="color:#a6e22e">errorW</span>}, <span style="color:#66d9ef">nil</span>
+}
+</code></pre></div><h3 id="http多路分发器mux">HTTP多路分发器：mux</h3>
+<p><code>github.com/gorilla/mux</code> 是一个HTTP多路分发器，其原理也比较简单，就是实现了Golang标准库中的 <code>net.http.Handler</code> 接口，即如下：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Handler</span> <span style="color:#66d9ef">interface</span> {
+    <span style="color:#a6e22e">ServeHTTP</span>(<span style="color:#a6e22e">ResponseWriter</span>, <span style="color:#f92672">*</span><span style="color:#a6e22e">Request</span>)
+}
+</code></pre></div><p>当mux注册到HTTP服务之后，所有的HTTP请求就会由标准库 <code>net/http</code> 转发到mux库中的 <code>func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request)</code> 函数中，
+mux.Router.ServeHTTP这个函数再进行自己的路由规则匹配和转发。</p>
+<p>Trafik使用 <code>github.com/gorilla/mux</code> 库做路由转发。</p>
+<h2 id="参考">参考</h2>
+<ol>
+<li><a href="https://docs.traefik.io/">官方网站 https://docs.traefik.io/</a></li>
+<li><a href="https://github.com/containous/traefik">项目源码 https://github.com/containous/traefik</a></li>
+</ol>
+
+</div>
+
+
+    </main>
+
+    
+      
+    
+  </body>
+</html>

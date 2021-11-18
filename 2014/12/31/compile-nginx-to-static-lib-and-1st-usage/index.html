@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<head>
+  <link href="https://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="generator" content="Hugo 0.89.4" />
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Nginx源码研究（2）——编译Nginx为静(动)态库以及验证 &middot; CodeG Blog</title>
+  <meta name="description" content="" />
+
+  
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/print.css" media="print">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/poole.css">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/syntax.css">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/hyde.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
+
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/favicon.png">
+
+  
+  
+</head>
+
+  <body class=" ">
+  <aside class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <a href="http://zieckey.github.io/"><h1>CodeG Blog</h1></a>
+      <p class="lead">
+      An elegant open source and mobile first theme for <a href="http://hugo.spf13.com">hugo</a> made by <a href="http://twitter.com/mdo">@mdo</a>. Originally made for Jekyll.
+      </p>
+    </div>
+
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="http://zieckey.github.io/">Home</a> </li>
+        
+      </ul>
+    </nav>
+
+    <p>&copy; 2021. All rights reserved. </p>
+  </div>
+</aside>
+
+    <main class="content container">
+    <div class="post">
+  <h1>Nginx源码研究（2）——编译Nginx为静(动)态库以及验证</h1>
+  <time datetime=2014-12-31T00:00:00Z class="post-date">Wed, Dec 31, 2014</time>
+  <p>最近编码哥又开始阅读和研究Nginx源码，这一过程中做了一些笔记，从而形成本系列文章。</p>
+<p>本文主要介绍如何将nginx编译为一个动态库或静态库，这样我们可以更方便调用nginx提供的一系列高性能的C函数库，包括:</p>
+<ul>
+<li>ngx_string_t</li>
+<li>ngx_array_t</li>
+<li>ngx_list_t</li>
+<li>ngx_buf_t</li>
+<li>ngx_pool_t</li>
+<li>ngx_hash_t</li>
+<li>ngx_queue_t</li>
+<li>ngx_rbtree_t</li>
+</ul>
+<h3 id="思路">思路</h3>
+<p>Nginx项目本来是作为一个整体直接编译出一个二进制文件，要将其编译为库，有两个地方要修改：</p>
+<ul>
+<li>增加编译选项<code>-fPIC</code>使得库编译出来是地址无关的，这样方便被其他程序连接</li>
+<li>将程序入口main函数修改了，例如修改为__xmain</li>
+</ul>
+<p>上述两步做完，就可以轻松将nginx编译为一个动态库或静态库。</p>
+<h3 id="编译脚本">编译脚本</h3>
+<p>关键内容如下：</p>
+<pre><code>wget http://nginx.org/download/nginx-$(NGINX_VERSION).tar.gz
+tar zxvf $(NGINX_ROOT).tar.gz 
+sed -i &quot;s|-Werror|-Werror -fPIC|g&quot; $(NGINX_ROOT)/auto/cc/gcc
+sed -i &quot;s|main(int argc|__xmain(int argc|g&quot; $(NGINX_ROOT)/src/core/nginx.c
+cd $(NGINX_ROOT); ./configure ; (make||echo)
+
+# 编译静态库
+$(LIBNGINX) : $(NGINX_MAKEFILE)
+    $(AR) $(ARFLAGS) $@ $(NGINX_OBJS) 
+    ranlib $@
+
+# 编译动态库
+libnginx.so :
+    cc -static -o $@ $(LDFLAGS) $(NGINX_OBJS)
+</code></pre>
+<p>详情请见<a href="https://github.com/zieckey/nginx-research/blob/master/libnginx/Makefile">Makefile</a></p>
+<p>将该<a href="https://github.com/zieckey/nginx-research/blob/master/libnginx/Makefile">Makefile</a>和<a href="https://github.com/zieckey/nginx-research/blob/master/libnginx/build.mk">build.mk</a>两个文件保存到一个目录下，然后在该目录下执行<code>make</code>命令即可将最新的<a href="http://nginx.org/download/nginx-1.7.9.tar.gz">nginx-1.7.9.tar.gz</a>（2014-12-23发布）下载下来，然后解压、编译为一个libnginx.a的静态库。</p>
+<h3 id="写测试程序">写测试程序</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">	<span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;ngx_config.h&#34;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;ngx_conf_file.h&#34;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;nginx.h&#34;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;ngx_core.h&#34;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;ngx_string.h&#34;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;ngx_string.h&#34;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>	
+	<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
+	    ngx_str_t enc;
+	    ngx_str_t dec;
+	    ngx_str_t mystr <span style="color:#f92672">=</span> ngx_string(<span style="color:#e6db74">&#34;https://github.com/zieckey/gochart&#34;</span>);
+	    <span style="color:#66d9ef">int</span> enc_len <span style="color:#f92672">=</span> ngx_base64_encoded_length(mystr.len);
+	    enc.data <span style="color:#f92672">=</span> malloc(enc_len <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>);
+	    dec.data <span style="color:#f92672">=</span> malloc(mystr.len);
+	    ngx_encode_base64(<span style="color:#f92672">&amp;</span>enc, <span style="color:#f92672">&amp;</span>mystr);
+	    printf(<span style="color:#e6db74">&#34;source string is [%s] , base64 encoded string is [%s]</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, mystr.data, enc.data);
+	    ngx_decode_base64(<span style="color:#f92672">&amp;</span>dec, <span style="color:#f92672">&amp;</span>enc);
+	    printf(<span style="color:#e6db74">&#34;base64 encoded string is [%s] , base64 decoded string is [%s]</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, enc.data, dec.data);
+	    <span style="color:#66d9ef">if</span> (ngx_strncmp(mystr.data, dec.data, dec.len) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+	        printf(<span style="color:#e6db74">&#34;base64 encode/decode OK</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+	    } <span style="color:#66d9ef">else</span> {
+	        printf(<span style="color:#e6db74">&#34;base64 encode/decode FAILED</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+	    }
+	    free(enc.data);
+	    free(dec.data);
+	    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+	}
+</code></pre></div><p>编译连接：</p>
+<pre><code>gcc -c -pipe -O -fPIC \
+	-W -Wall -Wpointer-arith \
+	-Wunused-value -Wno-unused-parameter \
+	-Wunused-function -Wunused-variable \
+	-I ../nginx-1.7.9/objs \
+	-I ../nginx-1.7.9/src/core \
+	-I ../nginx-1.7.9/src/os \
+	-I ../nginx-1.7.9/src/os/unix \
+	-I ../nginx-1.7.9/src/os/event  base64.c -o base64.o
+gcc -o base64 base64.o ../libnginx.a \
+	-L .. -lnginx -lpcre -lcrypto -lcrypt -lz -lpthread
+</code></pre>
+<p>运行：</p>
+<pre><code>$ ./base64 
+source string is [https://github.com/zieckey/gochart] , base64 encoded string is [aHR0cHM6Ly9naXRodWIuY29tL3ppZWNrZXkvZ29jaGFydA==]
+base64 encoded string is [aHR0cHM6Ly9naXRodWIuY29tL3ppZWNrZXkvZ29jaGFydA==] , base64 decoded string is [https://github.com/zieckey/gochart]
+base64 encode/decode OK
+</code></pre>
+<p>源代码地址：<a href="https://github.com/zieckey/nginx-research/tree/master/nginxlib">https://github.com/zieckey/nginx-research/tree/master/nginxlib</a></p>
+<p>参考：<a href="https://code.google.com/p/nginxsrp/wiki/NginxCodeReview">https://code.google.com/p/nginxsrp/wiki/NginxCodeReview</a></p>
+
+</div>
+
+
+    </main>
+
+    
+      
+    
+  </body>
+</html>

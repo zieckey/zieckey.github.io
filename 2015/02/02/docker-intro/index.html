@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<head>
+  <link href="https://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="generator" content="Hugo 0.89.4" />
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Docker介绍及初次使用教程 &middot; CodeG Blog</title>
+  <meta name="description" content="本文针对第一次接触Docker的同学而写的手把手式使用指南。涉及到安装、镜像下载、build镜像、使用等等细节。" />
+
+  
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/print.css" media="print">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/poole.css">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/syntax.css">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/hyde.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
+
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/favicon.png">
+
+  
+  
+</head>
+
+  <body class=" ">
+  <aside class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <a href="http://zieckey.github.io/"><h1>CodeG Blog</h1></a>
+      <p class="lead">
+      An elegant open source and mobile first theme for <a href="http://hugo.spf13.com">hugo</a> made by <a href="http://twitter.com/mdo">@mdo</a>. Originally made for Jekyll.
+      </p>
+    </div>
+
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="http://zieckey.github.io/">Home</a> </li>
+        
+      </ul>
+    </nav>
+
+    <p>&copy; 2021. All rights reserved. </p>
+  </div>
+</aside>
+
+    <main class="content container">
+    <div class="post">
+  <h1>Docker介绍及初次使用教程</h1>
+  <time datetime=2015-02-02T00:00:00Z class="post-date">Mon, Feb 2, 2015</time>
+  <h2 id="介绍">介绍</h2>
+<p>请参考下列文章：</p>
+<ol>
+<li><a href="http://www.infoq.com/cn/articles/docker-core-technology-preview" title="http://www.infoq.com/cn/articles/docker-core-technology-preview">深入浅出Docker（一）：Docker核心技术预览</a></li>
+<li><a href="http://zhumeng8337797.blog.163.com/blog/static/100768914201452401954833/" title="http://zhumeng8337797.blog.163.com/blog/static/100768914201452401954833/">Docker镜像文件（images）的存储结构</a></li>
+</ol>
+<h2 id="初次使用">初次使用</h2>
+<h3 id="实验环境">实验环境</h3>
+<pre tabindex="0"><code>$ uname -a
+Linux 3.13.0-44-generic #73-Ubuntu SMP Tue Dec 16 00:22:43 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux
+</code></pre><h3 id="docker安装">Docker安装</h3>
+<p>请参考官方文档<a href="https://docs.docker.com/installation/ubuntulinux/">https://docs.docker.com/installation/ubuntulinux/</a>，不再累述。</p>
+<h3 id="下载一个基础镜像">下载一个基础镜像</h3>
+<p>按照官方教程执行<code>sudo docker run -i -t ubuntu /bin/bash</code>会得到下列错误：</p>
+<p>FATA[0301] Get <a href="https://registry-1.docker.io/v1/repositories/library/ubuntu/tags">https://registry-1.docker.io/v1/repositories/library/ubuntu/tags</a>: dial tcp 162.242.195.84:443: connection timed out</p>
+<p>这是我大中华局域网F**K墙的原因，Docker官网镜像源的被墙，只能搭建一个梯子来做代理解决。</p>
+<pre tabindex="0"><code>sudo stop docker
+sudo HTTP_PROXY=http://proxy_server:port docker -d &amp;
+</code></pre><p>先停掉之前启动的docker进程，然后使用环境变量设置代理后启动docker进程。再最后执行<code>sudo docker run -i -t ubuntu /bin/bash</code>来下载我们的第一个基础镜像(<code>base image</code>)，这个过程有点长，大约半小时吧（视代理速度），然后看到下列信息表明下载成功了。</p>
+<pre tabindex="0"><code>Status: Downloaded newer image for ubuntu:latest
+</code></pre><h3 id="第一次使用">第一次使用</h3>
+<p>上一步中命令<code>sudo docker run -i -t ubuntu /bin/bash</code>会下载一个基础镜像，并进入docker的执行环境执行<code>/bin/bash</code>.
+输入<code>exit</code>即可退出docker运行环境。</p>
+<h3 id="构建自己的nginx镜像">构建自己的nginx镜像</h3>
+<p>我们可以通过Dockerfile来构建镜像。下面是一个示例：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">~$ mkdir -p docker/nginx
+~$ cd docker/nginx/
+~/docker/nginx$ vim Dockerfile
+</code></pre></div><p>在文件中输入下列信息：</p>
+<pre tabindex="0"><code>FROM ubuntu
+MAINTAINER zieckey@codeg.cn
+RUN apt-get update
+RUN apt-get install -y nginx
+RUN echo 'Hello, this is responsed from a docker container web server' &gt; /usr/share/nginx/html/index.html
+EXPOSE 80
+</code></pre><p>执行docker build指令来构建镜像 <code>sudo docker build -t=&quot;zieckey/nginx&quot; .</code> 运行过程如下：</p>
+<pre tabindex="0"><code>~/docker/nginx$ sudo docker build -t=&quot;zieckey/nginx&quot; .
+Sending build context to Docker daemon 2.048 kB
+Sending build context to Docker daemon 
+Step 0 : FROM ubuntu
+ ---&gt; 5ba9dab47459
+Step 1 : MAINTAINER zieckey@codeg.cn
+ ---&gt; Running in 36aebea12217
+ ---&gt; 841ff9c34fd3
+Removing intermediate container 36aebea12217
+Step 2 : RUN apt-get update
+ ---&gt; Running in 098f88fb27b9
+Reading package lists...
+ ---&gt; 3f3c2f49a178
+Removing intermediate container 098f88fb27b9
+Step 3 : RUN apt-get install -y nginx
+ ---&gt; Running in 0a251800f71c
+ ---&gt; dc297e9ab15a
+Removing intermediate container 0a251800f71c
+Step 4 : RUN echo 'Hello, this is responsed from a docker container web server' &gt; /usr/share/nginx/html/index.html
+ ---&gt; Running in b158d0bceba4
+ ---&gt; b98652380a9a
+Removing intermediate container b158d0bceba4
+Step 5 : EXPOSE 80
+ ---&gt; Running in 5f641c649cc3
+ ---&gt; 64925f0a281f
+Removing intermediate container 5f641c649cc3
+Successfully built 64925f0a281f
+</code></pre><p>可以看到Dockerfile中的每条指令会按顺序执行，而且作为构建过程的最终结果，返回了新的镜像ID，即<code>64925f0a281f</code>。</p>
+<p>看看我们新创建的容器：</p>
+<pre tabindex="0"><code>~/docker/nginx$ sudo docker  images zieckey/nginx                     
+REPOSITORY          TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
+zieckey/nginx       latest              64925f0a281f        About an hour ago   226.9 MB
+</code></pre><p>然后，启动新的容器来执行刚刚创建的镜像，这里我们让其启动一个bash程序，这样我们能够更多看到交互过程：</p>
+<pre tabindex="0"><code>~$ sudo docker run -i -t zieckey/nginx /bin/bash
+root@51d13f1000ba:/# nginx 
+root@51d13f1000ba:/# ps aux|grep nginx
+root        22  0.0  0.0  85872  1340 ?        Ss   05:43   0:00 nginx: master process nginx
+www-data    23  0.0  0.0  86212  1764 ?        S    05:43   0:00 nginx: worker process
+www-data    24  0.0  0.0  86212  1764 ?        S    05:43   0:00 nginx: worker process
+www-data    25  0.0  0.0  86212  1764 ?        S    05:43   0:00 nginx: worker process
+www-data    26  0.0  0.0  86212  1764 ?        S    05:43   0:00 nginx: worker process
+root@51d13f1000ba:/# ifconfig
+eth0      Link encap:Ethernet  HWaddr 02:42:ac:11:00:09  
+          inet addr:172.17.0.9  Bcast:0.0.0.0  Mask:255.255.0.0
+          inet6 addr: fe80::42:acff:fe11:9/64 Scope:Link
+          UP BROADCAST RUNNING  MTU:1500  Metric:1
+          RX packets:8 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:8 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0 
+          RX bytes:648 (648.0 B)  TX bytes:648 (648.0 B)
+
+lo        Link encap:Local Loopback  
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          inet6 addr: ::1/128 Scope:Host
+          UP LOOPBACK RUNNING  MTU:65536  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0 
+          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+</code></pre><p>然后在另一个shell上执行命令<code>~$ curl http://172.17.0.8/index.html</code>可以看到屏幕输出<code>Hello, this is responsed from a docker container web server</code>.</p>
+<h3 id="从c源码构建自己的镜像">从C源码构建自己的镜像</h3>
+<p>上面是直接通过apt-get从网络下载一个已经编译好的nginx二进制包来构建我们的镜像，下面我们看看如何通过源代码方式构建我们的自定义的镜像。</p>
+<p>源代码文件main.c:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
+    printf(<span style="color:#e6db74">&#34;hello world!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+}
+</code></pre></div><p>Dockerfile内容如下：</p>
+<pre tabindex="0"><code>FROM ubuntu
+MAINTAINER zieckey@codeg.cn
+ADD ./helloworld /usr/bin/helloworld
+</code></pre><p>使用下列命令编译c源文件、build Docker镜像、执行：</p>
+<pre tabindex="0"><code>~/workspace/condiment/docker/helloworld$ gcc -g -Wall main.c -o helloworld
+~/workspace/condiment/docker/helloworld$ sudo docker build -t=&quot;zieckey/helloworld&quot; .
+Sending build context to Docker daemon 15.36 kB
+Sending build context to Docker daemon 
+Step 0 : FROM ubuntu
+ ---&gt; 5ba9dab47459
+Step 1 : MAINTAINER zieckey@codeg.cn
+ ---&gt; Using cache
+ ---&gt; 841ff9c34fd3
+Step 2 : ADD ./helloworld /usr/bin/helloworld
+ ---&gt; b3681250409a
+Removing intermediate container 208f4598e4e2
+Successfully built b3681250409a
+~/workspace/condiment/docker/helloworld$ sudo docker run -i -t zieckey/helloworld helloworld
+hello world!
+</code></pre><p>上述过程的源码在这里<a href="https://github.com/zieckey/condiment/tree/master/docker/helloworld">https://github.com/zieckey/condiment/tree/master/docker/helloworld</a></p>
+<h2 id="参考">参考</h2>
+<ol>
+<li>《第一本Docker书》</li>
+<li><a href="https://docs.docker.com/installation/ubuntulinux/#ubuntu-trusty-1404-lts-64-bit" title="https://docs.docker.com/installation/ubuntulinux/#ubuntu-trusty-1404-lts-64-bit">ubuntu安装指南</a></li>
+<li><a href="http://my.oschina.net/feedao/blog/223795" title="http://my.oschina.net/feedao/blog/223795">Docker使用系列二：CentOS 6.5 制作可以ssh登录的Docker</a></li>
+</ol>
+
+</div>
+
+
+    </main>
+
+    
+      
+    
+  </body>
+</html>

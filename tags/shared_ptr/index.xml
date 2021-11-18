@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>shared_ptr on CodeG Blog</title>
+    <link>http://zieckey.github.io/tags/shared_ptr/</link>
+    <description>Recent content in shared_ptr on CodeG Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 19 Apr 2017 10:11:01 +0000</lastBuildDate><atom:link href="http://zieckey.github.io/tags/shared_ptr/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>evpp设计细节系列(1)：利用 enable_shared_from_this 实现一个自管理的定时器</title>
+      <link>http://zieckey.github.io/post/2017-04-19-the-detail-design-of-evpp-invoke-timer/</link>
+      <pubDate>Wed, 19 Apr 2017 10:11:01 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/post/2017-04-19-the-detail-design-of-evpp-invoke-timer/</guid>
+      <description>0. 前言 https://github.com/Qihoo360/evpp是一个高性能的Reactor模式的现代化的C++11版本的高性能网络库。该项目中有一个InvokeTimer对象，接口头文件详细代码请参见https://github.com/Qihoo360/evpp/blob/master/evpp/invoke_timer.h。它是一个能自我管理的定时器类，可以将一个仿函数绑定到该定时器上，然后让该定时器自己管理并在预期的一段时间后执行该仿函数。
+现在我们复盘一下这个功能的实现细节和演化过程。
+1. 基础代码 定时器原型声明可能是下面的样子：
+class InvokeTimer { public: InvokeTimer(struct event_base* evloop, double timeout_ms, const std::function&amp;lt;void()&amp;gt;&amp;amp; f); ~InvokeTimer(); void Start(); }; 这个是最基本的接口，可以设置一个仿函数，并设置一个过期时间，然后绑定到一个event_base对象上，然后就可以期待过了一个预期的时间后，我们设置的仿函数被调用了。
+为了便于说明后续的多个版本的实现，我们先将基础的不变的代码说明一下。
+基础代码，我们采用evpp项目中的TimerEventWatcher，详细实现在这里event_watcher.h和event_watcher.cc。它是一个时间定时器观察者对象，可以观察一个时间事件。
+头文件event_watcher.h定义如下：
+#pragma once  #include &amp;lt;functional&amp;gt; struct event; struct event_base; namespace recipes { class EventWatcher { public: typedef std::function&amp;lt;void()&amp;gt; Handler; virtual ~EventWatcher(); bool Init(); void Cancel(); void SetCancelCallback(const Handler&amp;amp; cb); void ClearHandler() { handler_ = Handler(); } protected: EventWatcher(struct event_base* evbase, const Handler&amp;amp; handler); bool Watch(double timeout_ms); void Close(); void FreeEvent(); virtual bool DoInit() = 0; virtual void DoClose() {} protected: struct event* event_; struct event_base* evbase_; bool attached_; Handler handler_; Handler cancel_callback_; }; class TimerEventWatcher : public EventWatcher { public: TimerEventWatcher(struct event_base* evbase, const Handler&amp;amp; handler, double timeout_ms); bool AsyncWait(); private: virtual bool DoInit(); static void HandlerFn(int fd, short which, void* v); private: double timeout_ms_; }; } 实现文件event_watcher.</description>
+    </item>
+    
+  </channel>
+</rss>

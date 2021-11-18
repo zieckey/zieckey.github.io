@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>libpcap on CodeG Blog</title>
+    <link>http://zieckey.github.io/tags/libpcap/</link>
+    <description>Recent content in libpcap on CodeG Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 25 May 2016 20:12:01 +0000</lastBuildDate><atom:link href="http://zieckey.github.io/tags/libpcap/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>如何在win7 64位系统下安装gopcap包及使用</title>
+      <link>http://zieckey.github.io/post/2016-05-26-howto-build-gopcap-on-windows-x64/</link>
+      <pubDate>Wed, 25 May 2016 20:12:01 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/post/2016-05-26-howto-build-gopcap-on-windows-x64/</guid>
+      <description>gopcap是libpcap库的Golang封装，其项目地址在这里 https://github.com/akrennmair/gopcap 。 本文简要介绍一下如何在win7 64位系统平台上使用 gopcap 库。
+安装步骤如下：
+ 安装Golang 64位版本 安装mingw 64位版本，注意导入到windows环境变量中。让命令行能自动找到 gcc 命令 在 http://www.tcpdump.org/ 下载 libpcap-1.7.4.tar.gz，从这个包中得到libpcap的C语言头文件 在 https://www.winpcap.org/install/ 下载winpcap并安装，从这里可以得到libpcap的windows DLL文件 wpcap.dll，用于运行 在 http://www.winpcap.org/archive/ 下载 4.1.1-WpdPack.zip，从其中的x64目录下找到 wpcap.lib 库，用于编译 执行下列命令：  这里，将相关头文库、库文件都放在 C:\wpdpcak 目录下，是因为 gopcap 库的cgo编译选择是这么设置，当然你也可以修改源码的方式来重新设置目录。
+ 编译过程中如果出现下列错误  $ go build # github.com/akrennmair/gopcap In file included from C:/WpdPack/Include/pcap.h:43:0, from ..\..\..\akrennmair\gopcap\pcap.go:12: C:/WpdPack/Include/pcap/pcap.h:450:1: error: unknown type name &amp;#39;Adapter&amp;#39; Adapter *pcap_get_adapter(pcap_t *p); ^ 就将 pcap/pcap.h 中这一行注释掉。   至此，应该再不会有问题了，编译成功。 gopcap 库的toots目录有很多使用用例，可以看看以了解如何使用。  参考  http://blog.</description>
+    </item>
+    
+  </channel>
+</rss>

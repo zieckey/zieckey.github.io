@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<head>
+  <link href="https://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="generator" content="Hugo 0.89.4" />
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Nginx源码研究（5）——单向链表结构ngx_list_t &middot; CodeG Blog</title>
+  <meta name="description" content="本文主要介绍Nginx单向链表结构`ngx_list_t`这一重要的数据结构的使用方法和具体实现。`ngx_list_t`的节点却是一个固定大小的数组，可以存放多个元素。" />
+
+  
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/print.css" media="print">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/poole.css">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/syntax.css">
+  <link type="text/css" rel="stylesheet" href="http://zieckey.github.io/css/hyde.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
+
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/favicon.png">
+
+  
+  
+</head>
+
+  <body class=" ">
+  <aside class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <a href="http://zieckey.github.io/"><h1>CodeG Blog</h1></a>
+      <p class="lead">
+      An elegant open source and mobile first theme for <a href="http://hugo.spf13.com">hugo</a> made by <a href="http://twitter.com/mdo">@mdo</a>. Originally made for Jekyll.
+      </p>
+    </div>
+
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="http://zieckey.github.io/">Home</a> </li>
+        
+      </ul>
+    </nav>
+
+    <p>&copy; 2021. All rights reserved. </p>
+  </div>
+</aside>
+
+    <main class="content container">
+    <div class="post">
+  <h1>Nginx源码研究（5）——单向链表结构ngx_list_t</h1>
+  <time datetime=2015-01-04T00:00:00Z class="post-date">Sun, Jan 4, 2015</time>
+  <h2 id="简介">简介</h2>
+<p>本文主要介绍Nginx单向链表结构<code>ngx_list_t</code>这一重要的数据结构的使用方法和具体实现。</p>
+<p>该链表结构与我们常说的链表结构(例如<code>std::list</code>)不太一样。它虽然符合list类型数据结构的一些特点，比如可以添加元素，实现动态自增长，不会像数组类型的数据结构，受到初始设定的数组容量的限制，但不同点在于它的节点，<code>std::list</code>每个节点只能存放一个元素，<code>ngx_list_t</code>的节点却是一个固定大小的数组，可以存放多个元素。当添加元素到这个list里面的时候，会在最尾部的节点里的数组上添加元素，如果这个节点的数组存满了，就再增加一个新的节点到这个list里面去。</p>
+<h2 id="源代码位置">源代码位置</h2>
+<p>src/core/ngx_list.{h,c}</p>
+<h2 id="数据结构">数据结构</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">// ngx_list_part_s是代表ngx_list_t链表的一个节点。
+</span><span style="color:#75715e">// 它自身包含了一个数组，用来存放最终的元素
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">struct</span> ngx_list_part_s {
+    <span style="color:#66d9ef">void</span>             <span style="color:#f92672">*</span>elts; <span style="color:#75715e">//链表元素elts数组,数组申请的空间大小为size*nalloc
+</span><span style="color:#75715e"></span>    ngx_uint_t        nelts; <span style="color:#75715e">//当前已使用的elts个数，一定要小于等于nalloc
+</span><span style="color:#75715e"></span>    ngx_list_part_t  <span style="color:#f92672">*</span>next; <span style="color:#75715e">//指向ngx_list_t中的下个链表part
+</span><span style="color:#75715e"></span>};
+
+<span style="color:#75715e">// ngx_list_t结构是一个链表，链表中每个节点是ngx_list_part_t结构。
+</span><span style="color:#75715e">// 而ngx_list_part_t中有个elts是一个数组，储存了任意大小固定的元素，它是由ngx_pool_t分配的连续空间
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> {
+    ngx_list_part_t  <span style="color:#f92672">*</span>last; <span style="color:#75715e">//指向链表中最后一个元素，其作用相当于尾指针。插入新的节点时，从此开始。
+</span><span style="color:#75715e"></span>    ngx_list_part_t   part; <span style="color:#75715e">//链表中第一个元素，其作用相当于头指针。遍历时，从此开始。
+</span><span style="color:#75715e"></span>    size_t            size; <span style="color:#75715e">//链表中每个元素的大小
+</span><span style="color:#75715e"></span>    ngx_uint_t        nalloc; <span style="color:#75715e">//链表的每个ngx_list_part_t中elts数组的所能容纳的最大元素个数
+</span><span style="color:#75715e"></span>    ngx_pool_t       <span style="color:#f92672">*</span>pool; <span style="color:#75715e">//当前list数据存放的内存池
+</span><span style="color:#75715e"></span>} ngx_list_t;
+
+
+<span style="color:#75715e">// 具体实现比较简单，就不在累述。
+</span><span style="color:#75715e"></span>
+</code></pre></div><h2 id="内存结构图">内存结构图</h2>
+<p>阅读源码时，请参考下方的内存结构。</p>
+<p><a href="/images/githubpages/nginx/ngx_list_t.png"><img src="/images/githubpages/nginx/ngx_list_t.png" alt=""></a>
+备注：从参考博客4摘录</p>
+<h2 id="测试代码">测试代码</h2>
+<p>该测试代码的完整工程的编译和运行方式请参考 <a href="https://github.com/zieckey/nginx-research">https://github.com/zieckey/nginx-research项目</a>。Linux&amp;Windows都测试通过。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;allinc.h&#34;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+namespace {
+    <span style="color:#66d9ef">struct</span> ListElement {
+        ngx_str_t name;
+        <span style="color:#66d9ef">int</span> id;
+    };
+
+    <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span><span style="color:#f92672">*</span> names[] <span style="color:#f92672">=</span> { <span style="color:#e6db74">&#34;codeg&#34;</span>, <span style="color:#e6db74">&#34;jane&#34;</span>, <span style="color:#e6db74">&#34;zieckey&#34;</span>, <span style="color:#e6db74">&#34;codeg4&#34;</span>, <span style="color:#e6db74">&#34;codeg5&#34;</span>, <span style="color:#e6db74">&#34;codeg6&#34;</span>, <span style="color:#e6db74">&#34;codeg7&#34;</span>, <span style="color:#e6db74">&#34;codeg8&#34;</span>, <span style="color:#e6db74">&#34;codeg9&#34;</span>, <span style="color:#e6db74">&#34;codeg10&#34;</span> };
+}
+
+TEST_UNIT(ngx_list)
+{
+    ngx_uint_t nalloc <span style="color:#f92672">=</span> <span style="color:#ae81ff">4</span>;
+    ngx_list_t <span style="color:#f92672">*</span>list <span style="color:#f92672">=</span> ngx_list_create(g_pool, nalloc, <span style="color:#66d9ef">sizeof</span>(ListElement));
+
+    <span style="color:#75715e">// insert element to the list
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> (size_t i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> H_ARRAYSIZE(names); i<span style="color:#f92672">++</span>)
+    {
+        ListElement<span style="color:#f92672">*</span> u <span style="color:#f92672">=</span> (ListElement<span style="color:#f92672">*</span>)ngx_list_push(list);
+        u<span style="color:#f92672">-&gt;</span>id <span style="color:#f92672">=</span> i;
+        u<span style="color:#f92672">-&gt;</span>name.data <span style="color:#f92672">=</span> (u_char<span style="color:#f92672">*</span>)names[i];
+        u<span style="color:#f92672">-&gt;</span>name.len <span style="color:#f92672">=</span> strlen(names[i]);
+    }
+    
+    H_TEST_ASSERT(list<span style="color:#f92672">-&gt;</span>nalloc <span style="color:#f92672">==</span> nalloc);
+    H_TEST_ASSERT(list<span style="color:#f92672">-&gt;</span>last<span style="color:#f92672">-&gt;</span>next <span style="color:#f92672">==</span> NULL);
+    H_TEST_ASSERT(list<span style="color:#f92672">-&gt;</span>last<span style="color:#f92672">-&gt;</span>nelts <span style="color:#f92672">==</span> H_ARRAYSIZE(names) <span style="color:#f92672">%</span> nalloc);
+    H_TEST_ASSERT(list<span style="color:#f92672">-&gt;</span>last <span style="color:#f92672">==</span> list<span style="color:#f92672">-&gt;</span>part.next<span style="color:#f92672">-&gt;</span>next);
+
+    <span style="color:#75715e">// traverse the list
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">int</span> count <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+    <span style="color:#66d9ef">for</span> (ngx_list_part_t<span style="color:#f92672">*</span> part <span style="color:#f92672">=</span> <span style="color:#f92672">&amp;</span>list<span style="color:#f92672">-&gt;</span>part; part; part <span style="color:#f92672">=</span> part<span style="color:#f92672">-&gt;</span>next)
+    {
+        <span style="color:#66d9ef">for</span> (ngx_uint_t n <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; n <span style="color:#f92672">&lt;</span> part<span style="color:#f92672">-&gt;</span>nelts; <span style="color:#f92672">++</span>n)
+        {
+            ListElement<span style="color:#f92672">*</span> u <span style="color:#f92672">=</span> (ListElement<span style="color:#f92672">*</span>)(part<span style="color:#f92672">-&gt;</span>elts) <span style="color:#f92672">+</span> n;
+            <span style="color:#75715e">//printf(&#34;id=%d name=%s\n&#34;, u-&gt;id, (char*)u-&gt;name.data);
+</span><span style="color:#75715e"></span>            H_TEST_ASSERT(strncmp((<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span>)u<span style="color:#f92672">-&gt;</span>name.data, names[count<span style="color:#f92672">++</span>], u<span style="color:#f92672">-&gt;</span>name.len) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>);
+        }
+    }
+    H_TEST_ASSERT(count <span style="color:#f92672">==</span> H_ARRAYSIZE(names));
+}
+</code></pre></div><p>从下面运行调试截图可以较为清晰的看出<code>ngx_list_t</code>的三级结构<code>list --&gt; node --&gt; element</code>。上述例子的list中有10个元素，分为三个节点存储，前两个节点都存满了(4个)，最后一个节点存放了两个元素，但内存都已经分配好了。</p>
+<p><a href="/images/githubpages/nginx/ngx_list_win_debug.png"><img src="/images/githubpages/nginx/ngx_list_win_debug.png" alt=""></a></p>
+<h2 id="参考">参考：</h2>
+<ol>
+<li><a href="http://tengine.taobao.org/book/chapter_02.html#ngx-list-t-100">淘宝：Nginx开发从入门到精通 http://tengine.taobao.org/book/chapter_02.html#ngx-list-t-100</a></li>
+<li><a href="https://github.com/zieckey/nginx-1.0.14_comment/blob/master/src/core/ngx_list.h">nginx源码注释 https://github.com/zieckey/nginx-1.0.14_comment/blob/master/src/core/ngx_list.h</a></li>
+<li><a href="https://github.com/zieckey/nginx-1.0.14_comment/blob/master/src/core/ngx_list.c">nginx源码注释 https://github.com/zieckey/nginx-1.0.14_comment/blob/master/src/core/ngx_list.c</a></li>
+<li><a href="http://my.oschina.net/chenzhuo/blog/175999">nginx代码分析-基本结构-单链表ngx_list_t http://my.oschina.net/chenzhuo/blog/175999</a></li>
+</ol>
+
+</div>
+
+
+    </main>
+
+    
+      
+    
+  </body>
+</html>

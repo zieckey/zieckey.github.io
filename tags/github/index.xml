@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Github on CodeG Blog</title>
+    <link>http://zieckey.github.io/tags/github/</link>
+    <description>Recent content in Github on CodeG Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 14 Dec 2014 00:00:00 +0000</lastBuildDate><atom:link href="http://zieckey.github.io/tags/github/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Jekyll在github上构建免费的Web应用</title>
+      <link>http://zieckey.github.io/2014/12/14/jekyll-install-on-win7/</link>
+      <pubDate>Sun, 14 Dec 2014 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2014/12/14/jekyll-install-on-win7/</guid>
+      <description>1. Jekyll介绍 Jekyll是一个静态站点生成器，它会根据网页源码生成静态文件。它提供了模板、变量、插件等功能，可以用来生成整个网站。
+Jekyll生成的站点，可以直接发布到github上面，这样我们就有了一个免费的，无限流量的，有人维护的属于我们的自己的web网站。Jekyll是基于Rub y的程序，可以通过gem来下载安装。
+Jekyll官方文档：http://jekyllrb.com/
+2. 安装Ruby 我的系统环境
+ win7 64bit   下载ruby页面 下面是两个链接： http://dl.bintray.com/oneclick/rubyinstaller/rubyinstaller-2.1.5-x64.exe?direct http://cdn.rubyinstaller.org/archives/devkits/DevKit-mingw64-64-4.7.2-20130224-1432-sfx.exe  安装Ruby到 D:\Ruby21-x64 ，再安装RubyGems
+$ ruby --version ruby 2.1.5p273 (2014-11-13 revision 48405) [x64-mingw32] $ gem update --system ERROR: While executing gem ... (Gem::RemoteFetcher::FetchError) SSL_connect returned=1 errno=0 state=SSLv3 read server certificate B: certificate verify failed (https://api.rubygems.org/specs.4.8.gz)  问题1：下载认证文件 $ curl http://curl.haxx.se/ca/cacert.pem -o cacert.pem % Total % Received % Xferd Average Speed Time Time Time Current Dload Upload Total Spent Left Speed 100 245k 100 245k 0 0 26428 0 0:00:09 0:00:09 --:--:-- 23662 # 移动到Ruby安装目录 $ mv cacert.</description>
+    </item>
+    
+    <item>
+      <title>使用Github Pages建独立博客</title>
+      <link>http://zieckey.github.io/2014/12/13/github-pages/</link>
+      <pubDate>Sat, 13 Dec 2014 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2014/12/13/github-pages/</guid>
+      <description>本博客框架是直接在 BeiYuu：使用Github Pages建独立博客 上改造而来的。增加了下列特性：
+ 文章Tags Tags聚合 时间显示 作者显示  感谢 BeiYuu，非常感谢~</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Golang on CodeG Blog</title>
+    <link>http://zieckey.github.io/tags/golang/</link>
+    <description>Recent content in Golang on CodeG Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 06 Sep 2016 11:52:00 +0000</lastBuildDate><atom:link href="http://zieckey.github.io/tags/golang/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>minio源码阅读</title>
+      <link>http://zieckey.github.io/post/2016-09-06-minio-source-code-reading/</link>
+      <pubDate>Tue, 06 Sep 2016 11:52:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/post/2016-09-06-minio-source-code-reading/</guid>
+      <description>简介 minio是Go实现的一个完全兼容S3的服务，和大多Go项目一样，干净小巧，没有依赖，编译运行一键搞定，便利之极。
+源码阅读 HTTP事件注册 启动阶段的初始化工作还是相当繁琐，没戏看。重点看一下运行期间的功能。
+minio进程起来了，对外提供HTTP服务，那么找到HTTP的事件注册的函数就是最好的入口点。事件处理函数的注册代码路径为：serverMain -&amp;gt; configureServerHandler -&amp;gt; api-router.go:registerAPIRouter
+在registerAPIRouter这个函数中，注册了所有HTTP相关的事件处理回调函数。事件分发使用了github.com/gorilla/mux库。这个mux库，在Golang的项目中，使用率还是蛮多的，上次我在Trafix项目中也看到是使用mux库来处理HTTP事件注册和分发处理。
+PutObject：上传一个对象 注册回调函数为bucket.Methods(&amp;quot;PUT&amp;quot;).Path(&amp;quot;/{object:.+}&amp;quot;).HandlerFunc(api.PutObjectHandler)
+下面我们来分析一下func (api objectAPIHandlers) PutObjectHandler(w http.ResponseWriter, r *http.Request)函数的实现。
+ 首先，检测HTTP HEADER中是否有设置 X-Amz-Copy-Source 检测HTTP HEADER中的Content-Md5，并获取该MD5（注意：该MD5是16进制数Base64Encode之后的结果） 检测是否有相应权限 检测是否超过最大大小限制 根据权限，调用相应的函数。这里我们重点介绍api.ObjectAPI.PutObject(bucket, object, size, r.Body, metadata) 如果是单机版本，会进入func (fs fsObjects) PutObject(bucket string, object string, size int64, data io.Reader, metadata map[string]string) (string, error)函数中  继续分析func (fs fsObjects) PutObject(...)函数
+ 首先检测 BucketName、ObjectName 是否合法 生成一个UUID，然后根据UUID生成一个唯一的临时的obj路径tempObj new一个MD5对象，用来计算上传的数据的MD5 根据HTTP请求的Reader生成一个io.TeeReader对象，用来读取数据的同时，顺便计算一下MD5值 调用func fsCreateFile(...)来创建一个临时的对象文件 再检查计算出来的MD5是否与HTTP HEADER中的MD5完全一致 如果MD5不一致就删除临时文件，返回错误。如果MD5完全一致，就将临时文件Rename为目标文件 最后，如果HTTP HEADER中有额外的meta数据需要写入，就调用writeFSMetadata写入meta文件中 最最后，返回数据的MD5值  上面func fsCreateFile(.</description>
+    </item>
+    
+    <item>
+      <title>发布一个Golang版本的INI解析器</title>
+      <link>http://zieckey.github.io/post/2016-05-29-a-new-ini-parser-for-golang/</link>
+      <pubDate>Sun, 29 May 2016 13:14:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/post/2016-05-29-a-new-ini-parser-for-golang/</guid>
+      <description>goini 这是一个为Golang开发的读取INI格式文件的库，它还能读取类似于INI格式的key/value对数据。
+goini 的设计目标是简单、灵活、高效，有如下特性：
+ 支持标准INI格式 支持节 支持从本地磁盘中读取INI文件 支持从内存数据中读取INI数据 支持解析形如INI格式的key/value对数据，分隔符可以自定义 支持UTF8编码 支持注释符 ; or # 支持级联继承 仅仅只依赖Golang标准库 测试用户100%覆盖  使用时导入 import github.com/zieckey/goini  用法示例 示例1 : 解析INI文件 import github.com/zieckey/goini ini := goini.New() err := ini.ParseFile(filename) if err != nil { fmt.Printf(&amp;#34;parse INI file %v failed : %v\n&amp;#34;, filename, err.Error()) return } v, ok := ini.Get(&amp;#34;the-key&amp;#34;) //... 示例2 ： 解析内存中形如INI格式的数据 raw := []byte(&amp;#34;a:av||b:bv||c:cv||||d:dv||||||&amp;#34;) ini := goini.New() err := ini.Parse(raw, &amp;#34;||&amp;#34;, &amp;#34;:&amp;#34;) if err !</description>
+    </item>
+    
+    <item>
+      <title>Trafik源代码阅读</title>
+      <link>http://zieckey.github.io/post/2016-05-26-trafik-source-code-reading/</link>
+      <pubDate>Thu, 26 May 2016 07:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/post/2016-05-26-trafik-source-code-reading/</guid>
+      <description>Trafik介绍 其官网是这么介绍的：
+Træfɪk is a modern HTTP reverse proxy and load balancer made to deploy microservices with ease. It supports several backends (Docker, Swarm, Mesos/Marathon, Consul, Etcd, Zookeeper, BoltDB, Rest API, file...) to manage its configuration automatically and dynamically. 翻译过来就是：Træfɪk是一个现代的HTTP反向代理和易用的微服务负载平衡器，支持多种后端服务， 例如 Docker、 Swarm、 Mesos/Marathon、 Kubernetes、 Consul、 Etcd、 Zookeeper、 BoltDB、 Rest API、 文件 等等， 可以自动地动态管理和加载各种配置。
+特点如下：
+ 快速，benchmark显示，能够达到nginx的85%的性能 没有依赖地狱，得益于Golang的特性，单个二进制文件就能运行 Rest API 监视后端，能够自动监听后端配置的变化。 配置的热重加载，无需重新启动进程或服务器 优雅地关闭Http连接 后端的断路器Circuit breaker Round Robin rebalancer 负载平衡 Rest测量 包括小的官方docker SSL后端支持 SSL前端支持 干净的AngularJS Web UI 支持Websocket 支持Http/2 如果网络错误重试请求 自动Https支持(Let’s Encrypt)  用法 最简单的用法当然是做一个HTTP反向代理用。</description>
+    </item>
+    
+    <item>
+      <title>如何在win7 64位系统下安装gopcap包及使用</title>
+      <link>http://zieckey.github.io/post/2016-05-26-howto-build-gopcap-on-windows-x64/</link>
+      <pubDate>Wed, 25 May 2016 20:12:01 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/post/2016-05-26-howto-build-gopcap-on-windows-x64/</guid>
+      <description>gopcap是libpcap库的Golang封装，其项目地址在这里 https://github.com/akrennmair/gopcap 。 本文简要介绍一下如何在win7 64位系统平台上使用 gopcap 库。
+安装步骤如下：
+ 安装Golang 64位版本 安装mingw 64位版本，注意导入到windows环境变量中。让命令行能自动找到 gcc 命令 在 http://www.tcpdump.org/ 下载 libpcap-1.7.4.tar.gz，从这个包中得到libpcap的C语言头文件 在 https://www.winpcap.org/install/ 下载winpcap并安装，从这里可以得到libpcap的windows DLL文件 wpcap.dll，用于运行 在 http://www.winpcap.org/archive/ 下载 4.1.1-WpdPack.zip，从其中的x64目录下找到 wpcap.lib 库，用于编译 执行下列命令：  这里，将相关头文库、库文件都放在 C:\wpdpcak 目录下，是因为 gopcap 库的cgo编译选择是这么设置，当然你也可以修改源码的方式来重新设置目录。
+ 编译过程中如果出现下列错误  $ go build # github.com/akrennmair/gopcap In file included from C:/WpdPack/Include/pcap.h:43:0, from ..\..\..\akrennmair\gopcap\pcap.go:12: C:/WpdPack/Include/pcap/pcap.h:450:1: error: unknown type name &amp;#39;Adapter&amp;#39; Adapter *pcap_get_adapter(pcap_t *p); ^ 就将 pcap/pcap.h 中这一行注释掉。   至此，应该再不会有问题了，编译成功。 gopcap 库的toots目录有很多使用用例，可以看看以了解如何使用。  参考  http://blog.</description>
+    </item>
+    
+    <item>
+      <title>Golang CGO编程之调用返回char*指针及长度的C函数库</title>
+      <link>http://zieckey.github.io/post/2016-04-20-golang-cgo/</link>
+      <pubDate>Wed, 20 Apr 2016 21:43:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/post/2016-04-20-golang-cgo/</guid>
+      <description>现代所有主流操作系统几乎都是用C语音实现的，几乎所有高级语言都能调用C语言，例如PHP可以调用C语言写的PHP扩展，Python也可以调用C语言实现的Python扩展。 Golang语言也不例外。
+Golang通过CGO机制能很方便的调用C语言。本文介绍一下如何在Go中调用稍稍复杂一点C函数，例如： char* f(int, int*)
+首先看一个最简单的例子，将Golang中的一个字符串传入C函数中：
+package main /* #include &amp;lt;stdio.h&amp;gt; #include &amp;lt;stdlib.h&amp;gt; void print(char *str) { printf(&amp;#34;%s\n&amp;#34;, str); } */ import &amp;#34;C&amp;#34; import &amp;#34;unsafe&amp;#34; func main() { s := &amp;#34;Hello Cgo&amp;#34; cs := C.CString(s) C.print(cs) C.free(unsafe.Pointer(cs)) } 注意上述程序中的关键语句cs := C.CString(s)是将一个Golang的字符串转换为C语言字符串，该C语言字符串是由C函数malloc从堆中分配的，因此后续需要调用 C.free 释放内存。
+然后，我们看看如何调用一个复杂一点的C函数？例如： char* f(int, int*) ，返回一个char*指针，并且有一个参数也是返回值int*。请直接看下面的例子：
+package main /* #include &amp;lt;stdlib.h&amp;gt; #include &amp;lt;string.h&amp;gt; char* xmalloc(int len, int *rlen) { static const char* s = &amp;#34;0123456789&amp;#34;; char* p = malloc(len); if (len &amp;lt;= strlen(s)) { memcpy(p, s, len); } else { memset(p, &amp;#39;a&amp;#39;, len); } *rlen = len; return p; } */ import &amp;#34;C&amp;#34; import &amp;#34;unsafe&amp;#34; import &amp;#34;fmt&amp;#34; func main() { rlen := C.</description>
+    </item>
+    
+    <item>
+      <title>使用Golang利用ectd实现一个分布式锁</title>
+      <link>http://zieckey.github.io/post/2016-02-24-distrubute-lock-over-etcd/</link>
+      <pubDate>Wed, 24 Feb 2016 20:43:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/post/2016-02-24-distrubute-lock-over-etcd/</guid>
+      <description>etcd是随着CoreOS项目一起成长起来的，随着Golang和CoreOS等项目在开源社区日益火热， etcd作为一个高可用、强一致性的分布式Key-Value存储系统被越来越多的开发人员关注和使用。
+这篇文章全方位介绍了etcd的应用场景，这里简单摘要如下：
+ 服务发现（Service Discovery） 消息发布与订阅 负载均衡 分布式通知与协调 分布式锁 分布式队列 集群监控与Leader竞选 为什么用etcd而不用ZooKeeper  本文重点介绍如何利用ectd实现一个分布式锁。 锁的概念大家都熟悉，当我们希望某一事件在同一时间点只有一个线程(goroutine)在做，或者某一个资源在同一时间点只有一个服务能访问，这个时候我们就需要用到锁。 例如我们要实现一个分布式的id生成器，多台服务器之间的协调就非常麻烦。分布式锁就正好派上用场。
+其基本实现原理为：
+ 在ectd系统里创建一个key 如果创建失败，key存在，则监听该key的变化事件，直到该key被删除，回到1 如果创建成功，则认为我获得了锁  具体代码如下：
+package etcdsync import ( &amp;#34;fmt&amp;#34; &amp;#34;io&amp;#34; &amp;#34;os&amp;#34; &amp;#34;sync&amp;#34; &amp;#34;time&amp;#34; &amp;#34;github.com/coreos/etcd/client&amp;#34; &amp;#34;github.com/coreos/etcd/Godeps/_workspace/src/golang.org/x/net/context&amp;#34; ) const ( defaultTTL = 60 defaultTry = 3 deleteAction = &amp;#34;delete&amp;#34; expireAction = &amp;#34;expire&amp;#34; ) // A Mutex is a mutual exclusion lock which is distributed across a cluster. type Mutex struct { key string id string // The identity of the caller 	client client.</description>
+    </item>
+    
+    <item>
+      <title>编译Golang包为C语言库文件</title>
+      <link>http://zieckey.github.io/2016/02/19/sharing-golang-package-to-C/</link>
+      <pubDate>Fri, 19 Feb 2016 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2016/02/19/sharing-golang-package-to-C/</guid>
+      <description>Go 1.5发布后，其包含一个特性：可以编译生成C语言动态链接库或静态库。本文给出了示例代码和用法。
+go build和go install命令，可以使用参数 -buildmode 来指定生成哪种类型的二进制目标文件。请见https://golang.org/cmd/go/#Description of build modes 详细说明。
+当前我们使用 -buildmode=c-archive 来示例和测试。
+Golang源文件：
+// file hello.go package main port &amp;#34;C&amp;#34; import &amp;#34;fmt&amp;#34; //export SayHello func SayHello(name string) { fmt.Printf(&amp;#34;func in Golang SayHello says: Hello, %s!\n&amp;#34;, name) } //export SayHelloByte func SayHelloByte(name []byte) { fmt.Printf(&amp;#34;func in Golang SayHelloByte says: Hello, %s!\n&amp;#34;, string(name)) } //export SayBye func SayBye() { fmt.Println(&amp;#34;func in Golang SayBye says: Bye!&amp;#34;) } func main() { // We need the main function to make possible  // CGO compiler to compile the package as C shared library } 使用命令go build -buildmode=c-archive -o libhello.</description>
+    </item>
+    
+    <item>
+      <title>Golang发送邮件</title>
+      <link>http://zieckey.github.io/2016/02/14/send-email-for-golang/</link>
+      <pubDate>Sun, 14 Feb 2016 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2016/02/14/send-email-for-golang/</guid>
+      <description>本文介绍一个简单的方法使用Go语言发送邮件。直接调用系统自带的mail命令发送邮件。
+在网上找了很多例子，基本上都是基于Golang本身自带的smtp包来实现的，参考 http://www.tuicool.com/articles/e2qUv2，这里需要以下几个关键信息：
+ 邮箱地址(邮箱用户名) 邮箱密码 邮件提供商hostname smtp服务器地址和端口 邮件主题、正文、接收人列表  上述5个信息中，实际上我们关心的其实只有第5个，其他4个都不是太关心。而且，如果我们想写一段开源代码，这里就把邮箱用户名和密码给暴露了，不太合适。我于是想到了PHP中的mail这个发送邮件的函数来，PHP是如何实现邮件发送的功能呢？我搜素PHP的源码发现在非Windows平台使用的系统自带的sendmail命令来发送的，具体代码请参考: php-5.3.3/ext/standard/mail.c:php_mail
+受此启发，我在golang中也这么实现不就简单了么？下面是源码：
+import ( &amp;#34;os/exec&amp;#34; &amp;#34;log&amp;#34; &amp;#34;runtime&amp;#34; ) // SendMail sends an email to the addresses using &amp;#39;mail&amp;#39; command on *nux platform. func SendMail(title, message string, email ...string) error { if runtime.GOOS == &amp;#34;windows&amp;#34; { log.Printf(&amp;#34;TODO: cannot send email on windows title=[%v] messagebody=[%v]&amp;#34;, title, message) return nil } mailCommand := exec.Command(&amp;#34;mail&amp;#34;, &amp;#34;-s&amp;#34;, title) mailCommand.Args = append(mailCommand.Args, email...) stdin, err := mailCommand.</description>
+    </item>
+    
+    <item>
+      <title>Golang版本的remove_if函数实现</title>
+      <link>http://zieckey.github.io/2016/02/14/golang-remove_if/</link>
+      <pubDate>Sun, 14 Feb 2016 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2016/02/14/golang-remove_if/</guid>
+      <description>C++中的std::remove_if函数实现了一个算法，可以将一个容器中的元素按照一定的规则进行删除，但Go语言中却没有类似的函数。代码其实很简单，如下：
+func RemoveIf(s string, f func(rune) bool) string { runes := []rune(s) result := 0 for i, r := range runes { if !f(r) { runes[result] = runes[i] result++ } } return string(runes[0:result]) } 上述算法是参考C++标准库中的实现(bits/stl_algo.h:remove_if)，但比C++的效率低，因为多了两次转换（string与[]rune互相转换两次）。
+进一步思考：这两次转换不知道是否可以通过其他方式节省掉？类似于C++的实现，就地删除（并没有新开辟内存空间）。
+上述源码放到这里了： https://github.com/zieckey/gocom/tree/master/tstrings
+必须要吐槽一下Go语言没有泛型，如果要针对[]byte就又得要重复实现一遍类似的代码。</description>
+    </item>
+    
+    <item>
+      <title>使用grafana&#43;influxdb搭建炫酷的实时可视化监控平台</title>
+      <link>http://zieckey.github.io/2016/02/05/influxdb-grafana/</link>
+      <pubDate>Fri, 05 Feb 2016 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2016/02/05/influxdb-grafana/</guid>
+      <description>最近看到一篇介绍influxdb的文章，然后又看到用grafana配合图形展示，就简单试用了一下，确实还不错。但其中也遇到一些低级问题，这篇博文就当一个流水文档吧，便于以后查阅。
+这几个组件的使用方式为：数据收集 &amp;ndash;&amp;gt; influxdb存储 &amp;ndash;&amp;gt; grafana展现。
+本文所述的influxdb版本适用于为0.9x，grafana版本适用于2.6
+influxdb介绍 InfluxDB 是一个开源分布式的时序、事件和指标数据库。使用 Go 语言编写，无需外部依赖。其设计目标是实现分布式和水平伸缩扩展。 它有三大特性：
+ Time Series （时间序列）：你可以使用与时间有关的相关函数（如最大，最小，求和等） Metrics（度量）：你可以实时对大量数据进行计算 Eevents（事件）：它支持任意的事件数据  又有如下特点：
+ schemaless(无结构)，可以是任意数量的列 Scalable min, max, sum, count, mean, median 一系列函数，方便统计  按照其官方文档，可以很方便的在centos上安装：
+cat &amp;lt;&amp;lt;EOF | sudo tee /etc/yum.repos.d/influxdb.repo [influxdb] name = InfluxDB Repository - RHEL \$releasever baseurl = https://repos.influxdata.com/rhel/\$releasever/\$basearch/stable enabled = 1 gpgcheck = 1 gpgkey = https://repos.influxdata.com/influxdb.key EOF  然后使用yum安装： sudo yum install influxdb
+直接在前台启动也很方便，输入命令 influxdb 即可启动。
+默认情况下influxdb会监听一下端口：</description>
+    </item>
+    
+    <item>
+      <title>源码阅读-悟空搜索引擎</title>
+      <link>http://zieckey.github.io/2016/02/02/wukong-source-code-reading/</link>
+      <pubDate>Tue, 02 Feb 2016 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2016/02/02/wukong-source-code-reading/</guid>
+      <description>一个最简单的例子 我们还是从一个最简单的示例代码开始：
+package main import ( &amp;#34;github.com/huichen/wukong/engine&amp;#34; &amp;#34;github.com/huichen/wukong/types&amp;#34; &amp;#34;log&amp;#34; ) var ( // searcher是协程安全的 	searcher = engine.Engine{} ) func main() { // 初始化 	searcher.Init(types.EngineInitOptions{ SegmenterDictionaries: &amp;#34;./data/dictionary.txt&amp;#34;}) defer searcher.Close() // 将文档加入索引 	searcher.IndexDocument(0, types.DocumentIndexData{Content: &amp;#34;此次百度收购将成中国互联网最大并购&amp;#34;}) searcher.IndexDocument(1, types.DocumentIndexData{Content: &amp;#34;百度宣布拟全资收购91无线业务&amp;#34;}) searcher.IndexDocument(2, types.DocumentIndexData{Content: &amp;#34;百度是中国最大的搜索引擎&amp;#34;}) // 等待索引刷新完毕 	searcher.FlushIndex() // 搜索输出格式见types.SearchResponse结构体 	res := searcher.Search(types.SearchRequest{Text:&amp;#34;百度中国&amp;#34;}) log.Printf(&amp;#34;num=%d &amp;#34;, res.NumDocs) for _, d := range res.Docs { log.Printf(&amp;#34;docId=%d&amp;#34;, d.DocId) log.Print(&amp;#34;\tscore:&amp;#34;, d.Scores) log.Print(&amp;#34;\tTokenLocations:&amp;#34;, d.TokenLocations) log.Print(&amp;#34;\tTokenSnippetLocations:&amp;#34;, d.TokenSnippetLocations) } } 悟空搜索引擎不是一个完整的搜索引擎，我们可以把它当做一个搜索引擎基础库来使用。上面的示例代码是一个最简单的例子，展示了如何使用这个库，非常简单，三步即可完成：</description>
+    </item>
+    
+    <item>
+      <title>应用双缓冲技术完美解决资源数据优雅无损的热加载问题</title>
+      <link>http://zieckey.github.io/2016/01/27/double-buffering/</link>
+      <pubDate>Wed, 27 Jan 2016 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2016/01/27/double-buffering/</guid>
+      <description>简介 在一个网络服务器不间断运行过程中，有一些资源数据需要实时更新，例如需要及时更新一份白名单列表，怎么做才能做到优雅无损的更新到服务的进程空间内？这里我们提出一种叫“双缓冲”的技术来解决这种问题。
+这里的双缓冲技术是借鉴了计算机屏幕绘图领域的概念。双缓冲技术绘图即在内存中创建一个与屏幕绘图区域一致的对象，先将图形绘制到内存中的这个对象上，再一次性将这个对象上的图形拷贝到屏幕上，这样能大大加快绘图的速度。
+问题抽象 假设我们有一个查询服务，为了方便描述，我们将数据加密传输等一些不必要的细节都省去后，请求报文可以抽象成两个参数：一个是id，用来唯一标识一台设备（例如手机或电脑）；另一个查询主体query。服务端业务逻辑是通过query查询数据库/NoSQL等数据引擎然后返回相应的数据，同时记录一条请求日志。
+用Golang来实现这个逻辑如下：
+package main import ( &amp;#34;net/http&amp;#34; &amp;#34;log&amp;#34; &amp;#34;os&amp;#34; &amp;#34;fmt&amp;#34; ) func Query(r *http.Request) string { id := r.FormValue(&amp;#34;id&amp;#34;) query := r.FormValue(&amp;#34;query&amp;#34;) //参数合法性检查  //具体的业务逻辑，查询数据库/NoSQL等数据引擎，然后做逻辑计算，然后合并结果 	//这里简单抽象，直接返回欢迎语 	result := fmt.Sprintf(&amp;#34;hello, %v&amp;#34;, id) // 记录一条查询日志，用于离线统计和分析 	log.Printf(&amp;#34;&amp;lt;id=%v&amp;gt;&amp;lt;query=%v&amp;gt;&amp;lt;result=%v&amp;gt;&amp;lt;ip=%v&amp;gt;&amp;#34;, id, query, result, r.RemoteAddr) return result } func Handler(w http.ResponseWriter, r *http.Request) { r.ParseForm() result := Query(r) w.Write([]byte(result)) } func main() { http.HandleFunc(&amp;#34;/q&amp;#34;, Handler) hostname, _ := os.Hostname() log.Printf(&amp;#34;start http://%s:8091/q&amp;#34;, hostname) log.</description>
+    </item>
+    
+    <item>
+      <title>godotenv介绍</title>
+      <link>http://zieckey.github.io/2015/12/15/godotenv/</link>
+      <pubDate>Tue, 15 Dec 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/12/15/godotenv/</guid>
+      <description>简介 godotenv是ruby社区的dotenv的Golang移植版本。该库会解析 .env 文件，该文件是一个典型的INI格式的文件，类似于下面：
+SOME_ENV_VAR=somevalue
+然后在你的代码中调用 godotenv.Load() 即可解析并将相应的Key/Value对都放到环境变量中。
+例如可以通过 os.Getenv(&amp;quot;SOME_ENV_VAR&amp;quot;) 获取。
+参考文献  dotenv godotenv  </description>
+    </item>
+    
+    <item>
+      <title>Golang开源项目源码阅读</title>
+      <link>http://zieckey.github.io/2015/09/19/golang-project-source-code-reading/</link>
+      <pubDate>Sat, 19 Sep 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/09/19/golang-project-source-code-reading/</guid>
+      <description>总览 github.com/julienschmidt/httproute httprouter 是一个轻量级的高性能HTTP请求分发器，英文称之为multiplexer，简称mux。
+httproute特性  仅支持精确匹配，及只匹配一个模式或不会匹配到任何模式。相对于其他一些mux，例如go原生的 http.ServerMux, 会使得一个请求URL匹配多个模式，从而需要有优先级顺序，例如最长匹配、最先匹配等等。 不需要关心URL结尾的斜杠 路径自动归一化和矫正 零内存分配 高性能。这一点可以参考Benchmarks 再也不会崩溃  示例代码 使用起来非常简单，与 net/http 包提供的接口非常类似，甚至还提供了完全的一致的接口。
+package main import ( &amp;#34;fmt&amp;#34; &amp;#34;github.com/julienschmidt/httprouter&amp;#34; &amp;#34;net/http&amp;#34; &amp;#34;log&amp;#34; ) func Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) { fmt.Fprint(w, &amp;#34;Welcome!\n&amp;#34;) } func Hello(w http.ResponseWriter, r *http.Request, ps httprouter.Params) { fmt.Fprintf(w, &amp;#34;hello, %s!\n&amp;#34;, ps.ByName(&amp;#34;name&amp;#34;)) } func main() { router := httprouter.New() router.GET(&amp;#34;/&amp;#34;, Index) router.GET(&amp;#34;/hello/:name&amp;#34;, Hello) log.Fatal(http.ListenAndServe(&amp;#34;:8080&amp;#34;, router)) } 源码阅读 httproute内部通过实现一个trie树来提高性能。核心代码就是golang标准库中 http.Handler 接口，在该函数中实现自己的请求路由分发策略。
+// ServeHTTP 实现 func (r *Router) ServeHTTP(w http.</description>
+    </item>
+    
+    <item>
+      <title>golang学习之如何构造一个multipart/form格式的HTTP请求</title>
+      <link>http://zieckey.github.io/2015/03/18/golang-how-to-make-a-multipart-http-request/</link>
+      <pubDate>Wed, 18 Mar 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/03/18/golang-how-to-make-a-multipart-http-request/</guid>
+      <description>使用PHP里面的curl扩展库可以方便的从一个php array来构造一个multipart/form格式的HTTP请求，但golang里构造起来稍稍麻烦一点，下面我们来介绍具体的构造方法。
+具体代码实现 实际代码中用到 multipart.Writer，并调用其 writer.WriteField(key, val) 方法来构造。
+package main import ( &amp;#34;bytes&amp;#34; &amp;#34;fmt&amp;#34; &amp;#34;log&amp;#34; &amp;#34;mime/multipart&amp;#34; &amp;#34;net/http&amp;#34; ) // Creates a new file upload http request with optional extra params func newMultipartRequest(url string, params map[string]string) (*http.Request, error) { body := &amp;amp;bytes.Buffer{} writer := multipart.NewWriter(body) for key, val := range params { _ = writer.WriteField(key, val) } writer.Close() return http.NewRequest(&amp;#34;POST&amp;#34;, url, body) } func main() { extraParams := map[string]string{ &amp;#34;title&amp;#34;: &amp;#34;My Document&amp;#34;, &amp;#34;author&amp;#34;: &amp;#34;zieckey&amp;#34;, &amp;#34;description&amp;#34;: &amp;#34;A document with all the Go programming language secrets&amp;#34;, } request, err := newMultipartRequest(&amp;#34;http://127.</description>
+    </item>
+    
+    <item>
+      <title>golang学习之继承和重载</title>
+      <link>http://zieckey.github.io/2015/02/12/golang-derive-override/</link>
+      <pubDate>Thu, 12 Feb 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/02/12/golang-derive-override/</guid>
+      <description>其实golang里是不提倡继承的，也不提倡重载的。但是有些场景下，我们还是想试验一下传统C++或Java语言里的继承和重载能否用在golang里。
+实现 package main import ( &amp;#34;fmt&amp;#34; ) type Person struct { Id int Name string } type Tester interface { Test() Eat() } func (this *Person) Test() { fmt.Println(&amp;#34;\tthis =&amp;#34;, &amp;amp;this, &amp;#34;Person.Test&amp;#34;) } func (this *Person) Eat() { fmt.Println(&amp;#34;\tthis =&amp;#34;, &amp;amp;this, &amp;#34;Person.Eat&amp;#34;) } // Employee 从Person继承, 直接继承了 Eat 方法，并且将 Test 方法覆盖了。 type Employee struct { Person } func (this *Employee) Test() { fmt.Println(&amp;#34;\tthis =&amp;#34;, &amp;amp;this, &amp;#34;Employee.Test&amp;#34;) this.Person.Test() // 调用父类的方法，且该方法被子类覆盖了 } func main() { fmt.</description>
+    </item>
+    
+    <item>
+      <title>golang解析MIME数据格式的代码示例</title>
+      <link>http://zieckey.github.io/2015/01/23/mime-golang-parsing/</link>
+      <pubDate>Fri, 23 Jan 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/01/23/mime-golang-parsing/</guid>
+      <description>MIME格式 MIME是multipurpose Internet mail extensions 的缩写。它是一种协议，可使电子邮件除包含一般纯文本以外，还可加上彩色图片、视频、声音或二进位格式的文件。它要求邮件的发送端和接收端必须有解读MIME协议的电子邮件程序。
+本文介绍了如何使用golang来解析MIME以及multipart格式的数据。并给出了详细的示例代码。
+MIME格式示例数据 请点击 resources/example.mime.txt
+完整解析代码请参考：https://github.com/zieckey/gohello/tree/master/mime
+解析boundary 使用net/textproto.Reader来解析。示例代码如下：
+// 从textproto.Reader读取数据 func (m *MHtml) GetBoundary(r *textproto.Reader) string { // 先调用ReadMIMEHeader来解析MIME的头信息 	mimeHeader, err := r.ReadMIMEHeader() if err != nil { return &amp;#34;&amp;#34; } // 然后得到 &amp;#34;Content-Type&amp;#34; 	fmt.Printf(&amp;#34;%v %v\n&amp;#34;, mimeHeader, err) contentType := mimeHeader.Get(&amp;#34;Content-Type&amp;#34;) fmt.Printf(&amp;#34;Content-Type = %v %v\n&amp;#34;, contentType) // 再然后，调用 mime.ParseMediaType 来解析 &amp;#34;Content-Type&amp;#34; 	mediatype, params, err := mime.ParseMediaType(contentType) fmt.Printf(&amp;#34;mediatype=%v, params=%v %v, err=%v\n&amp;#34;, mediatype, len(params), params, err) // 最最后，得到 boundary 	boundary := params[&amp;#34;boundary&amp;#34;] fmt.</description>
+    </item>
+    
+    <item>
+      <title>多进程编程</title>
+      <link>http://zieckey.github.io/2015/01/13/linux-system-programming/</link>
+      <pubDate>Tue, 13 Jan 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/01/13/linux-system-programming/</guid>
+      <description>wait 和 waitpid 当一个进程正常或异常退出时，内核就向其父进程发送SIGCHLD信号。因为子进程退出是一个异步事件，所以该信号也是内核向父进程发送的异步信号。
+wait的函数原型是：
+#include &amp;lt;sys/types.h&amp;gt;#include &amp;lt;sys/wait.h&amp;gt; pid_t wait(int *status); pid_t waitpid(pid_t pid, int *status, int options); 参数status用来保存被收集进程退出时的一些状态信息，它是一个指向int类型的指针。进程一旦调用了wait或waitpid，则可能发生：
+ 如果其所有子进程都还在运行，则阻塞 如果某个子进程已经退出， wait/waitpid就会收集这个子进程的信息，并把它彻底销毁后返回 如果没有任何子进程，则会立即出错返回　  这两个函数的区别在于：
+ 在子进程结束之前，wait使其调用者阻塞，而waitpid有一个选项，可以使调用者不阻塞。 waitpid并不等待在其调用之后的第一个终止子进程，它有若干选项可以控制它所等待的子进程。 对于wait()，其唯一的出错是调用进程没有子进程；对于waitpid()，若指定的进程或进程组不存在，或者参数pid指定的进程不是调用进程的子进程都可能出错。 waitpid()提供了wait()没有的三个功能：一是waitpid()可等待一个特定的进程；二是waitpid()提供了一个wait()的非阻塞版本（有时希望取的一个子进程的状态，但不想使父进程阻塞，waitpid() 提供了一个这样的选择：WNOHANG，它可以使调用者不阻塞）；三是waitpid()支持作业控制。 wait(&amp;amp;status) 的功能就等于waitpid(-1, &amp;amp;status, 0);  下面看一个示例代码：
+#include&amp;lt;stdio.h&amp;gt;#include&amp;lt;sys/types.h&amp;gt;#include&amp;lt;sys/wait.h&amp;gt;#include&amp;lt;unistd.h&amp;gt;#include&amp;lt;stdlib.h&amp;gt; int main() { pid_t child; int i; child = fork(); if(child &amp;lt; 0){ printf(&amp;#34;create failed!\n&amp;#34;); return (1); } else if (0 == child){ printf(&amp;#34;this is the child process pid= %d\n&amp;#34;,getpid()); for(i = 0;i&amp;lt;5;i++){ printf(&amp;#34;this is the child process print %d !</description>
+    </item>
+    
+    <item>
+      <title>Golang源码阅读——crypto/subtle.ConstantTimeByteEq 深度解析</title>
+      <link>http://zieckey.github.io/2015/01/12/go-source-code-reading-ConstantTimeByteEq/</link>
+      <pubDate>Mon, 12 Jan 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/01/12/go-source-code-reading-ConstantTimeByteEq/</guid>
+      <description>根据文档说明，ConstantTimeByteEq返回1，如果 x == y；相反则返回0。为什么一个简单整数比较操作要搞一个单独的函数出来实现？并且其实现代码看起来要不x == y复杂多了？
+源码及分析 先看源码实现，如下：
+// ConstantTimeByteEq returns 1 if x == y and 0 otherwise. func ConstantTimeByteEq(x, y uint8) int { z := ^(x ^ y) z &amp;amp;= z &amp;gt;&amp;gt; 4 z &amp;amp;= z &amp;gt;&amp;gt; 2 z &amp;amp;= z &amp;gt;&amp;gt; 1 return int(z) } 分析源码可以发现，其的确是实现了该函数的功能，如果x == y则返回1；相反则返回0。
+x ^ y就是x按位异或y, 以某一位为例，其异或结果为1如果x和y不同，相反为0:
+x = 01010011 y = 00010011 x ^ y = 01000000  ^(x ^ y)是上述表达式的取反操作</description>
+    </item>
+    
+    <item>
+      <title>golang网络编程-udp客户端示例代码</title>
+      <link>http://zieckey.github.io/2015/01/07/golang-udp-client/</link>
+      <pubDate>Wed, 07 Jan 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/01/07/golang-udp-client/</guid>
+      <description>最简单的一个客户端 编程步骤：
+ 创建一个udp socket并连接服务器 发送数据给服务器 从服务器接收数据 关闭udp socket  package main import ( &amp;#34;fmt&amp;#34; &amp;#34;net&amp;#34; &amp;#34;os&amp;#34; ) func main() { hostport := &amp;#34;10.16.28.17:1053&amp;#34; if len(os.Args) == 2 { hostport = os.Args[1] } addr, err := net.ResolveUDPAddr(&amp;#34;udp&amp;#34;, hostport) if err != nil { fmt.Println(&amp;#34;server address error. It MUST be a format like this hostname:port&amp;#34;, err) return } // Create a udp socket and connect to server  socket, err := net.</description>
+    </item>
+    
+    <item>
+      <title>发布一个批量转码工具:gbk2utf8</title>
+      <link>http://zieckey.github.io/2015/01/03/gbk2utf8-by-golang/</link>
+      <pubDate>Sat, 03 Jan 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2015/01/03/gbk2utf8-by-golang/</guid>
+      <description>Linux下的iconv是针对单个文件处理，但是转码后的数据直接输出到STDOUT，不方便批量处理。gbk2utf8工具可以针对一个目录以及递归遍历所有子目录下的所有文件进行批量处理，并且直接修改原始文件为UTF-8编码。为了避免错误，会将原始文件备份为*.bak文件。
+当前其实现是直接调用iconv命令实现，后期可以考虑纯粹使用golang实现。另外，如果将来有需要，可以直接将iconv的几个参数如-f -t等也一并实现了，从而形成goiconv，一个通用的批量原地转码工具。
+代码实现其实非常简单，总共不过100来行golang代码，地址请见: https://github.com/zieckey/tools/tree/master/gbk2utf8
+使用方法：
+  gbk2utf8 处理当前目录以及递归遍历所有子目录下的所有文件
+  gbk2utf8 *.cc 处理当前目录以及递归遍历所有子目录下的所有形如*.cc
+  gbk2utf8 somedir/* 处理somedir目录以及递归遍历所有子目录下的所有文件
+  </description>
+    </item>
+    
+    <item>
+      <title>Golang源码阅读</title>
+      <link>http://zieckey.github.io/2014/12/28/go-source-code-reading/</link>
+      <pubDate>Sun, 28 Dec 2014 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2014/12/28/go-source-code-reading/</guid>
+      <description>总览  src/cmd/dist/buf.c 该文件提供两个数据结构：Buf、Vec，分别用来取代char*和char**的相关操作。Buf和Vec这两个数据结构非常简单易懂，其他C语言项目如有需要，可以比较方便的拿过去使用，因此记录在此。 src/lib9/cleanname.c Unix下的路径压缩功能 cmd/dist/windows.c windows平台相关的一些功能函数 src/unicode/utf8/utf8.go utf8编码问题 src/io/pipe.go 进程内的单工管道 src/net/pipe.go 进程内的双工管道  1. src/cmd/dist/buf.c Buf定义 // A Buf is a byte buffer, like Go&amp;#39;s []byte. typedef struct Buf Buf; struct Buf { char *p; int len; int cap; }; 对Buf结构相关的一些操作  void binit(Buf *b) 初始化一个Buf void breset(Buf *b) 重置Buf，使之长度为0。类似于C++中的std::string::clear()，其数据内存不释放，但数据长度字段设为0 void bfree(Buf *b) 释放掉Buf内部的内存，并调用binit初始化这个Buf void bgrow(Buf *b, int n) 增长Buf内部的内存，确保至少还能容纳n字节数据 void bwrite(Buf *b, void *v, int n) 将从v地址开始的n字节数据追加写入Buf中。类似于C++中的std::string::append(v,n) void bwritestr(Buf *b, char *p) 将字符串p追加写入Buf中，会自动调用strlen(p)计算p的长度。类似于C++中的std::string::append(p) char* bstr(Buf *b) 返回一个NUL结束的字符串指针，该指针指向Buf内部，外部调用者不能释放该指针。类似于C++中的std::string::c_str() char* btake(Buf *b) 返回一个NUL结束的字符串指针，外部调用者需要自己释放该指针。 void bwriteb(Buf *dst, Buf *src) 将Bufsrc追加到dst中，src保持不变。类似于C++中的std::string::append(s) bool bequal(Buf *s, Buf *t) 判断两个Buf是否相等。类似于C++中的std::string::compare(s) == 0 void bsubst(Buf *b, char *x, char *y) 使用子串y替换掉Buf中所有的x  Vec定义 // A Vec is a string vector, like Go&amp;#39;s []string.</description>
+    </item>
+    
+    <item>
+      <title>发布一个使用简单的绘图工具</title>
+      <link>http://zieckey.github.io/2014/12/27/gochart-info/</link>
+      <pubDate>Sat, 27 Dec 2014 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2014/12/27/gochart-info/</guid>
+      <description>gochart是仿照goplot使用golang和highcharts开源库制作的一个使用起来非常简单的绘制图表的工具，图表风格有曲线图、折线图、面积图、柱状图、饼图等。编译好的gochart只有一个二进制文件，不依赖任何库/网络。
+直接下载二进制 Win7 amd64
+从源码安装 直接只用命令go get -u github.com/zieckey/gochart即可。该命令会自动处理好依赖的开源项目：
+ https://github.com/zieckey/goini https://github.com/bitly/go-simplejson  使用方法  解压下载包后，进入解压目录，可以看到一个gochart的可执行文件和一些*.chart文件，这些chart文件是默认的一些数据文件样例。可以在这些chart文件的目录执行gochart，然后通过浏览器访问http://localhost:8000就可以看到图表了。 可以把gochart工具放到您的PATH中，在*.chart文件所在的目录执行gochart即可。 chart文件必须是.chart后缀名，内容可以参考源码examples目录中的例子。启动gochart的目录如果有多个chart文件，可以通过不断刷新网页来切换图表。  示例2:曲线图数据格式样例 该示例数据格式与曲线图、折线图、面积图、(横向/纵向)柱状图通用。通过改变ChartType可以展现不同类型的图，如下：
+ spline 曲线图 line 折线图 bar 横向柱状图 column 纵向柱状图 area 面积图  # The chart type , option : spline/line/bar/column/area ChartType = spline Title = Source: WorldClimate.com SubTitle = Monthly Average Temperature ValueSuffix = °C # The x Axis numbers. The count this numbers MUST be the same with the data series XAxisNumbers = 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 # The y Axis text YAxisText = Temperature (°C) # The data and the name of the lines Data|Tokyo = 7.</description>
+    </item>
+    
+    <item>
+      <title>Golang1.4资源下载</title>
+      <link>http://zieckey.github.io/2014/12/15/golang1.4-resource-download/</link>
+      <pubDate>Mon, 15 Dec 2014 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2014/12/15/golang1.4-resource-download/</guid>
+      <description>当前golang官方主页背墙，且有些golang.org/x下面的库也下载不到，因此我将这项资源统一放在这里供大家下载。
+golang.org/x打包下载</description>
+    </item>
+    
+    <item>
+      <title>Golang写的HTTP服务与Nginx对比</title>
+      <link>http://zieckey.github.io/2014/12/13/golang-vs-nginx-at-httpecho/</link>
+      <pubDate>Sat, 13 Dec 2014 00:00:00 +0000</pubDate>
+      
+      <guid>http://zieckey.github.io/2014/12/13/golang-vs-nginx-at-httpecho/</guid>
+      <description>Golang写网络程序的确很简单，一个HTTP Echo服务，几行源码就可以搞定。Golang源码如下：
+package main import ( &amp;#34;log&amp;#34; &amp;#34;net/http&amp;#34; &amp;#34;io/ioutil&amp;#34; ) func handler(w http.ResponseWriter, r *http.Request) { buf, err := ioutil.ReadAll(r.Body) //Read the http body 	if err == nil { w.Write(buf) return } w.WriteHeader(403) } func main() { http.HandleFunc(&amp;#34;/echo&amp;#34;, handler) log.Fatal(http.ListenAndServe(&amp;#34;:8091&amp;#34;, nil)) } Nginx直接使用echo module,配置文件如下：
+worker_processes 24; #daemon off; events { worker_connections 4096; } http { include mime.types; default_type application/octet-stream; sendfile on; keepalive_timeout 65; server { listen 8090; server_name localhost; location /echo { echo_read_request_body; echo_request_body; } location / { root html; index index.</description>
+    </item>
+    
+  </channel>
+</rss>
