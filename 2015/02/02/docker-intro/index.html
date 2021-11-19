@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN" lang="zh-CN">
 <head>
   <link href="https://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
@@ -20,8 +20,8 @@
 
 
   
-  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
-  <link rel="shortcut icon" href="/favicon.png">
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="http://blog.codeg.cn/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="http://blog.codeg.cn/favicon.png">
 
   
   
@@ -33,14 +33,14 @@
     <div class="sidebar-about">
       <a href="http://blog.codeg.cn"><h1>CodeG Blog</h1></a>
       <p class="lead">
-      An elegant open source and mobile first theme for <a href="http://hugo.spf13.com">hugo</a> made by <a href="http://twitter.com/mdo">@mdo</a>. Originally made for Jekyll.
+       思路决定出路，态度决定高度。 
       </p>
     </div>
 
     <nav>
       <ul class="sidebar-nav">
         <li><a href="http://blog.codeg.cn">Home</a> </li>
-        
+        <li><a href="http://blog.codeg.cn/post/"> 技术文章 </a></li><li><a href="http://blog.codeg.cn/about/"> 关于我 </a></li>
       </ul>
     </nav>
 
@@ -77,8 +77,8 @@ sudo HTTP_PROXY=http://proxy_server:port docker -d &amp;
 输入<code>exit</code>即可退出docker运行环境。</p>
 <h3 id="构建自己的nginx镜像">构建自己的nginx镜像</h3>
 <p>我们可以通过Dockerfile来构建镜像。下面是一个示例：</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">~$ mkdir -p docker/nginx
-~$ cd docker/nginx/
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell">~$ mkdir -p docker/nginx
+~$ <span class="nb">cd</span> docker/nginx/
 ~/docker/nginx$ vim Dockerfile
 </code></pre></div><p>在文件中输入下列信息：</p>
 <pre tabindex="0"><code>FROM ubuntu
@@ -151,11 +151,11 @@ lo        Link encap:Local Loopback
 <h3 id="从c源码构建自己的镜像">从C源码构建自己的镜像</h3>
 <p>上面是直接通过apt-get从网络下载一个已经编译好的nginx二进制包来构建我们的镜像，下面我们看看如何通过源代码方式构建我们的自定义的镜像。</p>
 <p>源代码文件main.c:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
-    printf(<span style="color:#e6db74">&#34;hello world!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-}
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span><span class="cp"></span><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;hello world!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
 </code></pre></div><p>Dockerfile内容如下：</p>
 <pre tabindex="0"><code>FROM ubuntu
 MAINTAINER zieckey@codeg.cn

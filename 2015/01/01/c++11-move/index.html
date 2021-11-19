@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN" lang="zh-CN">
 <head>
   <link href="https://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
@@ -20,8 +20,8 @@
 
 
   
-  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
-  <link rel="shortcut icon" href="/favicon.png">
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="http://blog.codeg.cn/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="http://blog.codeg.cn/favicon.png">
 
   
   
@@ -33,14 +33,14 @@
     <div class="sidebar-about">
       <a href="http://blog.codeg.cn"><h1>CodeG Blog</h1></a>
       <p class="lead">
-      An elegant open source and mobile first theme for <a href="http://hugo.spf13.com">hugo</a> made by <a href="http://twitter.com/mdo">@mdo</a>. Originally made for Jekyll.
+       思路决定出路，态度决定高度。 
       </p>
     </div>
 
     <nav>
       <ul class="sidebar-nav">
         <li><a href="http://blog.codeg.cn">Home</a> </li>
-        
+        <li><a href="http://blog.codeg.cn/post/"> 技术文章 </a></li><li><a href="http://blog.codeg.cn/about/"> 关于我 </a></li>
       </ul>
     </nav>
 
@@ -55,8 +55,8 @@
   <p><code>std::move</code>作用：如果其类型支持移动的话，会无条件的将其参数（可能是左值）强制转换为右值引用，从而表示其可以移动，它使得编译器随后能够移动（而不是复制）在参数中传递的值。如果其类型不支持移动，则将进行复制。</p>
 <p>因此可以将<code>std::move</code>看着是一个用于提示编译器优化的函数，过去的c++98中，由于无法将作为右值的临时变量从左值当中区别出来，所以程序运行时有大量临时变量白白的创建后又立刻销毁。</p>
 <h2 id="stdmove定义">std::move定义</h2>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">	template<span style="color:#f92672">&lt;</span>class Type<span style="color:#f92672">&gt;</span>
-    <span style="color:#66d9ef">typename</span> remove_reference<span style="color:#f92672">&lt;</span>Type<span style="color:#f92672">&gt;::</span>type<span style="color:#f92672">&amp;&amp;</span> move(Type<span style="color:#f92672">&amp;&amp;</span> Arg) noexcept;
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c">	<span class="n">template</span><span class="o">&lt;</span><span class="n">class</span> <span class="n">Type</span><span class="o">&gt;</span>
+    <span class="kr">typename</span> <span class="n">remove_reference</span><span class="o">&lt;</span><span class="n">Type</span><span class="o">&gt;::</span><span class="n">type</span><span class="o">&amp;&amp;</span> <span class="n">move</span><span class="p">(</span><span class="n">Type</span><span class="o">&amp;&amp;</span> <span class="n">Arg</span><span class="p">)</span> <span class="n">noexcept</span><span class="p">;</span>
 </code></pre></div><h5 id="参数说明">参数说明：</h5>
 <ul>
 <li>Type 一种从 <code>Arg</code> 中传递的参数类型推导出的类型（与<strong>引用折叠规则</strong>一起）。</li>
@@ -65,93 +65,93 @@
 <h5 id="返回值">返回值</h5>
 <p>返回<code>Arg</code>的右值引用，而无论其类型是否是引用类型。</p>
 <h2 id="示例代码">示例代码</h2>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;iostream&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;utility&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span>
-class Moveable{
-public:
-    Moveable() <span style="color:#f92672">:</span> i(new <span style="color:#66d9ef">int</span>(<span style="color:#ae81ff">3</span>)) {
-        std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;Moveable::Moveable() 构造函数 : ptr(i)=&#34;</span> <span style="color:#f92672">&lt;&lt;</span> i <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-    }
-    <span style="color:#f92672">~</span>Moveable() { 
-        std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;Moveable::~Moveable() 析构函数 ptr(i)=&#34;</span> <span style="color:#f92672">&lt;&lt;</span> i <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-        <span style="color:#66d9ef">if</span> (i) {
-            delete i;
-            i <span style="color:#f92672">=</span> nullptr;
-        }
-    }
-    Moveable(<span style="color:#66d9ef">const</span> Moveable <span style="color:#f92672">&amp;</span> m) <span style="color:#f92672">:</span> i(new <span style="color:#66d9ef">int</span>(<span style="color:#f92672">*</span>m.i)) {
-        std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;Moveable::Moveable(const Moveable &amp;) 拷贝构造函数 ptr(i)=&#34;</span> <span style="color:#f92672">&lt;&lt;</span> i <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-    }
-    Moveable(Moveable <span style="color:#f92672">&amp;&amp;</span> m) {
-        this<span style="color:#f92672">-&gt;</span>i <span style="color:#f92672">=</span> m.i;
-        m.i <span style="color:#f92672">=</span> nullptr;
-        std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;Moveable::Moveable(Moveable &amp;&amp;) 移动构造函数 ptr(i)=&#34;</span> <span style="color:#f92672">&lt;&lt;</span> i <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-    }
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;utility&gt;</span><span class="cp">
+</span><span class="cp"></span>
+<span class="n">class</span> <span class="n">Moveable</span><span class="p">{</span>
+<span class="nl">public</span><span class="p">:</span>
+    <span class="n">Moveable</span><span class="p">()</span> <span class="o">:</span> <span class="n">i</span><span class="p">(</span><span class="n">new</span> <span class="kt">int</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;Moveable::Moveable() 构造函数 : ptr(i)=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">i</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="o">~</span><span class="n">Moveable</span><span class="p">()</span> <span class="p">{</span> 
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;Moveable::~Moveable() 析构函数 ptr(i)=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">i</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">delete</span> <span class="n">i</span><span class="p">;</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">nullptr</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="n">Moveable</span><span class="p">(</span><span class="k">const</span> <span class="n">Moveable</span> <span class="o">&amp;</span> <span class="n">m</span><span class="p">)</span> <span class="o">:</span> <span class="n">i</span><span class="p">(</span><span class="n">new</span> <span class="kt">int</span><span class="p">(</span><span class="o">*</span><span class="n">m</span><span class="p">.</span><span class="n">i</span><span class="p">))</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;Moveable::Moveable(const Moveable &amp;) 拷贝构造函数 ptr(i)=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">i</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="n">Moveable</span><span class="p">(</span><span class="n">Moveable</span> <span class="o">&amp;&amp;</span> <span class="n">m</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">this</span><span class="o">-&gt;</span><span class="n">i</span> <span class="o">=</span> <span class="n">m</span><span class="p">.</span><span class="n">i</span><span class="p">;</span>
+        <span class="n">m</span><span class="p">.</span><span class="n">i</span> <span class="o">=</span> <span class="n">nullptr</span><span class="p">;</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;Moveable::Moveable(Moveable &amp;&amp;) 移动构造函数 ptr(i)=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">i</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+    <span class="p">}</span>
 
-    <span style="color:#66d9ef">void</span> Set(<span style="color:#66d9ef">int</span> x) {
-        <span style="color:#f92672">*</span>i <span style="color:#f92672">=</span> x;
-    }
+    <span class="kt">void</span> <span class="n">Set</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span> <span class="p">{</span>
+        <span class="o">*</span><span class="n">i</span> <span class="o">=</span> <span class="n">x</span><span class="p">;</span>
+    <span class="p">}</span>
 
-    <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">int</span><span style="color:#f92672">*</span> Get() {
-        <span style="color:#66d9ef">return</span> i;
-    }
-private:
-    <span style="color:#66d9ef">int</span><span style="color:#f92672">*</span> i;
-};
+    <span class="k">const</span> <span class="kt">int</span><span class="o">*</span> <span class="n">Get</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">i</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="nl">private</span><span class="p">:</span>
+    <span class="kt">int</span><span class="o">*</span> <span class="n">i</span><span class="p">;</span>
+<span class="p">};</span>
 
-<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">stdmove_test1</span>() {
-    Moveable a;
-    a.Set(<span style="color:#ae81ff">5</span>);
-    <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">int</span><span style="color:#f92672">*</span> ptr <span style="color:#f92672">=</span> a.Get();
+<span class="kt">void</span> <span class="nf">stdmove_test1</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">Moveable</span> <span class="n">a</span><span class="p">;</span>
+    <span class="n">a</span><span class="p">.</span><span class="n">Set</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span>
+    <span class="k">const</span> <span class="kt">int</span><span class="o">*</span> <span class="n">ptr</span> <span class="o">=</span> <span class="n">a</span><span class="p">.</span><span class="n">Get</span><span class="p">();</span>
 
-    Moveable b(a); <span style="color:#75715e">// 这里会为b.i重新分配内存
-</span><span style="color:#75715e"></span>
-    std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;a ptr=&#34;</span> <span style="color:#f92672">&lt;&lt;</span> a.Get() <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>;
-    std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;b ptr=&#34;</span> <span style="color:#f92672">&lt;&lt;</span> b.Get() <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>;
-    H_TEST_ASSERT(a.Get() <span style="color:#f92672">==</span> ptr);
-    H_TEST_ASSERT(a.Get() <span style="color:#f92672">!=</span> nullptr);
-    H_TEST_ASSERT(a.Get() <span style="color:#f92672">!=</span> b.Get());
-    H_TEST_ASSERT(b.Get() <span style="color:#f92672">!=</span> nullptr);
+    <span class="n">Moveable</span> <span class="n">b</span><span class="p">(</span><span class="n">a</span><span class="p">);</span> <span class="c1">// 这里会为b.i重新分配内存
+</span><span class="c1"></span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;a ptr=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">a</span><span class="p">.</span><span class="n">Get</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">;</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;b ptr=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">b</span><span class="p">.</span><span class="n">Get</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">;</span>
+    <span class="n">H_TEST_ASSERT</span><span class="p">(</span><span class="n">a</span><span class="p">.</span><span class="n">Get</span><span class="p">()</span> <span class="o">==</span> <span class="n">ptr</span><span class="p">);</span>
+    <span class="n">H_TEST_ASSERT</span><span class="p">(</span><span class="n">a</span><span class="p">.</span><span class="n">Get</span><span class="p">()</span> <span class="o">!=</span> <span class="n">nullptr</span><span class="p">);</span>
+    <span class="n">H_TEST_ASSERT</span><span class="p">(</span><span class="n">a</span><span class="p">.</span><span class="n">Get</span><span class="p">()</span> <span class="o">!=</span> <span class="n">b</span><span class="p">.</span><span class="n">Get</span><span class="p">());</span>
+    <span class="n">H_TEST_ASSERT</span><span class="p">(</span><span class="n">b</span><span class="p">.</span><span class="n">Get</span><span class="p">()</span> <span class="o">!=</span> <span class="n">nullptr</span><span class="p">);</span>
 
-    <span style="color:#75715e">/* Output:
-</span><span style="color:#75715e">    Moveable::Moveable() 构造函数 : ptr(i)=006AC498
-</span><span style="color:#75715e">    Moveable::Moveable(const Moveable &amp;) 拷贝构造函数 ptr(i)=006AC4D8
-</span><span style="color:#75715e">    a ptr=006AC498
-</span><span style="color:#75715e">    b ptr=006AC4D8
-</span><span style="color:#75715e">    Moveable::~Moveable() 析构函数 ptr(i)=006AC4D8
-</span><span style="color:#75715e">    Moveable::~Moveable() 析构函数 ptr(i)=006AC498
-</span><span style="color:#75715e">    */</span>
-}
+    <span class="cm">/* Output:
+</span><span class="cm">    Moveable::Moveable() 构造函数 : ptr(i)=006AC498
+</span><span class="cm">    Moveable::Moveable(const Moveable &amp;) 拷贝构造函数 ptr(i)=006AC4D8
+</span><span class="cm">    a ptr=006AC498
+</span><span class="cm">    b ptr=006AC4D8
+</span><span class="cm">    Moveable::~Moveable() 析构函数 ptr(i)=006AC4D8
+</span><span class="cm">    Moveable::~Moveable() 析构函数 ptr(i)=006AC498
+</span><span class="cm">    */</span>
+<span class="p">}</span>
 
 
-<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">stdmove_test2</span>() {
-    Moveable a;
-    a.Set(<span style="color:#ae81ff">5</span>);
-    <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">int</span><span style="color:#f92672">*</span> ptr <span style="color:#f92672">=</span> a.Get();
+<span class="kt">void</span> <span class="nf">stdmove_test2</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">Moveable</span> <span class="n">a</span><span class="p">;</span>
+    <span class="n">a</span><span class="p">.</span><span class="n">Set</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span>
+    <span class="k">const</span> <span class="kt">int</span><span class="o">*</span> <span class="n">ptr</span> <span class="o">=</span> <span class="n">a</span><span class="p">.</span><span class="n">Get</span><span class="p">();</span>
 
-    Moveable b(std<span style="color:#f92672">::</span>move(a)); <span style="color:#75715e">// 会调用移动构造函数，因此不会为b.i重新分配内存，而是直接使用a.i指向的内存
-</span><span style="color:#75715e"></span>
-    <span style="color:#75715e">// 调用 std::move(a) 转换，a.i就变为空指针了。这是需要重点关注的地方
-</span><span style="color:#75715e"></span>
+    <span class="n">Moveable</span> <span class="n">b</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">a</span><span class="p">));</span> <span class="c1">// 会调用移动构造函数，因此不会为b.i重新分配内存，而是直接使用a.i指向的内存
+</span><span class="c1"></span>
+    <span class="c1">// 调用 std::move(a) 转换，a.i就变为空指针了。这是需要重点关注的地方
+</span><span class="c1"></span>
 
-    std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;a ptr=&#34;</span> <span style="color:#f92672">&lt;&lt;</span> a.Get() <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>;
-    std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;b ptr=&#34;</span> <span style="color:#f92672">&lt;&lt;</span> b.Get() <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>;
-    H_TEST_ASSERT(a.Get() <span style="color:#f92672">!=</span> ptr);
-    H_TEST_ASSERT(a.Get() <span style="color:#f92672">==</span> nullptr);
-    H_TEST_ASSERT(a.Get() <span style="color:#f92672">!=</span> b.Get());
-    H_TEST_ASSERT(b.Get() <span style="color:#f92672">==</span> ptr);
-    H_TEST_ASSERT(b.Get() <span style="color:#f92672">!=</span> nullptr);
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;a ptr=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">a</span><span class="p">.</span><span class="n">Get</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">;</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;b ptr=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">b</span><span class="p">.</span><span class="n">Get</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">;</span>
+    <span class="n">H_TEST_ASSERT</span><span class="p">(</span><span class="n">a</span><span class="p">.</span><span class="n">Get</span><span class="p">()</span> <span class="o">!=</span> <span class="n">ptr</span><span class="p">);</span>
+    <span class="n">H_TEST_ASSERT</span><span class="p">(</span><span class="n">a</span><span class="p">.</span><span class="n">Get</span><span class="p">()</span> <span class="o">==</span> <span class="n">nullptr</span><span class="p">);</span>
+    <span class="n">H_TEST_ASSERT</span><span class="p">(</span><span class="n">a</span><span class="p">.</span><span class="n">Get</span><span class="p">()</span> <span class="o">!=</span> <span class="n">b</span><span class="p">.</span><span class="n">Get</span><span class="p">());</span>
+    <span class="n">H_TEST_ASSERT</span><span class="p">(</span><span class="n">b</span><span class="p">.</span><span class="n">Get</span><span class="p">()</span> <span class="o">==</span> <span class="n">ptr</span><span class="p">);</span>
+    <span class="n">H_TEST_ASSERT</span><span class="p">(</span><span class="n">b</span><span class="p">.</span><span class="n">Get</span><span class="p">()</span> <span class="o">!=</span> <span class="n">nullptr</span><span class="p">);</span>
 
-    <span style="color:#75715e">/* Output:
-</span><span style="color:#75715e">    Moveable::Moveable() 构造函数 : ptr(i)=006AC498
-</span><span style="color:#75715e">    Moveable::Moveable(Moveable &amp;&amp;) 移动构造函数 ptr(i)=006AC498
-</span><span style="color:#75715e">    a ptr=00000000
-</span><span style="color:#75715e">    b ptr=006AC498
-</span><span style="color:#75715e">    Moveable::~Moveable() 析构函数 ptr(i)=006AC498
-</span><span style="color:#75715e">    Moveable::~Moveable() 析构函数 ptr(i)=00000000
-</span><span style="color:#75715e">    */</span>
-}
+    <span class="cm">/* Output:
+</span><span class="cm">    Moveable::Moveable() 构造函数 : ptr(i)=006AC498
+</span><span class="cm">    Moveable::Moveable(Moveable &amp;&amp;) 移动构造函数 ptr(i)=006AC498
+</span><span class="cm">    a ptr=00000000
+</span><span class="cm">    b ptr=006AC498
+</span><span class="cm">    Moveable::~Moveable() 析构函数 ptr(i)=006AC498
+</span><span class="cm">    Moveable::~Moveable() 析构函数 ptr(i)=00000000
+</span><span class="cm">    */</span>
+<span class="p">}</span>
 </code></pre></div><h2 id="lvalues-和-rvalues">Lvalues 和 Rvalues</h2>
 <p>每个 C++ 表达式不是左值(Lvalue)就是右值(Rvalue)。左值是指在单个表达式的外部仍然需要保留的对象。可以将左值视为具有名称的对象。所有变量（包括不能更改的 (const) 变量）都是左值。 左值是一个不在使用它的表达式的外部保留的临时值。 若要更好地了解左值和右值之间的区别，请考虑下面的示例：</p>
 <pre><code>// lvalues_and_rvalues1.cpp

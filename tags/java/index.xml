@@ -2,11 +2,12 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Java on CodeG Blog</title>
-    <link>http://blog.codeg.cn/tags/java/</link>
+    <link>http://blog.codeg.cn/tags/Java/</link>
     <description>Recent content in Java on CodeG Blog</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language>
-    <lastBuildDate>Sun, 14 Dec 2014 00:00:00 +0000</lastBuildDate><atom:link href="http://blog.codeg.cn/tags/java/index.xml" rel="self" type="application/rss+xml" />
+    <language>zh-CN</language>
+    <copyright>Copyright (c) 2015. All rights reserved.</copyright>
+    <lastBuildDate>Sun, 14 Dec 2014 00:00:00 +0000</lastBuildDate><atom:link href="http://blog.codeg.cn/tags/Java/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>C&#43;&#43;与Java垃圾回收的区别</title>
       <link>http://blog.codeg.cn/2014/12/14/gc-cpp-java/</link>

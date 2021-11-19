@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN" lang="zh-CN">
 <head>
   <link href="https://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
@@ -20,8 +20,8 @@
 
 
   
-  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
-  <link rel="shortcut icon" href="/favicon.png">
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="http://blog.codeg.cn/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="http://blog.codeg.cn/favicon.png">
 
   
   
@@ -33,14 +33,14 @@
     <div class="sidebar-about">
       <a href="http://blog.codeg.cn"><h1>CodeG Blog</h1></a>
       <p class="lead">
-      An elegant open source and mobile first theme for <a href="http://hugo.spf13.com">hugo</a> made by <a href="http://twitter.com/mdo">@mdo</a>. Originally made for Jekyll.
+       思路决定出路，态度决定高度。 
       </p>
     </div>
 
     <nav>
       <ul class="sidebar-nav">
         <li><a href="http://blog.codeg.cn">Home</a> </li>
-        
+        <li><a href="http://blog.codeg.cn/post/"> 技术文章 </a></li><li><a href="http://blog.codeg.cn/about/"> 关于我 </a></li>
       </ul>
     </nav>
 
@@ -103,26 +103,26 @@
 </ol>
 <h3 id="源码阅读">源码阅读</h3>
 <h4 id="quicpacketpublicheader">QuicPacketPublicHeader</h4>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">struct</span> QuicPacketPublicHeader {
-  <span style="color:#75715e">// Universal header. All QuicPacket headers will have a connection_id and
-</span><span style="color:#75715e"></span>  <span style="color:#75715e">// public flags.
-</span><span style="color:#75715e"></span>  QuicConnectionId connection_id;
-  QuicConnectionIdLength connection_id_length;
-  <span style="color:#66d9ef">bool</span> reset_flag;
-  <span style="color:#66d9ef">bool</span> version_flag;
-  QuicSequenceNumberLength sequence_number_length;
-  QuicVersionVector versions;
-};
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="k">struct</span> <span class="n">QuicPacketPublicHeader</span> <span class="p">{</span>
+  <span class="c1">// Universal header. All QuicPacket headers will have a connection_id and
+</span><span class="c1"></span>  <span class="c1">// public flags.
+</span><span class="c1"></span>  <span class="n">QuicConnectionId</span> <span class="n">connection_id</span><span class="p">;</span>
+  <span class="n">QuicConnectionIdLength</span> <span class="n">connection_id_length</span><span class="p">;</span>
+  <span class="kt">bool</span> <span class="n">reset_flag</span><span class="p">;</span>
+  <span class="kt">bool</span> <span class="n">version_flag</span><span class="p">;</span>
+  <span class="n">QuicSequenceNumberLength</span> <span class="n">sequence_number_length</span><span class="p">;</span>
+  <span class="n">QuicVersionVector</span> <span class="n">versions</span><span class="p">;</span>
+<span class="p">};</span>
 </code></pre></div><h4 id="quicpacketheader">QuicPacketHeader</h4>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">struct</span> QuicPacketHeader {
-  QuicPacketPublicHeader public_header;
-  <span style="color:#66d9ef">bool</span> fec_flag;
-  <span style="color:#66d9ef">bool</span> entropy_flag;
-  QuicPacketEntropyHash entropy_hash;
-  QuicPacketSequenceNumber packet_sequence_number;
-  InFecGroup is_in_fec_group;
-  QuicFecGroupNumber fec_group;
-};
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="k">struct</span> <span class="n">QuicPacketHeader</span> <span class="p">{</span>
+  <span class="n">QuicPacketPublicHeader</span> <span class="n">public_header</span><span class="p">;</span>
+  <span class="kt">bool</span> <span class="n">fec_flag</span><span class="p">;</span>
+  <span class="kt">bool</span> <span class="n">entropy_flag</span><span class="p">;</span>
+  <span class="n">QuicPacketEntropyHash</span> <span class="n">entropy_hash</span><span class="p">;</span>
+  <span class="n">QuicPacketSequenceNumber</span> <span class="n">packet_sequence_number</span><span class="p">;</span>
+  <span class="n">InFecGroup</span> <span class="n">is_in_fec_group</span><span class="p">;</span>
+  <span class="n">QuicFecGroupNumber</span> <span class="n">fec_group</span><span class="p">;</span>
+<span class="p">};</span>
 </code></pre></div><h4 id="void-quicdispatcheronunauthenticatedheaderconst-quicpacketheader-header">void QuicDispatcher::OnUnauthenticatedHeader(const QuicPacketHeader&amp; header)</h4>
 
 </div>

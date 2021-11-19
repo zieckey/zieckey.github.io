@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN" lang="zh-CN">
 <head>
   <link href="https://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
@@ -20,8 +20,8 @@
 
 
   
-  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
-  <link rel="shortcut icon" href="/favicon.png">
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="http://blog.codeg.cn/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="http://blog.codeg.cn/favicon.png">
 
   
   
@@ -33,14 +33,14 @@
     <div class="sidebar-about">
       <a href="http://blog.codeg.cn"><h1>CodeG Blog</h1></a>
       <p class="lead">
-      An elegant open source and mobile first theme for <a href="http://hugo.spf13.com">hugo</a> made by <a href="http://twitter.com/mdo">@mdo</a>. Originally made for Jekyll.
+       思路决定出路，态度决定高度。 
       </p>
     </div>
 
     <nav>
       <ul class="sidebar-nav">
         <li><a href="http://blog.codeg.cn">Home</a> </li>
-        
+        <li><a href="http://blog.codeg.cn/post/"> 技术文章 </a></li><li><a href="http://blog.codeg.cn/about/"> 关于我 </a></li>
       </ul>
     </nav>
 
@@ -57,7 +57,7 @@
 <h3 id="1-在其主页上httpscoverallsiohttpscoverallsio上开通你的项目">1. 在其主页上<a href="https://coveralls.io/">https://coveralls.io/</a>上开通你的项目</h3>
 <h3 id="2-找到项目的-repo_token">2. 找到项目的 repo_token</h3>
 <p>请参考下图中的标红部分：</p>
-<p><!-- raw HTML omitted --><img src="/images/githubpages/coverall/repo_token.png" alt=""><!-- raw HTML omitted --></p>
+<p><!-- raw HTML omitted --><img src="http://blog.codeg.cn/images/githubpages/coverall/repo_token.png" alt=""><!-- raw HTML omitted --></p>
 <h3 id="3-加密repo_token">3. 加密repo_token</h3>
 <p>为什么要加密repo_token?因为，这个repo_token是你的项目在coverall.io网站的唯一token，不能公开，但是又希望travis-ci.com网站使用这个repo_token，因此travis提供一个非对称加密工具来加密这个token串。详细原因和使用介绍可以参考<a href="http://docs.travis-ci.com/user/encryption-keys/">官方文档</a></p>
 <p>进入你的github项目所在目录，输入下列命令<code>travis encrypt COVERALLS_TOKEN=aaaaa</code>(记得替换你自己的repo_token)来加密上述repo_token，如下：</p>

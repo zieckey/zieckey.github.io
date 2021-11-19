@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN" lang="zh-CN">
 <head>
   <link href="https://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
@@ -20,8 +20,8 @@
 
 
   
-  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
-  <link rel="shortcut icon" href="/favicon.png">
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="http://blog.codeg.cn/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="http://blog.codeg.cn/favicon.png">
 
   
   
@@ -33,14 +33,14 @@
     <div class="sidebar-about">
       <a href="http://blog.codeg.cn"><h1>CodeG Blog</h1></a>
       <p class="lead">
-      An elegant open source and mobile first theme for <a href="http://hugo.spf13.com">hugo</a> made by <a href="http://twitter.com/mdo">@mdo</a>. Originally made for Jekyll.
+       思路决定出路，态度决定高度。 
       </p>
     </div>
 
     <nav>
       <ul class="sidebar-nav">
         <li><a href="http://blog.codeg.cn">Home</a> </li>
-        
+        <li><a href="http://blog.codeg.cn/post/"> 技术文章 </a></li><li><a href="http://blog.codeg.cn/about/"> 关于我 </a></li>
       </ul>
     </nav>
 
@@ -56,49 +56,49 @@
 <p><code>go build</code>和<code>go install</code>命令，可以使用参数 <code>-buildmode</code> 来指定生成哪种类型的二进制目标文件。请见<a href="https://golang.org/cmd/go/">https://golang.org/cmd/go/#Description of build modes</a> 详细说明。</p>
 <p>当前我们使用 <code>-buildmode=c-archive</code> 来示例和测试。</p>
 <p>Golang源文件：</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">
-<span style="color:#75715e">// file hello.go
-</span><span style="color:#75715e"></span><span style="color:#f92672">package</span> <span style="color:#a6e22e">main</span>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go">
+<span class="c1">// file hello.go
+</span><span class="c1"></span><span class="kn">package</span> <span class="nx">main</span>
 
-  <span style="color:#a6e22e">port</span> <span style="color:#e6db74">&#34;C&#34;</span>
-<span style="color:#f92672">import</span> <span style="color:#e6db74">&#34;fmt&#34;</span>
+  <span class="nx">port</span> <span class="s">&#34;C&#34;</span>
+<span class="kn">import</span> <span class="s">&#34;fmt&#34;</span>
 
-<span style="color:#75715e">//export SayHello
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">SayHello</span>(<span style="color:#a6e22e">name</span> <span style="color:#66d9ef">string</span>) {
-    <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;func in Golang SayHello says: Hello, %s!\n&#34;</span>, <span style="color:#a6e22e">name</span>)
-}
+<span class="c1">//export SayHello
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">SayHello</span><span class="p">(</span><span class="nx">name</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;func in Golang SayHello says: Hello, %s!\n&#34;</span><span class="p">,</span> <span class="nx">name</span><span class="p">)</span>
+<span class="p">}</span>
 
-<span style="color:#75715e">//export SayHelloByte
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">SayHelloByte</span>(<span style="color:#a6e22e">name</span> []<span style="color:#66d9ef">byte</span>) {
-    <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;func in Golang SayHelloByte says: Hello, %s!\n&#34;</span>, string(<span style="color:#a6e22e">name</span>))
-}
+<span class="c1">//export SayHelloByte
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">SayHelloByte</span><span class="p">(</span><span class="nx">name</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;func in Golang SayHelloByte says: Hello, %s!\n&#34;</span><span class="p">,</span> <span class="nb">string</span><span class="p">(</span><span class="nx">name</span><span class="p">))</span>
+<span class="p">}</span>
 
-<span style="color:#75715e">//export SayBye
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">SayBye</span>() {
-    <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#e6db74">&#34;func in Golang SayBye says: Bye!&#34;</span>)
-}
+<span class="c1">//export SayBye
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">SayBye</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;func in Golang SayBye says: Bye!&#34;</span><span class="p">)</span>
+<span class="p">}</span>
 
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
-    <span style="color:#75715e">// We need the main function to make possible
-</span><span style="color:#75715e"></span>    <span style="color:#75715e">// CGO compiler to compile the package as C shared library
-</span><span style="color:#75715e"></span>}
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="c1">// We need the main function to make possible
+</span><span class="c1"></span>    <span class="c1">// CGO compiler to compile the package as C shared library
+</span><span class="c1"></span><span class="p">}</span>
 </code></pre></div><p>使用命令<code>go build -buildmode=c-archive -o libhello.a hello.go</code>可以生成一个C语言静态库<code>libhello.a</code>和头文件<code>libhello.h</code>。
 然后我们再写个C语言程序来调用这个库，如下：</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">// file hello.c
-</span><span style="color:#75715e"></span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;libhello.h&#34;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span>
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
-  printf(<span style="color:#e6db74">&#34;This is a C Application.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-  GoString name <span style="color:#f92672">=</span> {(<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span>)<span style="color:#e6db74">&#34;Jane&#34;</span>, <span style="color:#ae81ff">4</span>};
-  SayHello(name);
-  GoSlice buf <span style="color:#f92672">=</span> {(<span style="color:#66d9ef">void</span><span style="color:#f92672">*</span>)<span style="color:#e6db74">&#34;Jane&#34;</span>, <span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">4</span>};
-  SayHelloByte(buf);
-  SayBye();
-  <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-}
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="c1">// file hello.c
+</span><span class="c1"></span><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&#34;libhello.h&#34;</span><span class="cp">
+</span><span class="cp"></span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">printf</span><span class="p">(</span><span class="s">&#34;This is a C Application.</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+  <span class="n">GoString</span> <span class="n">name</span> <span class="o">=</span> <span class="p">{(</span><span class="kt">char</span><span class="o">*</span><span class="p">)</span><span class="s">&#34;Jane&#34;</span><span class="p">,</span> <span class="mi">4</span><span class="p">};</span>
+  <span class="n">SayHello</span><span class="p">(</span><span class="n">name</span><span class="p">);</span>
+  <span class="n">GoSlice</span> <span class="n">buf</span> <span class="o">=</span> <span class="p">{(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="s">&#34;Jane&#34;</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">};</span>
+  <span class="n">SayHelloByte</span><span class="p">(</span><span class="n">buf</span><span class="p">);</span>
+  <span class="n">SayBye</span><span class="p">();</span>
+  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
 </code></pre></div><p>使用命令<code>gcc -o hello hello.c libhello.a -pthread</code>来编译生成一个可执行文件<code>hello</code>。执行命令如下：</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ go build -buildmode<span style="color:#f92672">=</span>c-archive -o libhello.a hello.go
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell">$ go build -buildmode<span class="o">=</span>c-archive -o libhello.a hello.go
 $ gcc -o hello hello.c libhello.a -pthread
 $ ./hello 
 This is a C Application.

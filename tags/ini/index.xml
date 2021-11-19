@@ -2,20 +2,19 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>INI on CodeG Blog</title>
-    <link>http://blog.codeg.cn/tags/ini/</link>
+    <link>http://blog.codeg.cn/tags/INI/</link>
     <description>Recent content in INI on CodeG Blog</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language>
-    <lastBuildDate>Sun, 29 May 2016 13:14:00 +0000</lastBuildDate><atom:link href="http://blog.codeg.cn/tags/ini/index.xml" rel="self" type="application/rss+xml" />
+    <language>zh-CN</language>
+    <copyright>Copyright (c) 2015. All rights reserved.</copyright>
+    <lastBuildDate>Sun, 29 May 2016 13:14:00 +0000</lastBuildDate><atom:link href="http://blog.codeg.cn/tags/INI/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>发布一个Golang版本的INI解析器</title>
-      <link>http://blog.codeg.cn/post/2016-05-29-a-new-ini-parser-for-golang/</link>
+      <link>http://blog.codeg.cn/post/blog/2016-05-29-a-new-ini-parser-for-golang/</link>
       <pubDate>Sun, 29 May 2016 13:14:00 +0000</pubDate>
       
-      <guid>http://blog.codeg.cn/post/2016-05-29-a-new-ini-parser-for-golang/</guid>
-      <description>goini 这是一个为Golang开发的读取INI格式文件的库，它还能读取类似于INI格式的key/value对数据。
-goini 的设计目标是简单、灵活、高效，有如下特性：
- 支持标准INI格式 支持节 支持从本地磁盘中读取INI文件 支持从内存数据中读取INI数据 支持解析形如INI格式的key/value对数据，分隔符可以自定义 支持UTF8编码 支持注释符 ; or # 支持级联继承 仅仅只依赖Golang标准库 测试用户100%覆盖  使用时导入 import github.com/zieckey/goini  用法示例 示例1 : 解析INI文件 import github.com/zieckey/goini ini := goini.New() err := ini.ParseFile(filename) if err != nil { fmt.Printf(&amp;#34;parse INI file %v failed : %v\n&amp;#34;, filename, err.Error()) return } v, ok := ini.Get(&amp;#34;the-key&amp;#34;) //... 示例2 ： 解析内存中形如INI格式的数据 raw := []byte(&amp;#34;a:av||b:bv||c:cv||||d:dv||||||&amp;#34;) ini := goini.New() err := ini.Parse(raw, &amp;#34;||&amp;#34;, &amp;#34;:&amp;#34;) if err !</description>
+      <guid>http://blog.codeg.cn/post/blog/2016-05-29-a-new-ini-parser-for-golang/</guid>
+      <description>goini 这是一个为Golang开发的读取INI格式文件的库，它还能读取类似于INI格式的key/value对数据。 goini 的设计目标是简单、灵活、高效，</description>
     </item>
     
   </channel>

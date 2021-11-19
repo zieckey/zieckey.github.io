@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN" lang="zh-CN">
 <head>
   <link href="https://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
@@ -20,8 +20,8 @@
 
 
   
-  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
-  <link rel="shortcut icon" href="/favicon.png">
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="http://blog.codeg.cn/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="http://blog.codeg.cn/favicon.png">
 
   
   
@@ -33,14 +33,14 @@
     <div class="sidebar-about">
       <a href="http://blog.codeg.cn"><h1>CodeG Blog</h1></a>
       <p class="lead">
-      An elegant open source and mobile first theme for <a href="http://hugo.spf13.com">hugo</a> made by <a href="http://twitter.com/mdo">@mdo</a>. Originally made for Jekyll.
+       思路决定出路，态度决定高度。 
       </p>
     </div>
 
     <nav>
       <ul class="sidebar-nav">
         <li><a href="http://blog.codeg.cn">Home</a> </li>
-        
+        <li><a href="http://blog.codeg.cn/post/"> 技术文章 </a></li><li><a href="http://blog.codeg.cn/about/"> 关于我 </a></li>
       </ul>
     </nav>
 
@@ -63,35 +63,35 @@
 </ol>
 <p>上述5个信息中，实际上我们关心的其实只有第5个，其他4个都不是太关心。而且，如果我们想写一段开源代码，这里就把邮箱用户名和密码给暴露了，不太合适。我于是想到了PHP中的<code>mail</code>这个发送邮件的函数来，PHP是如何实现邮件发送的功能呢？我搜素PHP的源码发现在非Windows平台使用的系统自带的<code>sendmail</code>命令来发送的，具体代码请参考: php-5.3.3/ext/standard/mail.c:php_mail</p>
 <p>受此启发，我在golang中也这么实现不就简单了么？下面是源码：</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#f92672">import</span> (
-	<span style="color:#e6db74">&#34;os/exec&#34;</span>
-	<span style="color:#e6db74">&#34;log&#34;</span>
-	<span style="color:#e6db74">&#34;runtime&#34;</span>
-)
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kn">import</span> <span class="p">(</span>
+	<span class="s">&#34;os/exec&#34;</span>
+	<span class="s">&#34;log&#34;</span>
+	<span class="s">&#34;runtime&#34;</span>
+<span class="p">)</span>
 
-<span style="color:#75715e">// SendMail sends an email to the addresses using &#39;mail&#39; command on *nux platform.
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">SendMail</span>(<span style="color:#a6e22e">title</span>, <span style="color:#a6e22e">message</span> <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">email</span> <span style="color:#f92672">...</span><span style="color:#66d9ef">string</span>) <span style="color:#66d9ef">error</span> {
-	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">runtime</span>.<span style="color:#a6e22e">GOOS</span> <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;windows&#34;</span> {
-		<span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;TODO: cannot send email on windows title=[%v] messagebody=[%v]&#34;</span>, <span style="color:#a6e22e">title</span>, <span style="color:#a6e22e">message</span>)
-		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>
-	}
-	<span style="color:#a6e22e">mailCommand</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">exec</span>.<span style="color:#a6e22e">Command</span>(<span style="color:#e6db74">&#34;mail&#34;</span>, <span style="color:#e6db74">&#34;-s&#34;</span>, <span style="color:#a6e22e">title</span>)
-	<span style="color:#a6e22e">mailCommand</span>.<span style="color:#a6e22e">Args</span> = append(<span style="color:#a6e22e">mailCommand</span>.<span style="color:#a6e22e">Args</span>, <span style="color:#a6e22e">email</span><span style="color:#f92672">...</span>)
-	<span style="color:#a6e22e">stdin</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">mailCommand</span>.<span style="color:#a6e22e">StdinPipe</span>()
-	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
-		<span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;StdinPipe failed to perform: %s (Command: %s, Arguments: %s)&#34;</span>, <span style="color:#a6e22e">err</span>, <span style="color:#a6e22e">mailCommand</span>.<span style="color:#a6e22e">Path</span>, <span style="color:#a6e22e">mailCommand</span>.<span style="color:#a6e22e">Args</span>)
-		<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">err</span>
-	}
-	<span style="color:#a6e22e">stdin</span>.<span style="color:#a6e22e">Write</span>([]byte(<span style="color:#a6e22e">message</span>))
-	<span style="color:#a6e22e">stdin</span>.<span style="color:#a6e22e">Close</span>()
-	<span style="color:#a6e22e">_</span>, <span style="color:#a6e22e">err</span> = <span style="color:#a6e22e">mailCommand</span>.<span style="color:#a6e22e">Output</span>()
-	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> <span style="color:#f92672">||</span> !<span style="color:#a6e22e">mailCommand</span>.<span style="color:#a6e22e">ProcessState</span>.<span style="color:#a6e22e">Success</span>() {
-		<span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;send email ERROR : &lt;%v&gt; title=[%v] messagebody=[%v]&#34;</span>, <span style="color:#a6e22e">err</span>.<span style="color:#a6e22e">Error</span>(), <span style="color:#a6e22e">title</span>, <span style="color:#a6e22e">message</span>)
-		<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">err</span>
-	}
+<span class="c1">// SendMail sends an email to the addresses using &#39;mail&#39; command on *nux platform.
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">SendMail</span><span class="p">(</span><span class="nx">title</span><span class="p">,</span> <span class="nx">message</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">email</span> <span class="o">...</span><span class="kt">string</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+	<span class="k">if</span> <span class="nx">runtime</span><span class="p">.</span><span class="nx">GOOS</span> <span class="o">==</span> <span class="s">&#34;windows&#34;</span> <span class="p">{</span>
+		<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;TODO: cannot send email on windows title=[%v] messagebody=[%v]&#34;</span><span class="p">,</span> <span class="nx">title</span><span class="p">,</span> <span class="nx">message</span><span class="p">)</span>
+		<span class="k">return</span> <span class="kc">nil</span>
+	<span class="p">}</span>
+	<span class="nx">mailCommand</span> <span class="o">:=</span> <span class="nx">exec</span><span class="p">.</span><span class="nf">Command</span><span class="p">(</span><span class="s">&#34;mail&#34;</span><span class="p">,</span> <span class="s">&#34;-s&#34;</span><span class="p">,</span> <span class="nx">title</span><span class="p">)</span>
+	<span class="nx">mailCommand</span><span class="p">.</span><span class="nx">Args</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">mailCommand</span><span class="p">.</span><span class="nx">Args</span><span class="p">,</span> <span class="nx">email</span><span class="o">...</span><span class="p">)</span>
+	<span class="nx">stdin</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">mailCommand</span><span class="p">.</span><span class="nf">StdinPipe</span><span class="p">()</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;StdinPipe failed to perform: %s (Command: %s, Arguments: %s)&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">,</span> <span class="nx">mailCommand</span><span class="p">.</span><span class="nx">Path</span><span class="p">,</span> <span class="nx">mailCommand</span><span class="p">.</span><span class="nx">Args</span><span class="p">)</span>
+		<span class="k">return</span> <span class="nx">err</span>
+	<span class="p">}</span>
+	<span class="nx">stdin</span><span class="p">.</span><span class="nf">Write</span><span class="p">([]</span><span class="nb">byte</span><span class="p">(</span><span class="nx">message</span><span class="p">))</span>
+	<span class="nx">stdin</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+	<span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">mailCommand</span><span class="p">.</span><span class="nf">Output</span><span class="p">()</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="o">||</span> <span class="p">!</span><span class="nx">mailCommand</span><span class="p">.</span><span class="nx">ProcessState</span><span class="p">.</span><span class="nf">Success</span><span class="p">()</span> <span class="p">{</span>
+		<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;send email ERROR : &lt;%v&gt; title=[%v] messagebody=[%v]&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(),</span> <span class="nx">title</span><span class="p">,</span> <span class="nx">message</span><span class="p">)</span>
+		<span class="k">return</span> <span class="nx">err</span>
+	<span class="p">}</span>
 
-	<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>
-}
+	<span class="k">return</span> <span class="kc">nil</span>
+<span class="p">}</span>
 </code></pre></div><p>上述源码放到这里了： <a href="https://github.com/zieckey/gocom/tree/master/tmail">https://github.com/zieckey/gocom/tree/master/tmail</a></p>
 <h2 id="参考">参考</h2>
 <ol>

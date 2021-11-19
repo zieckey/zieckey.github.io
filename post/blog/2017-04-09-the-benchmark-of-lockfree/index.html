@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN" lang="zh-CN">
+<head>
+  <link href="https://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="generator" content="Hugo 0.89.4" />
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>基于evpp的EventLoop实现来对无锁队列boost::lockfree::queue和moodycamel::ConcurrentQueue做一个性能测试对比 &middot; CodeG Blog</title>
+  <meta name="description" content="" />
+
+  
+  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cncss/print.css" media="print">
+  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cncss/poole.css">
+  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cncss/syntax.css">
+  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cncss/hyde.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
+
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="http://blog.codeg.cn/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="http://blog.codeg.cn/favicon.png">
+
+  
+  
+</head>
+
+  <body class=" ">
+  <aside class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <a href="http://blog.codeg.cn"><h1>CodeG Blog</h1></a>
+      <p class="lead">
+       思路决定出路，态度决定高度。 
+      </p>
+    </div>
+
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="http://blog.codeg.cn">Home</a> </li>
+        <li><a href="http://blog.codeg.cn/post/"> 技术文章 </a></li><li><a href="http://blog.codeg.cn/about/"> 关于我 </a></li>
+      </ul>
+    </nav>
+
+    <p>&copy; 2021. All rights reserved. </p>
+  </div>
+</aside>
+
+    <main class="content container">
+    <div class="post">
+  <h1>基于evpp的EventLoop实现来对无锁队列boost::lockfree::queue和moodycamel::ConcurrentQueue做一个性能测试对比</h1>
+  <time datetime=2017-04-09T10:11:01Z class="post-date">Sun, Apr 9, 2017</time>
+  <p><a href="https://github.com/Qihoo360/evpp/blob/master/docs/benchmark_lockfree_vs_mutex_cn.md">English version : The performance benchmark of <code>queue with std::mutex</code> against <code>boost::lockfree::queue</code> and <code>moodycamel::ConcurrentQueue</code></a></p>
+<h3 id="brief">Brief</h3>
+<p>我们使用<a href="https://github.com/Qihoo360/evpp">https://github.com/Qihoo360/evpp</a>项目中的<code>EventLoop::QueueInLoop(...)</code>函数来做这个性能测试。我们通过该函数能够将一个仿函数执行体从一个线程调度到另一个线程中执行。这是一个典型的生产者和消费者问题。</p>
+<p>我们用一个队列来保存这种仿函数执行体。多个生产者线程向这个队列写入仿函数执行体，一个消费者线程从队列中取出仿函数执行体来执行。为了保证队列的线程安全问题，我们可以使用一个锁来保护这个队列，或者使用无锁队列机制来解决安全问题。<code>EventLoop::QueueInLoop(...)</code>函数通过通定义实现了三种不同模式的跨线程交换数据的队列。</p>
+<h3 id="测试对象">测试对象</h3>
+<ol>
+<li><a href="https://github.com/Qihoo360/evpp/archive/v0.3.2.zip">evpp-v0.3.2</a></li>
+<li><code>EventLoop::QueueInLoop(...)</code>函数内的队列的三种实现方式：
+<ul>
+<li>带锁的队列用<code>std::vector</code>和<code>std::mutex</code>来实现，具体的 gcc 版本为 4.8.2</li>
+<li><a href="http://www.boost.org/">boost::lockfree::queue from boost-1.53</a></li>
+<li><a href="https://github.com/cameron314/concurrentqueue">moodycamel::ConcurrentQueue</a> with commit c54341183f8674c575913a65ef7c651ecce47243</li>
+</ul>
+</li>
+</ol>
+<h3 id="测试环境">测试环境</h3>
+<ol>
+<li>Linux CentOS 6.2, 2.6.32-220.7.1.el6.x86_64</li>
+<li>Intel(R) Xeon(R) CPU E5-2630 v2 @ 2.60GHz</li>
+<li>gcc version 4.8.2 20140120 (Red Hat 4.8.2-15) (GCC)</li>
+</ol>
+<h3 id="测试方法">测试方法</h3>
+<p>测试代码请参考<a href="https://github.com/Qihoo360/evpp/blob/master/benchmark/post_task/post_task6.cc">https://github.com/Qihoo360/evpp/blob/master/benchmark/post_task/post_task6.cc</a>. 在一个消费者线程中运行一个<code>EventLoop</code>对象<code>loop_</code>，多个生产者线程不停的调用<code>loop_-&gt;QueueInLoop(...)</code>方法将仿函数执行体放入到消费者的队列中让其消费（执行）。每个生产者线程放入一定总数（由运行参数指定）的仿函数执行体之后就停下来，等消费者线程完全消费完所有的仿函数执行体之后，程序退出，并记录开始和结束时间。</p>
+<p>为了便于大家阅读，现将相关代码的核心部分摘录如下。</p>
+<p>event_loop.h中定义了队列：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++">    <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">PipeEventWatcher</span><span class="o">&gt;</span> <span class="n">watcher_</span><span class="p">;</span>
+<span class="cp">#ifdef H_HAVE_BOOST
+</span><span class="cp"></span>    <span class="n">boost</span><span class="o">::</span><span class="n">lockfree</span><span class="o">::</span><span class="n">queue</span><span class="o">&lt;</span><span class="n">Functor</span><span class="o">*&gt;*</span> <span class="n">pending_functors_</span><span class="p">;</span>
+<span class="cp">#elif defined(H_HAVE_CAMERON314_CONCURRENTQUEUE)
+</span><span class="cp"></span>    <span class="n">moodycamel</span><span class="o">::</span><span class="n">ConcurrentQueue</span><span class="o">&lt;</span><span class="n">Functor</span><span class="o">&gt;*</span> <span class="n">pending_functors_</span><span class="p">;</span>
+<span class="cp">#else
+</span><span class="cp"></span>    <span class="n">std</span><span class="o">::</span><span class="n">mutex</span> <span class="n">mutex_</span><span class="p">;</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Functor</span><span class="o">&gt;*</span> <span class="n">pending_functors_</span><span class="p">;</span> <span class="c1">// @Guarded By mutex_
+</span><span class="c1"></span><span class="cp">#endif
+</span></code></pre></div><p>event_loop.cc中定义了<code>QueueInLoop(...)</code>的具体实现：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="kt">void</span> <span class="nf">Init</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">watcher_</span><span class="o">-&gt;</span><span class="n">Watch</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">bind</span><span class="p">(</span><span class="o">&amp;</span><span class="n">EventLoop</span><span class="o">::</span><span class="n">DoPendingFunctors</span><span class="p">,</span> <span class="k">this</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">EventLoop</span><span class="o">::</span><span class="n">QueueInLoop</span><span class="p">(</span><span class="k">const</span> <span class="n">Functor</span><span class="o">&amp;</span> <span class="n">cb</span><span class="p">)</span> <span class="p">{</span>
+    <span class="p">{</span>
+<span class="cp">#ifdef H_HAVE_BOOST
+</span><span class="cp"></span>        <span class="k">auto</span> <span class="n">f</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Functor</span><span class="p">(</span><span class="n">cb</span><span class="p">);</span>
+        <span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="n">pending_functors_</span><span class="o">-&gt;</span><span class="n">push</span><span class="p">(</span><span class="n">f</span><span class="p">))</span> <span class="p">{</span>
+        <span class="p">}</span>
+<span class="cp">#elif defined(H_HAVE_CAMERON314_CONCURRENTQUEUE)
+</span><span class="cp"></span>        <span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="n">pending_functors_</span><span class="o">-&gt;</span><span class="n">enqueue</span><span class="p">(</span><span class="n">cb</span><span class="p">))</span> <span class="p">{</span>
+        <span class="p">}</span>
+<span class="cp">#else
+</span><span class="cp"></span>        <span class="n">std</span><span class="o">::</span><span class="n">lock_guard</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span> <span class="n">lock</span><span class="p">(</span><span class="n">mutex_</span><span class="p">);</span>
+        <span class="n">pending_functors_</span><span class="o">-&gt;</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">cb</span><span class="p">);</span>
+<span class="cp">#endif
+</span><span class="cp"></span>    <span class="p">}</span>
+
+    <span class="n">watcher_</span><span class="o">-&gt;</span><span class="n">Notify</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">EventLoop</span><span class="o">::</span><span class="n">DoPendingFunctors</span><span class="p">()</span> <span class="p">{</span>
+<span class="cp">#ifdef H_HAVE_BOOST
+</span><span class="cp"></span>    <span class="n">Functor</span><span class="o">*</span> <span class="n">f</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">;</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">pending_functors_</span><span class="o">-&gt;</span><span class="n">pop</span><span class="p">(</span><span class="n">f</span><span class="p">))</span> <span class="p">{</span>
+        <span class="p">(</span><span class="o">*</span><span class="n">f</span><span class="p">)();</span>
+        <span class="k">delete</span> <span class="n">f</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="cp">#elif defined(H_HAVE_CAMERON314_CONCURRENTQUEUE)
+</span><span class="cp"></span>    <span class="n">Functor</span> <span class="n">f</span><span class="p">;</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">pending_functors_</span><span class="o">-&gt;</span><span class="n">try_dequeue</span><span class="p">(</span><span class="n">f</span><span class="p">))</span> <span class="p">{</span>
+        <span class="n">f</span><span class="p">();</span>
+        <span class="o">--</span><span class="n">pending_functor_count_</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="cp">#else
+</span><span class="cp"></span>    <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Functor</span><span class="o">&gt;</span> <span class="n">functors</span><span class="p">;</span>
+    <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">lock_guard</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span> <span class="n">lock</span><span class="p">(</span><span class="n">mutex_</span><span class="p">);</span>
+        <span class="n">notified_</span><span class="p">.</span><span class="n">store</span><span class="p">(</span><span class="nb">false</span><span class="p">);</span>
+        <span class="n">pending_functors_</span><span class="o">-&gt;</span><span class="n">swap</span><span class="p">(</span><span class="n">functors</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">size_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">functors</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">functors</span><span class="p">[</span><span class="n">i</span><span class="p">]();</span>
+    <span class="p">}</span>
+<span class="cp">#endif
+</span><span class="cp"></span><span class="p">}</span>
+</code></pre></div><p>我们进行了两种测试：</p>
+<ol>
+<li>一个生产者线程投递1000000个仿函数执行体到消费者线程中执行，统计总耗时。然后同样的方法我们反复测试10次</li>
+<li>生产者线程分别是2/4/6/8/12/16/20，每个线程投递1000000个仿函数执行体到消费者线程中执行，并统计总共耗时</li>
+</ol>
+<h3 id="测试结论">测试结论</h3>
+<ol>
+<li>当我们只有生产者和消费者都只有一个时，大多数测试结果表明<code>moodycamel::ConcurrentQueue</code>的性能是最好的，大概比<code>queue with std::mutex</code>高出**10%~50%**左右的性能。<code>boost::lockfree::queue</code>比<code>queue with std::mutex</code>的性能只能高出一点点。由于我们的实现中，必须要求能够使用多生产者的写入，所以并没有测试boost中专门的单生产者单消费者的无锁队列<code>boost::lockfree::spsc_queue</code>，在这种场景下，boost稍稍有些吃亏，但并不影响整体测试结果及结论。</li>
+<li>当我们有多个生产者线程和一个消费者线程时，<code>boost::lockfree::queue</code>的性能比<code>queue with std::mutex</code>高出<strong>75%~150%<strong>左右。 <code>moodycamel::ConcurrentQueue</code>的性能最好，大概比<code>boost::lockfree::queue</code>高出</strong>25%~100%</strong>，比<code>queue with std::mutex</code>高出<strong>100%~500%</strong>。当生产者线程越多，也就是锁冲突概率越大时，<code>moodycamel::ConcurrentQueue</code>的性能优势体现得更加明显。</li>
+</ol>
+<p>因此，上述对比测试结论，就我们的<a href="https://github.com/Qihoo360/evpp">evpp</a>项目中的<code>EventLoop</code>的实现方式，我们推荐使用<code>moodycamel::ConcurrentQueue</code>来实现跨线程的数据交换。</p>
+<p>更详细的测试数据，请参考下面的两个图表。</p>
+<p>纵轴是执行耗时，越低性能越高。</p>
+<p>图1，生产者和消费者都只有一个，横轴是测试的批次：
+<img src="https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/post_task/boost_lockfree-vs-mutex-1v1.png" alt=""></p>
+<p>图2，生产者线程有多个，横轴是生产者线程的个数，分别是2/4/6/8/12/16/20：
+<img src="https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/post_task/boost_lockfree-vs-mutex.png" alt=""></p>
+<h3 id="其他的性能测试报告">其他的性能测试报告</h3>
+<p><a href="https://github.com/Qihoo360/evpp/blob/master/docs/benchmark_ioevent_performance_vs_asio.md">The IO Event performance benchmark against Boost.Asio</a> : <a href="https://github.com/Qihoo360/evpp">evpp</a> is higher than <a href="http://www.boost.org/">asio</a> about <strong>20%~50%</strong> in this case</p>
+<p><a href="https://github.com/Qihoo360/evpp/blob/master/docs/benchmark_ping_pong_spend_time_vs_asio.md">The ping-pong benchmark against Boost.Asio</a> : <a href="https://github.com/Qihoo360/evpp">evpp</a> is higher than <a href="http://www.boost.org/">asio</a> about <strong>5%~20%</strong> in this case</p>
+<p><a href="https://github.com/Qihoo360/evpp/blob/master/docs/benchmark_throughput_vs_libevent.md">The throughput benchmark against libevent2</a> : <a href="https://github.com/Qihoo360/evpp">evpp</a> is higher than <a href="https://github.com/libevent/libevent">libevent</a> about <strong>17%~130%</strong> in this case</p>
+<p><a href="https://github.com/Qihoo360/evpp/blob/master/docs/benchmark_lockfree_vs_mutex.md">The performance benchmark of <code>queue with std::mutex</code> against <code>boost::lockfree::queue</code> and <code>moodycamel::ConcurrentQueue</code></a> : <code>moodycamel::ConcurrentQueue</code> is the best, the average is higher than <code>boost::lockfree::queue</code> about <strong>25%~100%</strong> and higher than <code>queue with std::mutex</code> about <strong>100%~500%</strong></p>
+<p><a href="https://github.com/Qihoo360/evpp/blob/master/docs/benchmark_throughput_vs_asio.md">The throughput benchmark against Boost.Asio</a> : <a href="https://github.com/Qihoo360/evpp">evpp</a> and <a href="http://www.boost.org/">asio</a> have the similar performance in this case</p>
+<p><a href="https://github.com/Qihoo360/evpp/blob/master/docs/benchmark_throughput_vs_asio_cn.md">The throughput benchmark against Boost.Asio(中文)</a> : <a href="https://github.com/Qihoo360/evpp">evpp</a> and <a href="http://www.boost.org/">asio</a> have the similar performance in this case</p>
+<p><a href="https://github.com/Qihoo360/evpp/blob/master/docs/benchmark_throughput_vs_muduo_cn.md">The throughput benchmark against muduo(中文)</a> : <a href="https://github.com/Qihoo360/evpp">evpp</a> and <a href="https://github.com/chenshuo/muduo">muduo</a> have the similar performance in this case</p>
+<h3 id="最后">最后</h3>
+<p>报告中的图表是使用<a href="https://github.com/zieckey/gochart/">gochart</a>绘制的。</p>
+<p>非常感谢您的阅读。如果您有任何疑问，请随时在<a href="https://github.com/Qihoo360/evpp/issues">issue</a>跟我们讨论。谢谢。</p>
+
+</div>
+
+
+    </main>
+
+    
+      
+    
+  </body>
+</html>

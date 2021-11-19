@@ -2,11 +2,12 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Hello on CodeG Blog</title>
-    <link>http://blog.codeg.cn/tags/hello/</link>
+    <link>http://blog.codeg.cn/tags/Hello/</link>
     <description>Recent content in Hello on CodeG Blog</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language>
-    <lastBuildDate>Sun, 14 Dec 2014 00:00:00 +0000</lastBuildDate><atom:link href="http://blog.codeg.cn/tags/hello/index.xml" rel="self" type="application/rss+xml" />
+    <language>zh-CN</language>
+    <copyright>Copyright (c) 2015. All rights reserved.</copyright>
+    <lastBuildDate>Sun, 14 Dec 2014 00:00:00 +0000</lastBuildDate><atom:link href="http://blog.codeg.cn/tags/Hello/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>C&#43;&#43;与Java垃圾回收的区别</title>
       <link>http://blog.codeg.cn/2014/12/14/gc-cpp-java/</link>
@@ -22,9 +23,7 @@
       <pubDate>Sat, 13 Dec 2014 00:00:00 +0000</pubDate>
       
       <guid>http://blog.codeg.cn/2014/12/13/Hello-CodeG/</guid>
-      <description>哥都不记得上次写博客的具体时间了，中间一直说写点什么，就是没有动手。原因有几：
- 哥的文笔不太好 总觉得技术水平不够高，文章写起来总没深度，不好意思写 哥比较懒  现在来看，前面两点都是扯淡的，懒惰才是重点。好吧，哥承认了。哥决定从今个起，找一个好的博客托管服务器，好好写点文章，尤其是多写点技术文章，用来记录哥的学习、工作中值得记录的点滴，而不论高深或浅薄与否。
-插，从此以后，请叫我编码哥。</description>
+      <description>哥都不记得上次写博客的具体时间了，中间一直说写点什么，就是没有动手。原因有几： 哥的文笔不太好 总觉得技术水平不够高，文章写起来总没深度，不好意</description>
     </item>
     
     <item>
@@ -33,8 +32,7 @@
       <pubDate>Sat, 13 Dec 2014 00:00:00 +0000</pubDate>
       
       <guid>http://blog.codeg.cn/2014/12/13/github-pages/</guid>
-      <description>本博客框架是直接在 BeiYuu：使用Github Pages建独立博客 上改造而来的。增加了下列特性：
- 文章Tags Tags聚合 时间显示 作者显示  感谢 BeiYuu，非常感谢~</description>
+      <description>本博客框架是直接在 BeiYuu：使用Github Pages建独立博客 上改造而来的。增加了下列特性： 文章Tags Tags聚合 时间显示 作者显示 感</description>
     </item>
     
   </channel>

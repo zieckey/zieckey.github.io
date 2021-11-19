@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN" lang="zh-CN">
 <head>
   <link href="https://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
@@ -20,8 +20,8 @@
 
 
   
-  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
-  <link rel="shortcut icon" href="/favicon.png">
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="http://blog.codeg.cn/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="http://blog.codeg.cn/favicon.png">
 
   
   
@@ -33,14 +33,14 @@
     <div class="sidebar-about">
       <a href="http://blog.codeg.cn"><h1>CodeG Blog</h1></a>
       <p class="lead">
-      An elegant open source and mobile first theme for <a href="http://hugo.spf13.com">hugo</a> made by <a href="http://twitter.com/mdo">@mdo</a>. Originally made for Jekyll.
+       思路决定出路，态度决定高度。 
       </p>
     </div>
 
     <nav>
       <ul class="sidebar-nav">
         <li><a href="http://blog.codeg.cn">Home</a> </li>
-        
+        <li><a href="http://blog.codeg.cn/post/"> 技术文章 </a></li><li><a href="http://blog.codeg.cn/about/"> 关于我 </a></li>
       </ul>
     </nav>
 
@@ -76,37 +76,37 @@
 <li>column 纵向柱状图</li>
 <li>area 面积图</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#960050;background-color:#1e0010">#</span> <span style="color:#a6e22e">The</span> <span style="color:#a6e22e">chart</span> <span style="color:#66d9ef">type</span> , <span style="color:#a6e22e">option</span> : <span style="color:#a6e22e">spline</span><span style="color:#f92672">/</span><span style="color:#a6e22e">line</span><span style="color:#f92672">/</span><span style="color:#a6e22e">bar</span><span style="color:#f92672">/</span><span style="color:#a6e22e">column</span><span style="color:#f92672">/</span><span style="color:#a6e22e">area</span>
-<span style="color:#a6e22e">ChartType</span> = <span style="color:#a6e22e">spline</span>
-<span style="color:#a6e22e">Title</span> = <span style="color:#a6e22e">Source</span>: <span style="color:#a6e22e">WorldClimate</span>.<span style="color:#a6e22e">com</span>
-<span style="color:#a6e22e">SubTitle</span> = <span style="color:#a6e22e">Monthly</span> <span style="color:#a6e22e">Average</span> <span style="color:#a6e22e">Temperature</span>
-<span style="color:#a6e22e">ValueSuffix</span> = <span style="color:#960050;background-color:#1e0010">°</span><span style="color:#a6e22e">C</span>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="err">#</span> <span class="nx">The</span> <span class="nx">chart</span> <span class="kd">type</span> <span class="p">,</span> <span class="nx">option</span> <span class="p">:</span> <span class="nx">spline</span><span class="o">/</span><span class="nx">line</span><span class="o">/</span><span class="nx">bar</span><span class="o">/</span><span class="nx">column</span><span class="o">/</span><span class="nx">area</span>
+<span class="nx">ChartType</span> <span class="p">=</span> <span class="nx">spline</span>
+<span class="nx">Title</span> <span class="p">=</span> <span class="nx">Source</span><span class="p">:</span> <span class="nx">WorldClimate</span><span class="p">.</span><span class="nx">com</span>
+<span class="nx">SubTitle</span> <span class="p">=</span> <span class="nx">Monthly</span> <span class="nx">Average</span> <span class="nx">Temperature</span>
+<span class="nx">ValueSuffix</span> <span class="p">=</span> <span class="err">°</span><span class="nx">C</span>
 
-<span style="color:#960050;background-color:#1e0010">#</span> <span style="color:#a6e22e">The</span> <span style="color:#a6e22e">x</span> <span style="color:#a6e22e">Axis</span> <span style="color:#a6e22e">numbers</span>. <span style="color:#a6e22e">The</span> <span style="color:#a6e22e">count</span> <span style="color:#a6e22e">this</span> <span style="color:#a6e22e">numbers</span> <span style="color:#a6e22e">MUST</span> <span style="color:#a6e22e">be</span> <span style="color:#a6e22e">the</span> <span style="color:#a6e22e">same</span> <span style="color:#a6e22e">with</span> <span style="color:#a6e22e">the</span> <span style="color:#a6e22e">data</span> <span style="color:#a6e22e">series</span>
-<span style="color:#a6e22e">XAxisNumbers</span> = <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">5</span>, <span style="color:#ae81ff">6</span>, <span style="color:#ae81ff">7</span>, <span style="color:#ae81ff">8</span>, <span style="color:#ae81ff">9</span>, <span style="color:#ae81ff">10</span>, <span style="color:#ae81ff">11</span>, <span style="color:#ae81ff">12</span>
+<span class="err">#</span> <span class="nx">The</span> <span class="nx">x</span> <span class="nx">Axis</span> <span class="nx">numbers</span><span class="p">.</span> <span class="nx">The</span> <span class="nx">count</span> <span class="nx">this</span> <span class="nx">numbers</span> <span class="nx">MUST</span> <span class="nx">be</span> <span class="nx">the</span> <span class="nx">same</span> <span class="nx">with</span> <span class="nx">the</span> <span class="nx">data</span> <span class="nx">series</span>
+<span class="nx">XAxisNumbers</span> <span class="p">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">12</span>
 
-<span style="color:#960050;background-color:#1e0010">#</span> <span style="color:#a6e22e">The</span> <span style="color:#a6e22e">y</span> <span style="color:#a6e22e">Axis</span> <span style="color:#a6e22e">text</span>
-<span style="color:#a6e22e">YAxisText</span> = <span style="color:#a6e22e">Temperature</span> (<span style="color:#960050;background-color:#1e0010">°</span><span style="color:#a6e22e">C</span>)
+<span class="err">#</span> <span class="nx">The</span> <span class="nx">y</span> <span class="nx">Axis</span> <span class="nx">text</span>
+<span class="nx">YAxisText</span> <span class="p">=</span> <span class="nf">Temperature</span> <span class="p">(</span><span class="err">°</span><span class="nx">C</span><span class="p">)</span>
 
-<span style="color:#960050;background-color:#1e0010">#</span> <span style="color:#a6e22e">The</span> <span style="color:#a6e22e">data</span> <span style="color:#a6e22e">and</span> <span style="color:#a6e22e">the</span> <span style="color:#a6e22e">name</span> <span style="color:#a6e22e">of</span> <span style="color:#a6e22e">the</span> <span style="color:#a6e22e">lines</span>
-<span style="color:#a6e22e">Data</span>|<span style="color:#a6e22e">Tokyo</span> = <span style="color:#ae81ff">7.0</span>, <span style="color:#ae81ff">6.9</span>, <span style="color:#ae81ff">9.5</span>, <span style="color:#ae81ff">14.5</span>, <span style="color:#ae81ff">18.2</span>, <span style="color:#ae81ff">21.5</span>, <span style="color:#ae81ff">25.2</span>, <span style="color:#ae81ff">26.5</span>, <span style="color:#ae81ff">23.3</span>, <span style="color:#ae81ff">18.3</span>, <span style="color:#ae81ff">13.9</span>, <span style="color:#ae81ff">9.6</span>
-<span style="color:#a6e22e">Data</span>|<span style="color:#a6e22e">New</span> <span style="color:#a6e22e">York</span> = <span style="color:#f92672">-</span><span style="color:#ae81ff">0.2</span>, <span style="color:#ae81ff">0.8</span>, <span style="color:#ae81ff">5.7</span>, <span style="color:#ae81ff">11.3</span>, <span style="color:#ae81ff">17.0</span>, <span style="color:#ae81ff">22.0</span>, <span style="color:#ae81ff">24.8</span>, <span style="color:#ae81ff">24.1</span>, <span style="color:#ae81ff">20.1</span>, <span style="color:#ae81ff">14.1</span>, <span style="color:#ae81ff">8.6</span>, <span style="color:#ae81ff">2.5</span>
-<span style="color:#a6e22e">Data</span>|<span style="color:#a6e22e">Berlin</span> = <span style="color:#f92672">-</span><span style="color:#ae81ff">0.9</span>, <span style="color:#ae81ff">0.6</span>, <span style="color:#ae81ff">3.5</span>, <span style="color:#ae81ff">8.4</span>, <span style="color:#ae81ff">13.5</span>, <span style="color:#ae81ff">17.0</span>, <span style="color:#ae81ff">18.6</span>, <span style="color:#ae81ff">17.9</span>, <span style="color:#ae81ff">14.3</span>, <span style="color:#ae81ff">9.0</span>, <span style="color:#ae81ff">3.9</span>, <span style="color:#ae81ff">1.0</span>
-<span style="color:#a6e22e">Data</span>|<span style="color:#a6e22e">London</span> = <span style="color:#ae81ff">3.9</span>, <span style="color:#ae81ff">4.2</span>, <span style="color:#ae81ff">5.7</span>, <span style="color:#ae81ff">8.5</span>, <span style="color:#ae81ff">11.9</span>, <span style="color:#ae81ff">15.2</span>, <span style="color:#ae81ff">17.0</span>, <span style="color:#ae81ff">16.6</span>, <span style="color:#ae81ff">14.2</span>, <span style="color:#ae81ff">10.3</span>, <span style="color:#ae81ff">6.6</span>, <span style="color:#ae81ff">4.8</span>
+<span class="err">#</span> <span class="nx">The</span> <span class="nx">data</span> <span class="nx">and</span> <span class="nx">the</span> <span class="nx">name</span> <span class="nx">of</span> <span class="nx">the</span> <span class="nx">lines</span>
+<span class="nx">Data</span><span class="p">|</span><span class="nx">Tokyo</span> <span class="p">=</span> <span class="mf">7.0</span><span class="p">,</span> <span class="mf">6.9</span><span class="p">,</span> <span class="mf">9.5</span><span class="p">,</span> <span class="mf">14.5</span><span class="p">,</span> <span class="mf">18.2</span><span class="p">,</span> <span class="mf">21.5</span><span class="p">,</span> <span class="mf">25.2</span><span class="p">,</span> <span class="mf">26.5</span><span class="p">,</span> <span class="mf">23.3</span><span class="p">,</span> <span class="mf">18.3</span><span class="p">,</span> <span class="mf">13.9</span><span class="p">,</span> <span class="mf">9.6</span>
+<span class="nx">Data</span><span class="p">|</span><span class="nx">New</span> <span class="nx">York</span> <span class="p">=</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">5.7</span><span class="p">,</span> <span class="mf">11.3</span><span class="p">,</span> <span class="mf">17.0</span><span class="p">,</span> <span class="mf">22.0</span><span class="p">,</span> <span class="mf">24.8</span><span class="p">,</span> <span class="mf">24.1</span><span class="p">,</span> <span class="mf">20.1</span><span class="p">,</span> <span class="mf">14.1</span><span class="p">,</span> <span class="mf">8.6</span><span class="p">,</span> <span class="mf">2.5</span>
+<span class="nx">Data</span><span class="p">|</span><span class="nx">Berlin</span> <span class="p">=</span> <span class="o">-</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">,</span> <span class="mf">8.4</span><span class="p">,</span> <span class="mf">13.5</span><span class="p">,</span> <span class="mf">17.0</span><span class="p">,</span> <span class="mf">18.6</span><span class="p">,</span> <span class="mf">17.9</span><span class="p">,</span> <span class="mf">14.3</span><span class="p">,</span> <span class="mf">9.0</span><span class="p">,</span> <span class="mf">3.9</span><span class="p">,</span> <span class="mf">1.0</span>
+<span class="nx">Data</span><span class="p">|</span><span class="nx">London</span> <span class="p">=</span> <span class="mf">3.9</span><span class="p">,</span> <span class="mf">4.2</span><span class="p">,</span> <span class="mf">5.7</span><span class="p">,</span> <span class="mf">8.5</span><span class="p">,</span> <span class="mf">11.9</span><span class="p">,</span> <span class="mf">15.2</span><span class="p">,</span> <span class="mf">17.0</span><span class="p">,</span> <span class="mf">16.6</span><span class="p">,</span> <span class="mf">14.2</span><span class="p">,</span> <span class="mf">10.3</span><span class="p">,</span> <span class="mf">6.6</span><span class="p">,</span> <span class="mf">4.8</span>
 </code></pre></div><h3 id="示例2饼图数据格式样例">示例2:饼图数据格式样例</h3>
 <p>该示例数据格式展示了如何绘制一个饼图。</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#a6e22e">ChartType</span>  = <span style="color:#a6e22e">pie</span>
-<span style="color:#a6e22e">Title</span> 	   = <span style="color:#a6e22e">Browser</span> <span style="color:#a6e22e">market</span> <span style="color:#a6e22e">shares</span> <span style="color:#a6e22e">at</span> <span style="color:#a6e22e">a</span> <span style="color:#a6e22e">specific</span> <span style="color:#a6e22e">website</span>, <span style="color:#ae81ff">2014</span>
-<span style="color:#a6e22e">SubTitle</span>   = <span style="color:#a6e22e">from</span> <span style="color:#a6e22e">website</span>.<span style="color:#a6e22e">com</span>
-<span style="color:#a6e22e">SeriesName</span> = <span style="color:#a6e22e">Browser</span> <span style="color:#a6e22e">shares</span>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="nx">ChartType</span>  <span class="p">=</span> <span class="nx">pie</span>
+<span class="nx">Title</span> 	   <span class="p">=</span> <span class="nx">Browser</span> <span class="nx">market</span> <span class="nx">shares</span> <span class="nx">at</span> <span class="nx">a</span> <span class="nx">specific</span> <span class="nx">website</span><span class="p">,</span> <span class="mi">2014</span>
+<span class="nx">SubTitle</span>   <span class="p">=</span> <span class="nx">from</span> <span class="nx">website</span><span class="p">.</span><span class="nx">com</span>
+<span class="nx">SeriesName</span> <span class="p">=</span> <span class="nx">Browser</span> <span class="nx">shares</span>
 
-<span style="color:#960050;background-color:#1e0010">#</span> <span style="color:#a6e22e">The</span> <span style="color:#a6e22e">data</span> <span style="color:#a6e22e">and</span> <span style="color:#a6e22e">the</span> <span style="color:#a6e22e">name</span> <span style="color:#a6e22e">of</span> <span style="color:#a6e22e">the</span> <span style="color:#a6e22e">pieces</span> <span style="color:#a6e22e">of</span> <span style="color:#a6e22e">the</span> <span style="color:#a6e22e">pie</span> 
-<span style="color:#a6e22e">Data</span>|<span style="color:#a6e22e">Firefox</span> = <span style="color:#ae81ff">45.0</span>
-<span style="color:#a6e22e">Data</span>|<span style="color:#a6e22e">IE</span> 	 = <span style="color:#ae81ff">26.8</span>
-<span style="color:#a6e22e">Data</span>|<span style="color:#a6e22e">Chrome</span>  = <span style="color:#ae81ff">12.8</span>
-<span style="color:#a6e22e">Data</span>|<span style="color:#a6e22e">Safari</span>  = <span style="color:#ae81ff">8.5</span>
-<span style="color:#a6e22e">Data</span>|<span style="color:#a6e22e">Opera</span>   = <span style="color:#ae81ff">6.2</span>
-<span style="color:#a6e22e">Data</span>|<span style="color:#a6e22e">Others</span>  = <span style="color:#ae81ff">0.7</span>    
+<span class="err">#</span> <span class="nx">The</span> <span class="nx">data</span> <span class="nx">and</span> <span class="nx">the</span> <span class="nx">name</span> <span class="nx">of</span> <span class="nx">the</span> <span class="nx">pieces</span> <span class="nx">of</span> <span class="nx">the</span> <span class="nx">pie</span> 
+<span class="nx">Data</span><span class="p">|</span><span class="nx">Firefox</span> <span class="p">=</span> <span class="mf">45.0</span>
+<span class="nx">Data</span><span class="p">|</span><span class="nx">IE</span> 	 <span class="p">=</span> <span class="mf">26.8</span>
+<span class="nx">Data</span><span class="p">|</span><span class="nx">Chrome</span>  <span class="p">=</span> <span class="mf">12.8</span>
+<span class="nx">Data</span><span class="p">|</span><span class="nx">Safari</span>  <span class="p">=</span> <span class="mf">8.5</span>
+<span class="nx">Data</span><span class="p">|</span><span class="nx">Opera</span>   <span class="p">=</span> <span class="mf">6.2</span>
+<span class="nx">Data</span><span class="p">|</span><span class="nx">Others</span>  <span class="p">=</span> <span class="mf">0.7</span>    
 </code></pre></div><h3 id="曲线图">曲线图</h3>
 <p><img src="https://raw.githubusercontent.com/zieckey/gochart/master/image/spline.png" alt=""></p>
 <h3 id="饼图">饼图</h3>

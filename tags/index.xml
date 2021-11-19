@@ -5,7 +5,8 @@
     <link>http://blog.codeg.cn/tags/</link>
     <description>Recent content in Tags on CodeG Blog</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language>
+    <language>zh-CN</language>
+    <copyright>Copyright (c) 2015. All rights reserved.</copyright>
     <lastBuildDate>Sun, 28 May 2017 18:11:01 +0000</lastBuildDate><atom:link href="http://blog.codeg.cn/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>evpp</title>
@@ -27,10 +28,10 @@
     
     <item>
       <title>C&#43;&#43;11</title>
-      <link>http://blog.codeg.cn/tags/c&#43;&#43;11/</link>
+      <link>http://blog.codeg.cn/tags/C&#43;&#43;11/</link>
       <pubDate>Wed, 19 Apr 2017 10:11:01 +0000</pubDate>
       
-      <guid>http://blog.codeg.cn/tags/c&#43;&#43;11/</guid>
+      <guid>http://blog.codeg.cn/tags/C&#43;&#43;11/</guid>
       <description></description>
     </item>
     
@@ -54,10 +55,10 @@
     
     <item>
       <title>Golang</title>
-      <link>http://blog.codeg.cn/tags/golang/</link>
+      <link>http://blog.codeg.cn/tags/Golang/</link>
       <pubDate>Tue, 06 Sep 2016 11:52:00 +0000</pubDate>
       
-      <guid>http://blog.codeg.cn/tags/golang/</guid>
+      <guid>http://blog.codeg.cn/tags/Golang/</guid>
       <description></description>
     </item>
     
@@ -72,19 +73,19 @@
     
     <item>
       <title>S3</title>
-      <link>http://blog.codeg.cn/tags/s3/</link>
+      <link>http://blog.codeg.cn/tags/S3/</link>
       <pubDate>Tue, 06 Sep 2016 11:52:00 +0000</pubDate>
       
-      <guid>http://blog.codeg.cn/tags/s3/</guid>
+      <guid>http://blog.codeg.cn/tags/S3/</guid>
       <description></description>
     </item>
     
     <item>
       <title>INI</title>
-      <link>http://blog.codeg.cn/tags/ini/</link>
+      <link>http://blog.codeg.cn/tags/INI/</link>
       <pubDate>Sun, 29 May 2016 13:14:00 +0000</pubDate>
       
-      <guid>http://blog.codeg.cn/tags/ini/</guid>
+      <guid>http://blog.codeg.cn/tags/INI/</guid>
       <description></description>
     </item>
     
@@ -135,10 +136,10 @@
     
     <item>
       <title>C&#43;&#43;</title>
-      <link>http://blog.codeg.cn/tags/c&#43;&#43;/</link>
+      <link>http://blog.codeg.cn/tags/C&#43;&#43;/</link>
       <pubDate>Fri, 19 Feb 2016 00:00:00 +0000</pubDate>
       
-      <guid>http://blog.codeg.cn/tags/c&#43;&#43;/</guid>
+      <guid>http://blog.codeg.cn/tags/C&#43;&#43;/</guid>
       <description></description>
     </item>
     
@@ -180,28 +181,28 @@
     
     <item>
       <title>Docker</title>
-      <link>http://blog.codeg.cn/tags/docker/</link>
+      <link>http://blog.codeg.cn/tags/Docker/</link>
       <pubDate>Mon, 02 Feb 2015 00:00:00 +0000</pubDate>
       
-      <guid>http://blog.codeg.cn/tags/docker/</guid>
+      <guid>http://blog.codeg.cn/tags/Docker/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Nginx</title>
-      <link>http://blog.codeg.cn/tags/nginx/</link>
+      <link>http://blog.codeg.cn/tags/Nginx/</link>
       <pubDate>Tue, 06 Jan 2015 00:00:00 +0000</pubDate>
       
-      <guid>http://blog.codeg.cn/tags/nginx/</guid>
+      <guid>http://blog.codeg.cn/tags/Nginx/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Tools</title>
-      <link>http://blog.codeg.cn/tags/tools/</link>
+      <link>http://blog.codeg.cn/tags/Tools/</link>
       <pubDate>Sat, 03 Jan 2015 00:00:00 +0000</pubDate>
       
-      <guid>http://blog.codeg.cn/tags/tools/</guid>
+      <guid>http://blog.codeg.cn/tags/Tools/</guid>
       <description></description>
     </item>
     
@@ -216,64 +217,64 @@
     
     <item>
       <title>Ubuntu</title>
-      <link>http://blog.codeg.cn/tags/ubuntu/</link>
+      <link>http://blog.codeg.cn/tags/Ubuntu/</link>
       <pubDate>Mon, 15 Dec 2014 00:00:00 +0000</pubDate>
       
-      <guid>http://blog.codeg.cn/tags/ubuntu/</guid>
+      <guid>http://blog.codeg.cn/tags/Ubuntu/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Github</title>
-      <link>http://blog.codeg.cn/tags/github/</link>
+      <link>http://blog.codeg.cn/tags/Github/</link>
       <pubDate>Sun, 14 Dec 2014 00:00:00 +0000</pubDate>
       
-      <guid>http://blog.codeg.cn/tags/github/</guid>
+      <guid>http://blog.codeg.cn/tags/Github/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Hello</title>
-      <link>http://blog.codeg.cn/tags/hello/</link>
+      <link>http://blog.codeg.cn/tags/Hello/</link>
       <pubDate>Sun, 14 Dec 2014 00:00:00 +0000</pubDate>
       
-      <guid>http://blog.codeg.cn/tags/hello/</guid>
+      <guid>http://blog.codeg.cn/tags/Hello/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Java</title>
-      <link>http://blog.codeg.cn/tags/java/</link>
+      <link>http://blog.codeg.cn/tags/Java/</link>
       <pubDate>Sun, 14 Dec 2014 00:00:00 +0000</pubDate>
       
-      <guid>http://blog.codeg.cn/tags/java/</guid>
+      <guid>http://blog.codeg.cn/tags/Java/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Jekyll</title>
-      <link>http://blog.codeg.cn/tags/jekyll/</link>
+      <link>http://blog.codeg.cn/tags/Jekyll/</link>
       <pubDate>Sun, 14 Dec 2014 00:00:00 +0000</pubDate>
       
-      <guid>http://blog.codeg.cn/tags/jekyll/</guid>
+      <guid>http://blog.codeg.cn/tags/Jekyll/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Ruby</title>
-      <link>http://blog.codeg.cn/tags/ruby/</link>
+      <link>http://blog.codeg.cn/tags/Ruby/</link>
       <pubDate>Sun, 14 Dec 2014 00:00:00 +0000</pubDate>
       
-      <guid>http://blog.codeg.cn/tags/ruby/</guid>
+      <guid>http://blog.codeg.cn/tags/Ruby/</guid>
       <description></description>
     </item>
     
     <item>
       <title>About</title>
-      <link>http://blog.codeg.cn/tags/about/</link>
+      <link>http://blog.codeg.cn/tags/About/</link>
       <pubDate>Sat, 13 Dec 2014 00:00:00 +0000</pubDate>
       
-      <guid>http://blog.codeg.cn/tags/about/</guid>
+      <guid>http://blog.codeg.cn/tags/About/</guid>
       <description></description>
     </item>
     

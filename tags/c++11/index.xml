@@ -2,92 +2,55 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>C&#43;&#43;11 on CodeG Blog</title>
-    <link>http://blog.codeg.cn/tags/c&#43;&#43;11/</link>
+    <link>http://blog.codeg.cn/tags/C&#43;&#43;11/</link>
     <description>Recent content in C&#43;&#43;11 on CodeG Blog</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language>
-    <lastBuildDate>Wed, 19 Apr 2017 10:11:01 +0000</lastBuildDate><atom:link href="http://blog.codeg.cn/tags/c++11/index.xml" rel="self" type="application/rss+xml" />
+    <language>zh-CN</language>
+    <copyright>Copyright (c) 2015. All rights reserved.</copyright>
+    <lastBuildDate>Wed, 19 Apr 2017 10:11:01 +0000</lastBuildDate><atom:link href="http://blog.codeg.cn/tags/C++11/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>evpp设计细节系列(1)：利用 enable_shared_from_this 实现一个自管理的定时器</title>
-      <link>http://blog.codeg.cn/post/2017-04-19-the-detail-design-of-evpp-invoke-timer/</link>
+      <link>http://blog.codeg.cn/post/blog/2017-04-19-the-detail-design-of-evpp-invoke-timer/</link>
       <pubDate>Wed, 19 Apr 2017 10:11:01 +0000</pubDate>
       
-      <guid>http://blog.codeg.cn/post/2017-04-19-the-detail-design-of-evpp-invoke-timer/</guid>
-      <description>0. 前言 https://github.com/Qihoo360/evpp是一个高性能的Reactor模式的现代化的C++11版本的高性能网络库。该项目中有一个InvokeTimer对象，接口头文件详细代码请参见https://github.com/Qihoo360/evpp/blob/master/evpp/invoke_timer.h。它是一个能自我管理的定时器类，可以将一个仿函数绑定到该定时器上，然后让该定时器自己管理并在预期的一段时间后执行该仿函数。
-现在我们复盘一下这个功能的实现细节和演化过程。
-1. 基础代码 定时器原型声明可能是下面的样子：
-class InvokeTimer { public: InvokeTimer(struct event_base* evloop, double timeout_ms, const std::function&amp;lt;void()&amp;gt;&amp;amp; f); ~InvokeTimer(); void Start(); }; 这个是最基本的接口，可以设置一个仿函数，并设置一个过期时间，然后绑定到一个event_base对象上，然后就可以期待过了一个预期的时间后，我们设置的仿函数被调用了。
-为了便于说明后续的多个版本的实现，我们先将基础的不变的代码说明一下。
-基础代码，我们采用evpp项目中的TimerEventWatcher，详细实现在这里event_watcher.h和event_watcher.cc。它是一个时间定时器观察者对象，可以观察一个时间事件。
-头文件event_watcher.h定义如下：
-#pragma once  #include &amp;lt;functional&amp;gt; struct event; struct event_base; namespace recipes { class EventWatcher { public: typedef std::function&amp;lt;void()&amp;gt; Handler; virtual ~EventWatcher(); bool Init(); void Cancel(); void SetCancelCallback(const Handler&amp;amp; cb); void ClearHandler() { handler_ = Handler(); } protected: EventWatcher(struct event_base* evbase, const Handler&amp;amp; handler); bool Watch(double timeout_ms); void Close(); void FreeEvent(); virtual bool DoInit() = 0; virtual void DoClose() {} protected: struct event* event_; struct event_base* evbase_; bool attached_; Handler handler_; Handler cancel_callback_; }; class TimerEventWatcher : public EventWatcher { public: TimerEventWatcher(struct event_base* evbase, const Handler&amp;amp; handler, double timeout_ms); bool AsyncWait(); private: virtual bool DoInit(); static void HandlerFn(int fd, short which, void* v); private: double timeout_ms_; }; } 实现文件event_watcher.</description>
+      <guid>http://blog.codeg.cn/post/blog/2017-04-19-the-detail-design-of-evpp-invoke-timer/</guid>
+      <description>0. 前言 https://github.com/Qihoo360/evpp是一个高性能的Reactor模式的现代化的C++11版本的高性能网络库</description>
     </item>
     
     <item>
       <title>基于evpp的EventLoop实现来对无锁队列boost::lockfree::queue和moodycamel::ConcurrentQueue做一个性能测试对比</title>
-      <link>http://blog.codeg.cn/post/2017-04-09-the-benchmark-of-lockfree/</link>
+      <link>http://blog.codeg.cn/post/blog/2017-04-09-the-benchmark-of-lockfree/</link>
       <pubDate>Sun, 09 Apr 2017 10:11:01 +0000</pubDate>
       
-      <guid>http://blog.codeg.cn/post/2017-04-09-the-benchmark-of-lockfree/</guid>
-      <description>English version : The performance benchmark of queue with std::mutex against boost::lockfree::queue and moodycamel::ConcurrentQueue
-Brief 我们使用https://github.com/Qihoo360/evpp项目中的EventLoop::QueueInLoop(...)函数来做这个性能测试。我们通过该函数能够将一个仿函数执行体从一个线程调度到另一个线程中执行。这是一个典型的生产者和消费者问题。
-我们用一个队列来保存这种仿函数执行体。多个生产者线程向这个队列写入仿函数执行体，一个消费者线程从队列中取出仿函数执行体来执行。为了保证队列的线程安全问题，我们可以使用一个锁来保护这个队列，或者使用无锁队列机制来解决安全问题。EventLoop::QueueInLoop(...)函数通过通定义实现了三种不同模式的跨线程交换数据的队列。
-测试对象  evpp-v0.3.2 EventLoop::QueueInLoop(...)函数内的队列的三种实现方式：  带锁的队列用std::vector和std::mutex来实现，具体的 gcc 版本为 4.8.2 boost::lockfree::queue from boost-1.53 moodycamel::ConcurrentQueue with commit c54341183f8674c575913a65ef7c651ecce47243    测试环境  Linux CentOS 6.2, 2.6.32-220.7.1.el6.x86_64 Intel(R) Xeon(R) CPU E5-2630 v2 @ 2.60GHz gcc version 4.8.2 20140120 (Red Hat 4.8.2-15) (GCC)  测试方法 测试代码请参考https://github.com/Qihoo360/evpp/blob/master/benchmark/post_task/post_task6.cc. 在一个消费者线程中运行一个EventLoop对象loop_，多个生产者线程不停的调用loop_-&amp;gt;QueueInLoop(...)方法将仿函数执行体放入到消费者的队列中让其消费（执行）。每个生产者线程放入一定总数（由运行参数指定）的仿函数执行体之后就停下来，等消费者线程完全消费完所有的仿函数执行体之后，程序退出，并记录开始和结束时间。
-为了便于大家阅读，现将相关代码的核心部分摘录如下。
-event_loop.h中定义了队列：
-std::shared_ptr&amp;lt;PipeEventWatcher&amp;gt; watcher_; #ifdef H_HAVE_BOOST  boost::lockfree::queue&amp;lt;Functor*&amp;gt;* pending_functors_; #elif defined(H_HAVE_CAMERON314_CONCURRENTQUEUE)  moodycamel::ConcurrentQueue&amp;lt;Functor&amp;gt;* pending_functors_; #else  std::mutex mutex_; std::vector&amp;lt;Functor&amp;gt;* pending_functors_; // @Guarded By mutex_ #endif event_loop.</description>
+      <guid>http://blog.codeg.cn/post/blog/2017-04-09-the-benchmark-of-lockfree/</guid>
+      <description>English version : The performance benchmark of queue with std::mutex against boost::lockfree::queue and moodycamel::ConcurrentQueue Brief 我们使用https://github.com/Qihoo360/evpp项目中的EventLoop::Queu</description>
     </item>
     
     <item>
       <title>evpp与asio吞吐量对比</title>
-      <link>http://blog.codeg.cn/post/2017-04-04-the-throughput-benchmark-test-of-evpp-vs-asio/</link>
+      <link>http://blog.codeg.cn/post/blog/2017-04-04-the-throughput-benchmark-test-of-evpp-vs-asio/</link>
       <pubDate>Tue, 04 Apr 2017 18:13:00 +0000</pubDate>
       
-      <guid>http://blog.codeg.cn/post/2017-04-04-the-throughput-benchmark-test-of-evpp-vs-asio/</guid>
-      <description>简介 Boost.Asio是用于网络和低层IO编程的跨平台C++库,为开发者提供了C++环境下稳定的异步编程模型。也是业内公认的优秀的C++网络库代表。一般来讲，其他的网络库的性能如果不能与asio做一下全面的对比和评测，就不能令人信服。
-本次测试是参考陈硕的博客文章muduo 与 boost asio 吞吐量对比，该文章的结论是：muduo吞吐量平均比asio高 15% 以上。
-我们之前做的evpp与[moduo]吞吐量测试性能报告显示，evpp与[moduo]吞吐量基本相当，各自都没有明显的优势。因此我们希望evpp在与boost的性能对比测试中能够占优。
-测试对象  evpp-v0.2.4 based on libevent-2.0.21 asio-1.10.8  测试环境  Linux CentOS 6.2, 2.6.32-220.7.1.el6.x86_64 Intel(R) Xeon(R) CPU E5-2630 v2 @ 2.60GHz gcc version 4.8.2 20140120 (Red Hat 4.8.2-15) (GCC)  测试方法 依据 boost.asio 性能测试 http://think-async.com/Asio/LinuxPerformanceImprovements 的办法，用 ping pong 协议来测试吞吐量。
-简单地说，ping pong 协议是客户端和服务器都实现 echo 协议。当 TCP 连接建立时，客户端向服务器发送一些数据，服务器会 echo 回这些数据，然后客户端再 echo 回服务器。这些数据就会像乒乓球一样在客户端和服务器之间来回传送，直到有一方断开连接为止。这是用来测试吞吐量的常用办法。
-evpp的测试代码在软件包内的路径为benchmark/throughput/evpp，代码如https://github.com/Qihoo360/evpp/tree/master/benchmark/throughput/evpp所示。并使用 tools目录下的benchmark-build.sh
-asio的测试代码直接使用陈硕recipes的实现，具体代码在这里https://github.com/chenshuo/recipes/tree/master/pingpong/asio。
-我们做了下面两项测试：
- 单线程测试，测试并发连接数为 1/10/100/1000/10000 时，消息大小分别为 4096 8192 81920 409600 时的吞吐量 多线程测试，并发连接数为 100 或 1000，服务器和客户端的线程数同时设为 2/3/4/6/8，ping pong 消息的大小为 4096 bytes。测试用的 shell 脚本可从evpp的源码包中找到。  测试结果数据 最终测试结论如下：</description>
+      <guid>http://blog.codeg.cn/post/blog/2017-04-04-the-throughput-benchmark-test-of-evpp-vs-asio/</guid>
+      <description>简介 Boost.Asio是用于网络和低层IO编程的跨平台C++库,为开发者提供了C++环境下稳定的异步编程模型。也是业内公认的优秀的C++网</description>
     </item>
     
     <item>
       <title>evpp与muduo吞吐量对比</title>
-      <link>http://blog.codeg.cn/post/2017-03-14-the-throughput-benchmark-test-of-evpp-vs-muduo/</link>
+      <link>http://blog.codeg.cn/post/blog/2017-03-14-the-throughput-benchmark-test-of-evpp-vs-muduo/</link>
       <pubDate>Tue, 14 Mar 2017 18:13:00 +0000</pubDate>
       
-      <guid>http://blog.codeg.cn/post/2017-03-14-the-throughput-benchmark-test-of-evpp-vs-muduo/</guid>
-      <description>简介 muduo是最近几年中国开源界里产生的优秀作品。它是由业内大牛陈硕实现的。详细介绍，请参考其博客介绍http://blog.csdn.net/solstice/article/details/5848547。
-本次测试是参考陈硕的博客文章muduo与libevent2吞吐量对比，该文章的结论是：muduo吞吐量平均比libevent2高 18% 以上。
-由于evpp本身是基于libevent2实现的，因此我们希望将evpp和muduo放到一起做一次全面的性能测试。本文是关于这两个库在吞吐量方面的测试。
-测试对象  evpp-v0.2.4 based on libevent-2.0.21 muduo-v1.0.9  测试环境  Linux CentOS 6.2, 2.6.32-220.7.1.el6.x86_64 Intel(R) Xeon(R) CPU E5-2630 v2 @ 2.60GHz gcc version 4.8.2 20140120 (Red Hat 4.8.2-15) (GCC)  测试方法 依据 boost.asio 性能测试 http://think-async.com/Asio/LinuxPerformanceImprovements 的办法，用 ping pong 协议来测试吞吐量。
-简单地说，ping pong 协议是客户端和服务器都实现 echo 协议。当 TCP 连接建立时，客户端向服务器发送一些数据，服务器会 echo 回这些数据，然后客户端再 echo 回服务器。这些数据就会像乒乓球一样在客户端和服务器之间来回传送，直到有一方断开连接为止。这是用来测试吞吐量的常用办法。
-muduo的测试代码在软件包内的路径为 examples/pingpong/，代码如https://github.com/chenshuo/muduo/tree/master/examples/pingpong所示。并使用BUILD_TYPE=release ./build.sh方式编译muduo的优化版本。
-evpp的测试代码在软件包内的路径为benchmark/throughput/evpp，代码如https://github.com/Qihoo360/evpp/tree/master/benchmark/throughput/evpp所示。并使用 tools目录下的benchmark-build.sh
-我们做了下面两项测试：
- 单线程测试，测试并发连接数为 1/10/100/1000/10000 时，消息大小分别为 4096 8192 81920 409600 时的吞吐量 多线程测试，并发连接数为 100 或 1000，服务器和客户端的线程数同时设为 2/3/4/6/8，ping pong 消息的大小为 16k bytes。测试用的 shell 脚本可从evpp的源码包中找到。  单线程测试结果数据 最终测试结论如下：</description>
+      <guid>http://blog.codeg.cn/post/blog/2017-03-14-the-throughput-benchmark-test-of-evpp-vs-muduo/</guid>
+      <description>简介 muduo是最近几年中国开源界里产生的优秀作品。它是由业内大牛陈硕实现的。详细介绍，请参考其博客介绍http://blog.csdn.n</description>
     </item>
     
     <item>
       <title>发布一个高性能的Reactor模式的C&#43;&#43;网络库：evpp</title>
-      <link>http://blog.codeg.cn/post/2017-03-13-release-a-high-performance-c&#43;&#43;11-network-library/</link>
+      <link>http://blog.codeg.cn/post/blog/2017-03-13-release-a-high-performance-C&#43;&#43;11-network-library/</link>
       <pubDate>Mon, 13 Mar 2017 18:13:00 +0000</pubDate>
       
-      <guid>http://blog.codeg.cn/post/2017-03-13-release-a-high-performance-c&#43;&#43;11-network-library/</guid>
-      <description>简介 evpp是一个基于libevent开发的现代化的支持C++11特性的高性能网络库，自带TCP/UDP/HTTP等协议的异步非阻塞式的服务器和客户端库。
-特性  现代版的C++11接口 非阻塞异步接口都是C++11的functional/bind形式的回调仿函数（不是libevent中的C风格的函数指针） 非阻塞纯异步多线程TCP服务器/客户端 非阻塞纯异步多线程HTTP服务器/客户端 非阻塞纯异步多线程UDP服务器 支持多进程模式 优秀的跨平台特性和高性能（继承自libevent的优点）  除此之外，基于该库之上，还提供两个附带的应用层协议库：
- evmc ：一个纯异步非阻塞式的memcached的C++客户端库，支持membase集群模式。该库已经用于生产环境，每天发起1000多亿次memcache查询请求。详情请见：evmc readme evnsq ： 一个纯异步非阻塞式的NSQ的C++客户端库，支持消费者、生产者、服务发现等特性。该库已经用于生产环境，每天生产200多亿条日志消息。详情请见：evnsq readme  将来还会推出redis的客户端库。
-项目由来 我们开发小组负责的业务需要用到TCP协议来建设长连接网关服务和一些其他的一些基于TCP的短连接服务，在调研开源项目的过程中，没有发现一个合适的库来满足我们要求。结合我们自身的业务情况，理想中的C++网络库应具备一下几个特性：
- 接口简单易用，最好是C++接口 多线程，也能支持多进程 最好是基于libevent实现（因为现有的历史遗留框架、基础库等是依赖libevent），这样能很方便嵌入libevent的事件循环，否则改动较大或者集成起来的程序可能会有很多跨线程的调用（这些会带来编程的复杂性以及跨线程锁带来的性能下降）  基于这些需求，可供选择的不多，所以我们只能自己开发一个。开发过程中，接口设计方面基本上大部分是参考muduo项目来设计和实现的，当然也做了一些取舍和增改；同时也大量借鉴了Golang的一些设计哲学和思想。下面举几个小例子来说明一下：
- Duration ： 这是一个时间区间相关的类，自带时间单位信息，参考了Golang项目中的Duration实现。我们在其他项目中见到太多的时间是不带单位的，例如timeout，到底是秒、毫秒还是微秒？需要看文档说明或具体实现，好一点的设计会将单位带在变量名中，例如timeout_ms，但还是没有Duration这种独立的类好。目前C++11中也有类似的实现std::chrono::duration，但稍显复杂，没有咱们这个借鉴Golang实现的版本来的简单明了 Buffer ： 这是一个缓冲区类，融合了muduo和Golang两个项目中相关类的设计和实现 http::Server : 这是一个http服务器类，自带线程池，它的事件循环和工作线程调度，完全是线程安全的，业务层不用太多关心跨线程调用问题。同时，还将http服务器的核心功能单独抽取出来形成http::Service类，是一个可嵌入型的服务器类，可以嵌入到已有的libevent事件循环中 网络地址的表达就仅仅使用&amp;quot;ip:port&amp;quot;这种形式字符串表示，就是参考Golang的设计 httpc::ConnPool是一个http的客户端连接池库，设计上尽量考虑高性能和复用。以后基于此还可以增加负载均衡和故障转移等特性  另外，我们实现过程中极其重视线程安全问题，一个事件相关的资源必须在其所属的EventLoop（每个EventLoop绑定一个线程）中初始化和析构释放，这样我们能最大限度的减少出错的可能。为了达到这个目标我们重载event_add和event_del等函数，每一次调用event_add，就在对应的线程私有数据中记录该对象，在调用event_del时，检查之前该线程私有数据中是否拥有该对象，然后在整个程序退出前，再完整的检查所有线程的私有数据，看看是否仍然有对象没有析构释放。具体实现稍有区别，详细代码实现可以参考 https://github.com/Qihoo360/evpp/blob/master/evpp/inner_pre.cc#L46~L87。我们如此苛刻的追求线程安全，只是为了让一个程序能安静的平稳的退出或Reload，因为我们深刻的理解“编写永远运行的系统，和编写运行一段时间后平静关闭的系统是两码事”，后者要困难的多得多。
-吞吐量Benchmark测试报告 本文用 ping pong 测试来对比evpp与libevent、boost.asio、muduo] 等网络的吞吐量，测试结果表明evpp吞吐量与boost.asio、muduo等相当，比libevent高**17%~130%**左右。
-evpp本身是基于libevent实现的，不过evpp只是用了libevent的事件循环，并没有用libevent的evbuffer，而是自己参考muduo和Golang实现了自己的网络IO读写类Buffer。
-性能测试相关的代码都在这里：https://github.com/Qihoo360/evpp/tree/master/benchmark/.
-测试对象  evpp-0.2.0 based on libevent-2.0.21 boost.asio-1.53 libevent-2.0.21  系统环境  操作系统：Linux CentOS 6.2, 2.6.32-220.7.1.el6.x86_64 硬件CPU：Intel(R) Xeon(R) CPU E5-2630 v2 @ 2.</description>
+      <guid>http://blog.codeg.cn/post/blog/2017-03-13-release-a-high-performance-C&#43;&#43;11-network-library/</guid>
+      <description>简介 evpp是一个基于libevent开发的现代化的支持C++11特性的高性能网络库，自带TCP/UDP/HTTP等协议的异步非阻塞式的服务</description>
     </item>
     
     <item>
@@ -96,10 +59,7 @@ evpp本身是基于libevent实现的，不过evpp只是用了libevent的事件�
       <pubDate>Thu, 01 Jan 2015 00:00:00 +0000</pubDate>
       
       <guid>http://blog.codeg.cn/2015/01/01/c&#43;&#43;11-move/</guid>
-      <description>std::move作用：如果其类型支持移动的话，会无条件的将其参数（可能是左值）强制转换为右值引用，从而表示其可以移动，它使得编译器随后能够移动（而不是复制）在参数中传递的值。如果其类型不支持移动，则将进行复制。
-因此可以将std::move看着是一个用于提示编译器优化的函数，过去的c++98中，由于无法将作为右值的临时变量从左值当中区别出来，所以程序运行时有大量临时变量白白的创建后又立刻销毁。
-std::move定义 template&amp;lt;class Type&amp;gt; typename remove_reference&amp;lt;Type&amp;gt;::type&amp;amp;&amp;amp; move(Type&amp;amp;&amp;amp; Arg) noexcept; 参数说明：  Type 一种从 Arg 中传递的参数类型推导出的类型（与引用折叠规则一起）。 Arg 要强制转换的参数。虽然 Arg 的类型看起来指定为右值引用，但 move 也接受左值参数，原因是左值引用可以绑定到右值引用。  返回值 返回Arg的右值引用，而无论其类型是否是引用类型。
-示例代码 #include &amp;lt;iostream&amp;gt;#include &amp;lt;utility&amp;gt; class Moveable{ public: Moveable() : i(new int(3)) { std::cout &amp;lt;&amp;lt; &amp;#34;Moveable::Moveable() 构造函数 : ptr(i)=&amp;#34; &amp;lt;&amp;lt; i &amp;lt;&amp;lt; std::endl; } ~Moveable() { std::cout &amp;lt;&amp;lt; &amp;#34;Moveable::~Moveable() 析构函数 ptr(i)=&amp;#34; &amp;lt;&amp;lt; i &amp;lt;&amp;lt; std::endl; if (i) { delete i; i = nullptr; } } Moveable(const Moveable &amp;amp; m) : i(new int(*m.</description>
+      <description>std::move作用：如果其类型支持移动的话，会无条件的将其参数（可能是左值）强制转换为右值引用，从而表示其可以移动，它使得编译器随后能够</description>
     </item>
     
   </channel>

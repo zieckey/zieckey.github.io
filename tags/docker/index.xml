@@ -2,24 +2,19 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Docker on CodeG Blog</title>
-    <link>http://blog.codeg.cn/tags/docker/</link>
+    <link>http://blog.codeg.cn/tags/Docker/</link>
     <description>Recent content in Docker on CodeG Blog</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language>
-    <lastBuildDate>Mon, 02 Feb 2015 00:00:00 +0000</lastBuildDate><atom:link href="http://blog.codeg.cn/tags/docker/index.xml" rel="self" type="application/rss+xml" />
+    <language>zh-CN</language>
+    <copyright>Copyright (c) 2015. All rights reserved.</copyright>
+    <lastBuildDate>Mon, 02 Feb 2015 00:00:00 +0000</lastBuildDate><atom:link href="http://blog.codeg.cn/tags/Docker/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Docker介绍及初次使用教程</title>
       <link>http://blog.codeg.cn/2015/02/02/docker-intro/</link>
       <pubDate>Mon, 02 Feb 2015 00:00:00 +0000</pubDate>
       
       <guid>http://blog.codeg.cn/2015/02/02/docker-intro/</guid>
-      <description>介绍 请参考下列文章：
- 深入浅出Docker（一）：Docker核心技术预览 Docker镜像文件（images）的存储结构  初次使用 实验环境 $ uname -a Linux 3.13.0-44-generic #73-Ubuntu SMP Tue Dec 16 00:22:43 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux Docker安装 请参考官方文档https://docs.docker.com/installation/ubuntulinux/，不再累述。
-下载一个基础镜像 按照官方教程执行sudo docker run -i -t ubuntu /bin/bash会得到下列错误：
-FATA[0301] Get https://registry-1.docker.io/v1/repositories/library/ubuntu/tags: dial tcp 162.242.195.84:443: connection timed out
-这是我大中华局域网F**K墙的原因，Docker官网镜像源的被墙，只能搭建一个梯子来做代理解决。
-sudo stop docker sudo HTTP_PROXY=http://proxy_server:port docker -d &amp;amp; 先停掉之前启动的docker进程，然后使用环境变量设置代理后启动docker进程。再最后执行sudo docker run -i -t ubuntu /bin/bash来下载我们的第一个基础镜像(base image)，这个过程有点长，大约半小时吧（视代理速度），然后看到下列信息表明下载成功了。
-Status: Downloaded newer image for ubuntu:latest 第一次使用 上一步中命令sudo docker run -i -t ubuntu /bin/bash会下载一个基础镜像，并进入docker的执行环境执行/bin/bash.</description>
+      <description>介绍 请参考下列文章： 深入浅出Docker（一）：Docker核心技术预览 Docker镜像文件（images）的存储结构 初次使用 实验环境 $ uname -a</description>
     </item>
     
   </channel>

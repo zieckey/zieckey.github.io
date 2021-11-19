@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN" lang="zh-CN">
 <head>
   <link href="https://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
@@ -20,8 +20,8 @@
 
 
   
-  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
-  <link rel="shortcut icon" href="/favicon.png">
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="http://blog.codeg.cn/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="http://blog.codeg.cn/favicon.png">
 
   
   
@@ -33,14 +33,14 @@
     <div class="sidebar-about">
       <a href="http://blog.codeg.cn"><h1>CodeG Blog</h1></a>
       <p class="lead">
-      An elegant open source and mobile first theme for <a href="http://hugo.spf13.com">hugo</a> made by <a href="http://twitter.com/mdo">@mdo</a>. Originally made for Jekyll.
+       思路决定出路，态度决定高度。 
       </p>
     </div>
 
     <nav>
       <ul class="sidebar-nav">
         <li><a href="http://blog.codeg.cn">Home</a> </li>
-        
+        <li><a href="http://blog.codeg.cn/post/"> 技术文章 </a></li><li><a href="http://blog.codeg.cn/about/"> 关于我 </a></li>
       </ul>
     </nav>
 
@@ -55,15 +55,15 @@
   <p>根据文档说明，<code>ConstantTimeByteEq</code>返回1，如果 x == y；相反则返回0。为什么一个简单整数比较操作要搞一个单独的函数出来实现？并且其实现代码看起来要不<code>x == y</code>复杂多了？</p>
 <h2 id="源码及分析">源码及分析</h2>
 <p>先看源码实现，如下：</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// ConstantTimeByteEq returns 1 if x == y and 0 otherwise.
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">ConstantTimeByteEq</span>(<span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">y</span> <span style="color:#66d9ef">uint8</span>) <span style="color:#66d9ef">int</span> {
-	<span style="color:#a6e22e">z</span> <span style="color:#f92672">:=</span> ^(<span style="color:#a6e22e">x</span> ^ <span style="color:#a6e22e">y</span>)
-	<span style="color:#a6e22e">z</span> <span style="color:#f92672">&amp;=</span> <span style="color:#a6e22e">z</span> <span style="color:#f92672">&gt;&gt;</span> <span style="color:#ae81ff">4</span>
-	<span style="color:#a6e22e">z</span> <span style="color:#f92672">&amp;=</span> <span style="color:#a6e22e">z</span> <span style="color:#f92672">&gt;&gt;</span> <span style="color:#ae81ff">2</span>
-	<span style="color:#a6e22e">z</span> <span style="color:#f92672">&amp;=</span> <span style="color:#a6e22e">z</span> <span style="color:#f92672">&gt;&gt;</span> <span style="color:#ae81ff">1</span>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="c1">// ConstantTimeByteEq returns 1 if x == y and 0 otherwise.
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">ConstantTimeByteEq</span><span class="p">(</span><span class="nx">x</span><span class="p">,</span> <span class="nx">y</span> <span class="kt">uint8</span><span class="p">)</span> <span class="kt">int</span> <span class="p">{</span>
+	<span class="nx">z</span> <span class="o">:=</span> <span class="p">^(</span><span class="nx">x</span> <span class="p">^</span> <span class="nx">y</span><span class="p">)</span>
+	<span class="nx">z</span> <span class="o">&amp;=</span> <span class="nx">z</span> <span class="o">&gt;&gt;</span> <span class="mi">4</span>
+	<span class="nx">z</span> <span class="o">&amp;=</span> <span class="nx">z</span> <span class="o">&gt;&gt;</span> <span class="mi">2</span>
+	<span class="nx">z</span> <span class="o">&amp;=</span> <span class="nx">z</span> <span class="o">&gt;&gt;</span> <span class="mi">1</span>
 
-	<span style="color:#66d9ef">return</span> int(<span style="color:#a6e22e">z</span>)
-}
+	<span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="nx">z</span><span class="p">)</span>
+<span class="p">}</span>
 </code></pre></div><p>分析源码可以发现，其的确是实现了该函数的功能，如果<code>x == y</code>则返回1；相反则返回0。</p>
 <p><code>x ^ y</code>就是x按位异或y, 以某一位为例，其异或结果为1如果x和y不同，相反为0:</p>
 <pre><code>x            = 01010011
