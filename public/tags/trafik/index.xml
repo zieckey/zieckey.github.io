@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>trafik on CodeG Blog</title>
+    <link>http://blog.codeg.cn/tags/trafik/</link>
+    <description>Recent content in trafik on CodeG Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <copyright>Copyright (c) 2015. All rights reserved.</copyright>
+    <lastBuildDate>Thu, 26 May 2016 07:00:00 +0000</lastBuildDate><atom:link href="http://blog.codeg.cn/tags/trafik/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Trafik源代码阅读</title>
+      <link>http://blog.codeg.cn/post/blog/2016-05-26-trafik-source-code-reading/</link>
+      <pubDate>Thu, 26 May 2016 07:00:00 +0000</pubDate>
+      
+      <guid>http://blog.codeg.cn/post/blog/2016-05-26-trafik-source-code-reading/</guid>
+      <description>Trafik介绍 其官网是这么介绍的： Træfɪk is a modern HTTP reverse proxy and load balancer made to deploy microservices with ease. It supports several backends (Docker, Swarm, Mesos/Marathon, Consul, Etcd, Zookeeper, BoltDB, Rest API, file...) to manage its configuration automatically and dynamically. 翻译过来就是：Træ</description>
+    </item>
+    
+  </channel>
+</rss>

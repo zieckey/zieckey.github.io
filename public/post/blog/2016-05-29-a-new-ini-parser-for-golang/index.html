@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN" lang="zh-CN">
+<head>
+  <link href="https://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="generator" content="Hugo 0.89.4" />
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>发布一个Golang版本的INI解析器 &middot; CodeG Blog</title>
+  <meta name="description" content="" />
+
+  
+  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/print.css" media="print">
+  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/poole.css">
+  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/syntax.css">
+  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/hyde.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
+
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="http://blog.codeg.cn/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="http://blog.codeg.cn/favicon.png">
+
+  
+  
+</head>
+
+  <body class=" ">
+  <aside class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <a href="http://blog.codeg.cn/"><h1>CodeG Blog</h1></a>
+      <p class="lead">
+       思路决定出路，态度决定高度。 
+      </p>
+    </div>
+
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="http://blog.codeg.cn/">Home</a> </li>
+        <li><a href="http://blog.codeg.cn/post/"> 技术文章 </a></li><li><a href="http://blog.codeg.cn/about/"> 关于我 </a></li>
+      </ul>
+    </nav>
+
+    <p>&copy; 2021. All rights reserved. </p>
+  </div>
+</aside>
+
+    <main class="content container">
+    <div class="post">
+  <h1>发布一个Golang版本的INI解析器</h1>
+  <time datetime=2016-05-29T13:14:00Z class="post-date">Sun, May 29, 2016</time>
+  <h2 id="goini">goini</h2>
+<p>这是一个为Golang开发的读取INI格式文件的库，它还能读取类似于INI格式的key/value对数据。</p>
+<p><code>goini</code> 的设计目标是简单、灵活、高效，有如下特性：</p>
+<ol>
+<li>支持标准INI格式</li>
+<li>支持节</li>
+<li>支持从本地磁盘中读取INI文件</li>
+<li>支持从内存数据中读取INI数据</li>
+<li>支持解析形如INI格式的key/value对数据，分隔符可以自定义</li>
+<li>支持UTF8编码</li>
+<li>支持注释符 <code>;</code> or <code>#</code></li>
+<li>支持级联继承</li>
+<li>仅仅只依赖Golang标准库</li>
+<li>测试用户100%覆盖</li>
+</ol>
+<h2 id="使用时导入">使用时导入</h2>
+<pre><code>import github.com/zieckey/goini
+</code></pre>
+<h2 id="用法示例">用法示例</h2>
+<h3 id="示例1--解析ini文件">示例1 : 解析INI文件</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kn">import</span> <span class="nx">github</span><span class="p">.</span><span class="nx">com</span><span class="o">/</span><span class="nx">zieckey</span><span class="o">/</span><span class="nx">goini</span>
+
+<span class="nx">ini</span> <span class="o">:=</span> <span class="nx">goini</span><span class="p">.</span><span class="nf">New</span><span class="p">()</span>
+<span class="nx">err</span> <span class="o">:=</span> <span class="nx">ini</span><span class="p">.</span><span class="nf">ParseFile</span><span class="p">(</span><span class="nx">filename</span><span class="p">)</span>
+<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;parse INI file %v failed : %v\n&#34;</span><span class="p">,</span> <span class="nx">filename</span><span class="p">,</span> <span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">())</span>
+	<span class="k">return</span>
+<span class="p">}</span>
+
+<span class="nx">v</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">ini</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;the-key&#34;</span><span class="p">)</span>
+<span class="c1">//...
+</span></code></pre></div><h3 id="示例2--解析内存中形如ini格式的数据">示例2 ： 解析内存中形如INI格式的数据</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="nx">raw</span> <span class="o">:=</span> <span class="p">[]</span><span class="nb">byte</span><span class="p">(</span><span class="s">&#34;a:av||b:bv||c:cv||||d:dv||||||&#34;</span><span class="p">)</span>
+<span class="nx">ini</span> <span class="o">:=</span> <span class="nx">goini</span><span class="p">.</span><span class="nf">New</span><span class="p">()</span>
+<span class="nx">err</span> <span class="o">:=</span> <span class="nx">ini</span><span class="p">.</span><span class="nf">Parse</span><span class="p">(</span><span class="nx">raw</span><span class="p">,</span> <span class="s">&#34;||&#34;</span><span class="p">,</span> <span class="s">&#34;:&#34;</span><span class="p">)</span>
+<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+    <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;parse INI memory data failed : %v\n&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">())</span>
+    <span class="k">return</span>
+<span class="p">}</span>
+
+<span class="nx">key</span> <span class="o">:=</span> <span class="s">&#34;a&#34;</span>
+<span class="nx">v</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">ini</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="nx">key</span><span class="p">)</span>
+<span class="k">if</span> <span class="nx">ok</span> <span class="p">{</span>
+    <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;The value of %v is [%v]\n&#34;</span><span class="p">,</span> <span class="nx">key</span><span class="p">,</span> <span class="nx">v</span><span class="p">)</span> <span class="c1">// Output : The value of a is [av]
+</span><span class="c1"></span><span class="p">}</span>
+
+<span class="nx">key</span> <span class="p">=</span> <span class="s">&#34;c&#34;</span>
+<span class="nx">v</span><span class="p">,</span> <span class="nx">ok</span> <span class="p">=</span> <span class="nx">ini</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="nx">key</span><span class="p">)</span>
+<span class="k">if</span> <span class="nx">ok</span> <span class="p">{</span>
+    <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;The value of %v is [%v]\n&#34;</span><span class="p">,</span> <span class="nx">key</span><span class="p">,</span> <span class="nx">v</span><span class="p">)</span> <span class="c1">// Output : The value of c is [cv]
+</span><span class="c1"></span><span class="p">}</span>
+</code></pre></div><h3 id="示例3--解析级联继承ini文件">示例3 : 解析级联继承INI文件</h3>
+<p>假设我们有一个项目，该项目会部署到多个不同的生产环境中，每一个生产环境的配置都不尽相同，一般情况下，就得为每一个环境分别管理其各自的配置。
+为了简化配置，我们抽取各个生产环境中配置的公共部分形成一个 <code>common.ini</code>, 然后让每个生产环境的配置从这个INI配置文件继承，
+这样就可以大大简化配置文件的维护工作。</p>
+<p><code>common.ini</code> 举例如下:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ini" data-lang="ini"><span class="na">product</span><span class="o">=</span><span class="s">common</span>
+<span class="na">combo</span><span class="o">=</span><span class="s">common</span>
+<span class="na">debug</span><span class="o">=</span><span class="s">0</span>
+
+<span class="na">version</span><span class="o">=</span><span class="s">0.0.0.0</span>
+<span class="na">encoding</span><span class="o">=</span><span class="s">0</span>
+
+<span class="k">[sss]</span>
+<span class="na">a</span> <span class="o">=</span> <span class="s">aval</span>
+<span class="na">b</span> <span class="o">=</span> <span class="s">bval</span>
+</code></pre></div><p>项目 <code>project1.ini</code> 从 <code>common.ini</code> 继承而来，如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ini" data-lang="ini"><span class="na">inherited_from</span><span class="o">=</span><span class="s">common.ini</span>
+
+<span class="c1">;the following config will override the values inherited from common.ini</span>
+<span class="na">product</span><span class="o">=</span><span class="s">project1</span>
+<span class="na">combo</span><span class="o">=</span><span class="s">test</span>
+<span class="na">debug</span><span class="o">=</span><span class="s">1</span>
+
+<span class="na">local</span><span class="o">=</span><span class="s">0</span>
+<span class="na">mid</span><span class="o">=</span><span class="s">c4ca4238a0b923820dcc509a6f75849b</span>
+
+<span class="k">[sss]</span>
+<span class="na">a</span> <span class="o">=</span> <span class="s">project1-aval</span>
+<span class="na">c</span> <span class="o">=</span> <span class="s">project1-cval</span>
+</code></pre></div><p>这个说话，我们使用 <code>goini.LoadInheritedINI(&quot;project1.ini&quot;)</code> 来解析这个配置文件，其效果相当下面的INI配置：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ini" data-lang="ini"><span class="na">product</span><span class="o">=</span><span class="s">project1</span>
+<span class="na">combo</span><span class="o">=</span><span class="s">test</span>
+<span class="na">debug</span><span class="o">=</span><span class="s">1</span>
+
+<span class="na">local</span><span class="o">=</span><span class="s">0</span>
+<span class="na">mid</span><span class="o">=</span><span class="s">c4ca4238a0b923820dcc509a6f75849b</span>
+
+<span class="na">version</span><span class="o">=</span><span class="s">0.0.0.0</span>
+<span class="na">encoding</span><span class="o">=</span><span class="s">0</span>
+
+<span class="k">[sss]</span>
+<span class="na">a</span> <span class="o">=</span> <span class="s">project1-aval</span>
+<span class="na">c</span> <span class="o">=</span> <span class="s">project1-cval</span>
+</code></pre></div><h2 id="参考">参考</h2>
+<ol>
+<li><a href="https://github.com/zieckey/goini">项目源码 https://github.com/zieckey/goini</a></li>
+</ol>
+
+</div>
+
+
+    </main>
+
+    
+      
+    
+  </body>
+</html>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>quic on CodeG Blog</title>
+    <link>http://blog.codeg.cn/tags/quic/</link>
+    <description>Recent content in quic on CodeG Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <copyright>Copyright (c) 2015. All rights reserved.</copyright>
+    <lastBuildDate>Wed, 17 Jun 2015 00:00:00 +0000</lastBuildDate><atom:link href="http://blog.codeg.cn/tags/quic/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>QUIC（Quick UDP Internet Connections）源代码阅读</title>
+      <link>http://blog.codeg.cn/2015/06/17/quic-source-code-reading/</link>
+      <pubDate>Wed, 17 Jun 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://blog.codeg.cn/2015/06/17/quic-source-code-reading/</guid>
+      <description>类 基础类 base Pickle：针对二进制数据进行pack和unpack操作 MessagePump：消息泵基类，也就是做消息循环用的 TimeDelt</description>
+    </item>
+    
+    <item>
+      <title>QUIC（Quick UDP Internet Connections）协议简要笔记(翻译)</title>
+      <link>http://blog.codeg.cn/2015/05/08/quic-protocol/</link>
+      <pubDate>Fri, 08 May 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://blog.codeg.cn/2015/05/08/quic-protocol/</guid>
+      <description>概述 动机 支持SPDY协议的动机 目标 我们希望开发出一套传输协议以支持下列目标： 在今天的因特网上的广泛的部署能力（例如，能够顺利通过中间路由、可</description>
+    </item>
+    
+  </channel>
+</rss>

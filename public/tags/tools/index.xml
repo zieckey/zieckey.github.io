@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Tools on CodeG Blog</title>
+    <link>http://blog.codeg.cn/tags/Tools/</link>
+    <description>Recent content in Tools on CodeG Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <copyright>Copyright (c) 2015. All rights reserved.</copyright>
+    <lastBuildDate>Sat, 03 Jan 2015 00:00:00 +0000</lastBuildDate><atom:link href="http://blog.codeg.cn/tags/Tools/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>发布一个批量转码工具:gbk2utf8</title>
+      <link>http://blog.codeg.cn/2015/01/03/gbk2utf8-by-golang/</link>
+      <pubDate>Sat, 03 Jan 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://blog.codeg.cn/2015/01/03/gbk2utf8-by-golang/</guid>
+      <description>Linux下的iconv是针对单个文件处理，但是转码后的数据直接输出到STDOUT，不方便批量处理。gbk2utf8工具可以针对一个目录以及</description>
+    </item>
+    
+    <item>
+      <title>发布一个使用简单的绘图工具</title>
+      <link>http://blog.codeg.cn/2014/12/27/gochart-info/</link>
+      <pubDate>Sat, 27 Dec 2014 00:00:00 +0000</pubDate>
+      
+      <guid>http://blog.codeg.cn/2014/12/27/gochart-info/</guid>
+      <description>gochart是仿照goplot使用golang和highcharts开源库制作的一个使用起来非常简单的绘制图表的工具，图表风格有曲线图、折</description>
+    </item>
+    
+  </channel>
+</rss>

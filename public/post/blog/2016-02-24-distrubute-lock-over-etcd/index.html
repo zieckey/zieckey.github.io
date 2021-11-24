@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN" lang="zh-CN">
+<head>
+  <link href="https://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="generator" content="Hugo 0.89.4" />
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>使用Golang利用ectd实现一个分布式锁 &middot; CodeG Blog</title>
+  <meta name="description" content="" />
+
+  
+  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/print.css" media="print">
+  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/poole.css">
+  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/syntax.css">
+  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/hyde.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
+
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="http://blog.codeg.cn/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="http://blog.codeg.cn/favicon.png">
+
+  
+  
+</head>
+
+  <body class=" ">
+  <aside class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <a href="http://blog.codeg.cn/"><h1>CodeG Blog</h1></a>
+      <p class="lead">
+       思路决定出路，态度决定高度。 
+      </p>
+    </div>
+
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="http://blog.codeg.cn/">Home</a> </li>
+        <li><a href="http://blog.codeg.cn/post/"> 技术文章 </a></li><li><a href="http://blog.codeg.cn/about/"> 关于我 </a></li>
+      </ul>
+    </nav>
+
+    <p>&copy; 2021. All rights reserved. </p>
+  </div>
+</aside>
+
+    <main class="content container">
+    <div class="post">
+  <h1>使用Golang利用ectd实现一个分布式锁</h1>
+  <time datetime=2016-02-24T20:43:00Z class="post-date">Wed, Feb 24, 2016</time>
+  <p><code>etcd</code>是随着<code>CoreOS</code>项目一起成长起来的，随着Golang和CoreOS等项目在开源社区日益火热，
+<code>etcd</code>作为一个高可用、强一致性的分布式Key-Value存储系统被越来越多的开发人员关注和使用。</p>
+<p>这篇<a href="http://www.infoq.com/cn/articles/etcd-interpretation-application-scenario-implement-principle">文章</a>全方位介绍了etcd的应用场景，这里简单摘要如下：</p>
+<ul>
+<li>服务发现（Service Discovery）</li>
+<li>消息发布与订阅</li>
+<li>负载均衡</li>
+<li>分布式通知与协调</li>
+<li>分布式锁</li>
+<li>分布式队列</li>
+<li>集群监控与Leader竞选</li>
+<li>为什么用etcd而不用ZooKeeper</li>
+</ul>
+<p>本文重点介绍如何利用<code>ectd</code>实现一个分布式锁。
+锁的概念大家都熟悉，当我们希望某一事件在同一时间点只有一个线程(goroutine)在做，或者某一个资源在同一时间点只有一个服务能访问，这个时候我们就需要用到锁。
+例如我们要实现一个分布式的id生成器，多台服务器之间的协调就非常麻烦。分布式锁就正好派上用场。</p>
+<p>其基本实现原理为：</p>
+<ol>
+<li>在ectd系统里创建一个key</li>
+<li>如果创建失败，key存在，则监听该key的变化事件，直到该key被删除，回到1</li>
+<li>如果创建成功，则认为我获得了锁</li>
+</ol>
+<p>具体代码如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">etcdsync</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+	<span class="s">&#34;fmt&#34;</span>
+	<span class="s">&#34;io&#34;</span>
+	<span class="s">&#34;os&#34;</span>
+	<span class="s">&#34;sync&#34;</span>
+	<span class="s">&#34;time&#34;</span>
+
+	<span class="s">&#34;github.com/coreos/etcd/client&#34;</span>
+	<span class="s">&#34;github.com/coreos/etcd/Godeps/_workspace/src/golang.org/x/net/context&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">const</span> <span class="p">(</span>
+	<span class="nx">defaultTTL</span> <span class="p">=</span> <span class="mi">60</span>
+	<span class="nx">defaultTry</span> <span class="p">=</span> <span class="mi">3</span>
+	<span class="nx">deleteAction</span> <span class="p">=</span> <span class="s">&#34;delete&#34;</span>
+	<span class="nx">expireAction</span> <span class="p">=</span> <span class="s">&#34;expire&#34;</span>
+<span class="p">)</span>
+
+<span class="c1">// A Mutex is a mutual exclusion lock which is distributed across a cluster.
+</span><span class="c1"></span><span class="kd">type</span> <span class="nx">Mutex</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span class="nx">key</span>    <span class="kt">string</span>
+	<span class="nx">id</span>     <span class="kt">string</span> <span class="c1">// The identity of the caller
+</span><span class="c1"></span>	<span class="nx">client</span> <span class="nx">client</span><span class="p">.</span><span class="nx">Client</span>
+	<span class="nx">kapi</span>   <span class="nx">client</span><span class="p">.</span><span class="nx">KeysAPI</span>
+	<span class="nx">ctx</span>    <span class="nx">context</span><span class="p">.</span><span class="nx">Context</span>
+	<span class="nx">ttl</span>    <span class="nx">time</span><span class="p">.</span><span class="nx">Duration</span>
+	<span class="nx">mutex</span>  <span class="o">*</span><span class="nx">sync</span><span class="p">.</span><span class="nx">Mutex</span>
+	<span class="nx">logger</span> <span class="nx">io</span><span class="p">.</span><span class="nx">Writer</span>
+<span class="p">}</span>
+
+<span class="c1">// New creates a Mutex with the given key which must be the same
+</span><span class="c1">// across the cluster nodes.
+</span><span class="c1">// machines are the ectd cluster addresses
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">New</span><span class="p">(</span><span class="nx">key</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">ttl</span> <span class="kt">int</span><span class="p">,</span> <span class="nx">machines</span> <span class="p">[]</span><span class="kt">string</span><span class="p">)</span> <span class="o">*</span><span class="nx">Mutex</span> <span class="p">{</span>
+	<span class="nx">cfg</span> <span class="o">:=</span> <span class="nx">client</span><span class="p">.</span><span class="nx">Config</span><span class="p">{</span>
+		<span class="nx">Endpoints</span><span class="p">:</span>               <span class="nx">machines</span><span class="p">,</span>
+		<span class="nx">Transport</span><span class="p">:</span>               <span class="nx">client</span><span class="p">.</span><span class="nx">DefaultTransport</span><span class="p">,</span>
+		<span class="nx">HeaderTimeoutPerRequest</span><span class="p">:</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">,</span>
+	<span class="p">}</span>
+
+	<span class="nx">c</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">client</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">cfg</span><span class="p">)</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="kc">nil</span>
+	<span class="p">}</span>
+
+	<span class="nx">hostname</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Hostname</span><span class="p">()</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="kc">nil</span>
+	<span class="p">}</span>
+
+	<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">key</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">||</span> <span class="nb">len</span><span class="p">(</span><span class="nx">machines</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="kc">nil</span>
+	<span class="p">}</span>
+
+	<span class="k">if</span> <span class="nx">key</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="sc">&#39;/&#39;</span> <span class="p">{</span>
+		<span class="nx">key</span> <span class="p">=</span> <span class="s">&#34;/&#34;</span> <span class="o">+</span> <span class="nx">key</span>
+	<span class="p">}</span>
+
+	<span class="k">if</span> <span class="nx">ttl</span> <span class="p">&lt;</span> <span class="mi">1</span> <span class="p">{</span>
+		<span class="nx">ttl</span> <span class="p">=</span> <span class="nx">defaultTTL</span>
+	<span class="p">}</span>
+
+	<span class="k">return</span> <span class="o">&amp;</span><span class="nx">Mutex</span><span class="p">{</span>
+		<span class="nx">key</span><span class="p">:</span>    <span class="nx">key</span><span class="p">,</span>
+		<span class="nx">id</span><span class="p">:</span>     <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;%v-%v-%v&#34;</span><span class="p">,</span> <span class="nx">hostname</span><span class="p">,</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Getpid</span><span class="p">(),</span> <span class="nx">time</span><span class="p">.</span><span class="nf">Now</span><span class="p">().</span><span class="nf">Format</span><span class="p">(</span><span class="s">&#34;20060102-15:04:05.999999999&#34;</span><span class="p">)),</span>
+		<span class="nx">client</span><span class="p">:</span> <span class="nx">c</span><span class="p">,</span>
+		<span class="nx">kapi</span><span class="p">:</span>   <span class="nx">client</span><span class="p">.</span><span class="nf">NewKeysAPI</span><span class="p">(</span><span class="nx">c</span><span class="p">),</span>
+		<span class="nx">ctx</span><span class="p">:</span> <span class="nx">context</span><span class="p">.</span><span class="nf">TODO</span><span class="p">(),</span>
+		<span class="nx">ttl</span><span class="p">:</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nf">Duration</span><span class="p">(</span><span class="nx">ttl</span><span class="p">),</span>
+		<span class="nx">mutex</span><span class="p">:</span>  <span class="nb">new</span><span class="p">(</span><span class="nx">sync</span><span class="p">.</span><span class="nx">Mutex</span><span class="p">),</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// Lock locks m.
+</span><span class="c1">// If the lock is already in use, the calling goroutine
+</span><span class="c1">// blocks until the mutex is available.
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><span class="nx">Mutex</span><span class="p">)</span> <span class="nf">Lock</span><span class="p">()</span> <span class="p">(</span><span class="nx">err</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">m</span><span class="p">.</span><span class="nx">mutex</span><span class="p">.</span><span class="nf">Lock</span><span class="p">()</span>
+	<span class="k">for</span> <span class="nx">try</span> <span class="o">:=</span> <span class="mi">1</span><span class="p">;</span> <span class="nx">try</span> <span class="o">&lt;=</span> <span class="nx">defaultTry</span><span class="p">;</span> <span class="nx">try</span><span class="o">++</span> <span class="p">{</span>
+		<span class="k">if</span> <span class="nx">m</span><span class="p">.</span><span class="nf">lock</span><span class="p">()</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+			<span class="k">return</span> <span class="kc">nil</span>
+		<span class="p">}</span>
+		
+		<span class="nx">m</span><span class="p">.</span><span class="nf">debug</span><span class="p">(</span><span class="s">&#34;Lock node %v ERROR %v&#34;</span><span class="p">,</span> <span class="nx">m</span><span class="p">.</span><span class="nx">key</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+		<span class="k">if</span> <span class="nx">try</span> <span class="p">&lt;</span> <span class="nx">defaultTry</span> <span class="p">{</span>
+			<span class="nx">m</span><span class="p">.</span><span class="nf">debug</span><span class="p">(</span><span class="s">&#34;Try to lock node %v again&#34;</span><span class="p">,</span> <span class="nx">m</span><span class="p">.</span><span class="nx">key</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="nx">err</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><span class="nx">Mutex</span><span class="p">)</span> <span class="nf">lock</span><span class="p">()</span> <span class="p">(</span><span class="nx">err</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">m</span><span class="p">.</span><span class="nf">debug</span><span class="p">(</span><span class="s">&#34;Trying to create a node : key=%v&#34;</span><span class="p">,</span> <span class="nx">m</span><span class="p">.</span><span class="nx">key</span><span class="p">)</span>
+	<span class="nx">setOptions</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">client</span><span class="p">.</span><span class="nx">SetOptions</span><span class="p">{</span>
+		<span class="nx">PrevExist</span><span class="p">:</span><span class="nx">client</span><span class="p">.</span><span class="nx">PrevNoExist</span><span class="p">,</span>
+		<span class="nx">TTL</span><span class="p">:</span>      <span class="nx">m</span><span class="p">.</span><span class="nx">ttl</span><span class="p">,</span>
+	<span class="p">}</span>
+	<span class="nx">resp</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">m</span><span class="p">.</span><span class="nx">kapi</span><span class="p">.</span><span class="nf">Set</span><span class="p">(</span><span class="nx">m</span><span class="p">.</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">m</span><span class="p">.</span><span class="nx">key</span><span class="p">,</span> <span class="nx">m</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span> <span class="nx">setOptions</span><span class="p">)</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">m</span><span class="p">.</span><span class="nf">debug</span><span class="p">(</span><span class="s">&#34;Create node %v OK [%q]&#34;</span><span class="p">,</span> <span class="nx">m</span><span class="p">.</span><span class="nx">key</span><span class="p">,</span> <span class="nx">resp</span><span class="p">)</span>
+		<span class="k">return</span> <span class="kc">nil</span>
+	<span class="p">}</span>
+	<span class="nx">m</span><span class="p">.</span><span class="nf">debug</span><span class="p">(</span><span class="s">&#34;Create node %v failed [%v]&#34;</span><span class="p">,</span> <span class="nx">m</span><span class="p">.</span><span class="nx">key</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+	<span class="nx">e</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">err</span><span class="p">.(</span><span class="nx">client</span><span class="p">.</span><span class="nx">Error</span><span class="p">)</span>
+	<span class="k">if</span> <span class="p">!</span><span class="nx">ok</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="nx">err</span>
+	<span class="p">}</span>
+
+	<span class="k">if</span> <span class="nx">e</span><span class="p">.</span><span class="nx">Code</span> <span class="o">!=</span> <span class="nx">client</span><span class="p">.</span><span class="nx">ErrorCodeNodeExist</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="nx">err</span>
+	<span class="p">}</span>
+
+	<span class="c1">// Get the already node&#39;s value.
+</span><span class="c1"></span>	<span class="nx">resp</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">m</span><span class="p">.</span><span class="nx">kapi</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="nx">m</span><span class="p">.</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">m</span><span class="p">.</span><span class="nx">key</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="nx">err</span>
+	<span class="p">}</span>
+	<span class="nx">m</span><span class="p">.</span><span class="nf">debug</span><span class="p">(</span><span class="s">&#34;Get node %v OK&#34;</span><span class="p">,</span> <span class="nx">m</span><span class="p">.</span><span class="nx">key</span><span class="p">)</span>
+	<span class="nx">watcherOptions</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">client</span><span class="p">.</span><span class="nx">WatcherOptions</span><span class="p">{</span>
+		<span class="nx">AfterIndex</span> <span class="p">:</span> <span class="nx">resp</span><span class="p">.</span><span class="nx">Index</span><span class="p">,</span>
+		<span class="nx">Recursive</span><span class="p">:</span><span class="kc">false</span><span class="p">,</span>
+	<span class="p">}</span>
+	<span class="nx">watcher</span> <span class="o">:=</span> <span class="nx">m</span><span class="p">.</span><span class="nx">kapi</span><span class="p">.</span><span class="nf">Watcher</span><span class="p">(</span><span class="nx">m</span><span class="p">.</span><span class="nx">key</span><span class="p">,</span> <span class="nx">watcherOptions</span><span class="p">)</span>
+	<span class="k">for</span> <span class="p">{</span>
+		<span class="nx">m</span><span class="p">.</span><span class="nf">debug</span><span class="p">(</span><span class="s">&#34;Watching %v ...&#34;</span><span class="p">,</span> <span class="nx">m</span><span class="p">.</span><span class="nx">key</span><span class="p">)</span>
+		<span class="nx">resp</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">watcher</span><span class="p">.</span><span class="nf">Next</span><span class="p">(</span><span class="nx">m</span><span class="p">.</span><span class="nx">ctx</span><span class="p">)</span>
+		<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+			<span class="k">return</span> <span class="nx">err</span>
+		<span class="p">}</span>
+
+		<span class="nx">m</span><span class="p">.</span><span class="nf">debug</span><span class="p">(</span><span class="s">&#34;Received an event : %q&#34;</span><span class="p">,</span> <span class="nx">resp</span><span class="p">)</span>
+		<span class="k">if</span> <span class="nx">resp</span><span class="p">.</span><span class="nx">Action</span> <span class="o">==</span> <span class="nx">deleteAction</span> <span class="o">||</span> <span class="nx">resp</span><span class="p">.</span><span class="nx">Action</span> <span class="o">==</span> <span class="nx">expireAction</span> <span class="p">{</span>
+			<span class="k">return</span> <span class="kc">nil</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+
+<span class="p">}</span>
+
+<span class="c1">// Unlock unlocks m.
+</span><span class="c1">// It is a run-time error if m is not locked on entry to Unlock.
+</span><span class="c1">//
+</span><span class="c1">// A locked Mutex is not associated with a particular goroutine.
+</span><span class="c1">// It is allowed for one goroutine to lock a Mutex and then
+</span><span class="c1">// arrange for another goroutine to unlock it.
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><span class="nx">Mutex</span><span class="p">)</span> <span class="nf">Unlock</span><span class="p">()</span> <span class="p">(</span><span class="nx">err</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">defer</span> <span class="nx">m</span><span class="p">.</span><span class="nx">mutex</span><span class="p">.</span><span class="nf">Unlock</span><span class="p">()</span>
+	<span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">1</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;=</span> <span class="nx">defaultTry</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+		<span class="kd">var</span> <span class="nx">resp</span> <span class="o">*</span><span class="nx">client</span><span class="p">.</span><span class="nx">Response</span>
+		<span class="nx">resp</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">m</span><span class="p">.</span><span class="nx">kapi</span><span class="p">.</span><span class="nf">Delete</span><span class="p">(</span><span class="nx">m</span><span class="p">.</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">m</span><span class="p">.</span><span class="nx">key</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span>
+		<span class="k">if</span> <span class="nx">err</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+			<span class="nx">m</span><span class="p">.</span><span class="nf">debug</span><span class="p">(</span><span class="s">&#34;Delete %v OK&#34;</span><span class="p">,</span> <span class="nx">m</span><span class="p">.</span><span class="nx">key</span><span class="p">)</span>
+			<span class="k">return</span> <span class="kc">nil</span>
+		<span class="p">}</span>
+		<span class="nx">m</span><span class="p">.</span><span class="nf">debug</span><span class="p">(</span><span class="s">&#34;Delete %v falied: %q&#34;</span><span class="p">,</span> <span class="nx">m</span><span class="p">.</span><span class="nx">key</span><span class="p">,</span> <span class="nx">resp</span><span class="p">)</span>
+		<span class="nx">e</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">err</span><span class="p">.(</span><span class="nx">client</span><span class="p">.</span><span class="nx">Error</span><span class="p">)</span>
+		<span class="k">if</span> <span class="nx">ok</span> <span class="o">&amp;&amp;</span> <span class="nx">e</span><span class="p">.</span><span class="nx">Code</span> <span class="o">==</span> <span class="nx">client</span><span class="p">.</span><span class="nx">ErrorCodeKeyNotFound</span> <span class="p">{</span>
+			<span class="k">return</span> <span class="kc">nil</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="nx">err</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><span class="nx">Mutex</span><span class="p">)</span> <span class="nf">debug</span><span class="p">(</span><span class="nx">format</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">v</span> <span class="o">...</span><span class="kd">interface</span><span class="p">{})</span> <span class="p">{</span>
+	<span class="k">if</span> <span class="nx">m</span><span class="p">.</span><span class="nx">logger</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">m</span><span class="p">.</span><span class="nx">logger</span><span class="p">.</span><span class="nf">Write</span><span class="p">([]</span><span class="nb">byte</span><span class="p">(</span><span class="nx">m</span><span class="p">.</span><span class="nx">id</span><span class="p">))</span>
+		<span class="nx">m</span><span class="p">.</span><span class="nx">logger</span><span class="p">.</span><span class="nf">Write</span><span class="p">([]</span><span class="nb">byte</span><span class="p">(</span><span class="s">&#34; &#34;</span><span class="p">))</span>
+		<span class="nx">m</span><span class="p">.</span><span class="nx">logger</span><span class="p">.</span><span class="nf">Write</span><span class="p">([]</span><span class="nb">byte</span><span class="p">(</span><span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="nx">format</span><span class="p">,</span> <span class="nx">v</span><span class="o">...</span><span class="p">)))</span>
+		<span class="nx">m</span><span class="p">.</span><span class="nx">logger</span><span class="p">.</span><span class="nf">Write</span><span class="p">([]</span><span class="nb">byte</span><span class="p">(</span><span class="s">&#34;\n&#34;</span><span class="p">))</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><span class="nx">Mutex</span><span class="p">)</span> <span class="nf">SetDebugLogger</span><span class="p">(</span><span class="nx">w</span> <span class="nx">io</span><span class="p">.</span><span class="nx">Writer</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">m</span><span class="p">.</span><span class="nx">logger</span> <span class="p">=</span> <span class="nx">w</span>
+<span class="p">}</span>
+</code></pre></div><p>其实类似的实现有很多，但目前都已经过时，使用的都是被官方标记为<code>deprecated</code>的项目。且大部分接口都不如上述代码简单。
+使用上，跟Golang官方sync包的Mutex接口非常类似，先<code>New()</code>，然后调用<code>Lock()</code>，使用完后调用<code>Unlock()</code>，就三个接口，就是这么简单。示例代码如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+	<span class="s">&#34;github.com/zieckey/etcdsync&#34;</span>
+	<span class="s">&#34;log&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="c1">//etcdsync.SetDebug(true)
+</span><span class="c1"></span>	<span class="nx">log</span><span class="p">.</span><span class="nf">SetFlags</span><span class="p">(</span><span class="nx">log</span><span class="p">.</span><span class="nx">Ldate</span><span class="p">|</span><span class="nx">log</span><span class="p">.</span><span class="nx">Ltime</span><span class="p">|</span><span class="nx">log</span><span class="p">.</span><span class="nx">Lshortfile</span><span class="p">)</span>
+	<span class="nx">m</span> <span class="o">:=</span> <span class="nx">etcdsync</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="s">&#34;/etcdsync&#34;</span><span class="p">,</span> <span class="s">&#34;123&#34;</span><span class="p">,</span> <span class="p">[]</span><span class="kt">string</span><span class="p">{</span><span class="s">&#34;http://127.0.0.1:2379&#34;</span><span class="p">})</span>
+	<span class="k">if</span> <span class="nx">m</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;etcdsync.NewMutex failed&#34;</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="nx">err</span> <span class="o">:=</span> <span class="nx">m</span><span class="p">.</span><span class="nf">Lock</span><span class="p">()</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;etcdsync.Lock failed&#34;</span><span class="p">)</span>
+	<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+		<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;etcdsync.Lock OK&#34;</span><span class="p">)</span>
+	<span class="p">}</span>
+
+	<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Get the lock. Do something here.&#34;</span><span class="p">)</span>
+
+	<span class="nx">err</span> <span class="p">=</span> <span class="nx">m</span><span class="p">.</span><span class="nf">Unlock</span><span class="p">()</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;etcdsync.Unlock failed&#34;</span><span class="p">)</span>
+	<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+		<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;etcdsync.Unlock OK&#34;</span><span class="p">)</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div><h2 id="参考">参考</h2>
+<ol>
+<li><a href="https://github.com/zieckey/etcdsync">etcdsync项目地址</a></li>
+<li><a href="https://github.com/coreos/etcd">ectd项目官方地址</a></li>
+</ol>
+
+</div>
+
+
+    </main>
+
+    
+      
+    
+  </body>
+</html>

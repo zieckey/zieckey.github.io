@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN" lang="zh-CN">
+<head>
+  <link href="https://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="generator" content="Hugo 0.89.4" />
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Ubuntu中国源地址列表及更改方法 &middot; CodeG Blog</title>
+  <meta name="description" content="这里贴出ubuntu系统中国源的list，更新速度超快" />
+
+  
+  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/print.css" media="print">
+  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/poole.css">
+  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/syntax.css">
+  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/hyde.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
+
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="http://blog.codeg.cn/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="http://blog.codeg.cn/favicon.png">
+
+  
+  
+</head>
+
+  <body class=" ">
+  <aside class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <a href="http://blog.codeg.cn/"><h1>CodeG Blog</h1></a>
+      <p class="lead">
+       思路决定出路，态度决定高度。 
+      </p>
+    </div>
+
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="http://blog.codeg.cn/">Home</a> </li>
+        <li><a href="http://blog.codeg.cn/post/"> 技术文章 </a></li><li><a href="http://blog.codeg.cn/about/"> 关于我 </a></li>
+      </ul>
+    </nav>
+
+    <p>&copy; 2021. All rights reserved. </p>
+  </div>
+</aside>
+
+    <main class="content container">
+    <div class="post">
+  <h1>Ubuntu中国源地址列表及更改方法</h1>
+  <time datetime=2014-12-15T00:00:00Z class="post-date">Mon, Dec 15, 2014</time>
+  <ol>
+<li>
+<p>首先备份Ubuntu源列表</p>
+<p>sudo cp /etc/apt/sources.list /etc/apt/sources.list.backup （备份下当前的源列表）
+sudo vim /etc/apt/sources.list</p>
+</li>
+</ol>
+<p>将下面的代码粘贴进去（“#”开头的那一行为注释，可以直接复制进文件中）之后，再执行命令“sudo apt-get update”</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go">
+
+<span class="err">#</span><span class="nx">deb</span> <span class="nx">cdrom</span><span class="p">:[</span><span class="nx">Ubuntu</span><span class="o">-</span><span class="nx">Server</span> <span class="mf">14.04.1</span> <span class="nx">LTS</span> <span class="nx">_Trusty</span> <span class="nx">Tahr_</span> <span class="o">-</span> <span class="nx">Release</span> <span class="nf">amd64</span> <span class="p">(</span><span class="mf">20140722.3</span><span class="p">)]</span><span class="o">/</span> <span class="nx">trusty</span> <span class="nx">main</span> <span class="nx">restricted</span>
+
+<span class="err">#</span> <span class="nx">See</span> <span class="nx">http</span><span class="p">:</span><span class="c1">//help.ubuntu.com/community/UpgradeNotes for how to upgrade to
+</span><span class="c1"></span><span class="err">#</span> <span class="nx">newer</span> <span class="nx">versions</span> <span class="nx">of</span> <span class="nx">the</span> <span class="nx">distribution</span><span class="p">.</span>
+<span class="nx">deb</span> <span class="nx">http</span><span class="p">:</span><span class="c1">//cn.archive.ubuntu.com/ubuntu/ trusty main restricted
+</span><span class="c1"></span><span class="nx">deb</span><span class="o">-</span><span class="nx">src</span> <span class="nx">http</span><span class="p">:</span><span class="c1">//cn.archive.ubuntu.com/ubuntu/ trusty main restricted
+</span><span class="c1"></span>
+<span class="err">##</span> <span class="nx">Major</span> <span class="nx">bug</span> <span class="nx">fix</span> <span class="nx">updates</span> <span class="nx">produced</span> <span class="nx">after</span> <span class="nx">the</span> <span class="nx">final</span> <span class="nx">release</span> <span class="nx">of</span> <span class="nx">the</span>
+<span class="err">##</span> <span class="nx">distribution</span><span class="p">.</span>
+<span class="nx">deb</span> <span class="nx">http</span><span class="p">:</span><span class="c1">//cn.archive.ubuntu.com/ubuntu/ trusty-updates main restricted
+</span><span class="c1"></span><span class="nx">deb</span><span class="o">-</span><span class="nx">src</span> <span class="nx">http</span><span class="p">:</span><span class="c1">//cn.archive.ubuntu.com/ubuntu/ trusty-updates main restricted
+</span><span class="c1"></span>
+<span class="err">##</span> <span class="nx">N</span><span class="p">.</span><span class="nx">B</span><span class="p">.</span> <span class="nx">software</span> <span class="nx">from</span> <span class="nx">this</span> <span class="nx">repository</span> <span class="nx">is</span> <span class="nx">ENTIRELY</span> <span class="nx">UNSUPPORTED</span> <span class="nx">by</span> <span class="nx">the</span> <span class="nx">Ubuntu</span>
+<span class="err">##</span> <span class="nx">team</span><span class="p">.</span> <span class="nx">Also</span><span class="p">,</span> <span class="nx">please</span> <span class="nx">note</span> <span class="nx">that</span> <span class="nx">software</span> <span class="nx">in</span> <span class="nx">universe</span> <span class="nx">WILL</span> <span class="nx">NOT</span> <span class="nx">receive</span> <span class="nx">any</span>
+<span class="err">##</span> <span class="nx">review</span> <span class="nx">or</span> <span class="nx">updates</span> <span class="nx">from</span> <span class="nx">the</span> <span class="nx">Ubuntu</span> <span class="nx">security</span> <span class="nx">team</span><span class="p">.</span>
+<span class="nx">deb</span> <span class="nx">http</span><span class="p">:</span><span class="c1">//cn.archive.ubuntu.com/ubuntu/ trusty universe
+</span><span class="c1"></span><span class="nx">deb</span><span class="o">-</span><span class="nx">src</span> <span class="nx">http</span><span class="p">:</span><span class="c1">//cn.archive.ubuntu.com/ubuntu/ trusty universe
+</span><span class="c1"></span><span class="nx">deb</span> <span class="nx">http</span><span class="p">:</span><span class="c1">//cn.archive.ubuntu.com/ubuntu/ trusty-updates universe
+</span><span class="c1"></span><span class="nx">deb</span><span class="o">-</span><span class="nx">src</span> <span class="nx">http</span><span class="p">:</span><span class="c1">//cn.archive.ubuntu.com/ubuntu/ trusty-updates universe
+</span><span class="c1"></span>
+<span class="err">##</span> <span class="nx">N</span><span class="p">.</span><span class="nx">B</span><span class="p">.</span> <span class="nx">software</span> <span class="nx">from</span> <span class="nx">this</span> <span class="nx">repository</span> <span class="nx">is</span> <span class="nx">ENTIRELY</span> <span class="nx">UNSUPPORTED</span> <span class="nx">by</span> <span class="nx">the</span> <span class="nx">Ubuntu</span> 
+<span class="err">##</span> <span class="nx">team</span><span class="p">,</span> <span class="nx">and</span> <span class="nx">may</span> <span class="nx">not</span> <span class="nx">be</span> <span class="nx">under</span> <span class="nx">a</span> <span class="nx">free</span> <span class="nx">licence</span><span class="p">.</span> <span class="nx">Please</span> <span class="nx">satisfy</span> <span class="nx">yourself</span> <span class="nx">as</span> <span class="nx">to</span> 
+<span class="err">##</span> <span class="nx">your</span> <span class="nx">rights</span> <span class="nx">to</span> <span class="nx">use</span> <span class="nx">the</span> <span class="nx">software</span><span class="p">.</span> <span class="nx">Also</span><span class="p">,</span> <span class="nx">please</span> <span class="nx">note</span> <span class="nx">that</span> <span class="nx">software</span> <span class="nx">in</span> 
+<span class="err">##</span> <span class="nx">multiverse</span> <span class="nx">WILL</span> <span class="nx">NOT</span> <span class="nx">receive</span> <span class="nx">any</span> <span class="nx">review</span> <span class="nx">or</span> <span class="nx">updates</span> <span class="nx">from</span> <span class="nx">the</span> <span class="nx">Ubuntu</span>
+<span class="err">##</span> <span class="nx">security</span> <span class="nx">team</span><span class="p">.</span>
+<span class="nx">deb</span> <span class="nx">http</span><span class="p">:</span><span class="c1">//cn.archive.ubuntu.com/ubuntu/ trusty multiverse
+</span><span class="c1"></span><span class="nx">deb</span><span class="o">-</span><span class="nx">src</span> <span class="nx">http</span><span class="p">:</span><span class="c1">//cn.archive.ubuntu.com/ubuntu/ trusty multiverse
+</span><span class="c1"></span><span class="nx">deb</span> <span class="nx">http</span><span class="p">:</span><span class="c1">//cn.archive.ubuntu.com/ubuntu/ trusty-updates multiverse
+</span><span class="c1"></span><span class="nx">deb</span><span class="o">-</span><span class="nx">src</span> <span class="nx">http</span><span class="p">:</span><span class="c1">//cn.archive.ubuntu.com/ubuntu/ trusty-updates multiverse
+</span><span class="c1"></span>
+<span class="err">##</span> <span class="nx">N</span><span class="p">.</span><span class="nx">B</span><span class="p">.</span> <span class="nx">software</span> <span class="nx">from</span> <span class="nx">this</span> <span class="nx">repository</span> <span class="nx">may</span> <span class="nx">not</span> <span class="nx">have</span> <span class="nx">been</span> <span class="nx">tested</span> <span class="nx">as</span>
+<span class="err">##</span> <span class="nx">extensively</span> <span class="nx">as</span> <span class="nx">that</span> <span class="nx">contained</span> <span class="nx">in</span> <span class="nx">the</span> <span class="nx">main</span> <span class="nx">release</span><span class="p">,</span> <span class="nx">although</span> <span class="nx">it</span> <span class="nx">includes</span>
+<span class="err">##</span> <span class="nx">newer</span> <span class="nx">versions</span> <span class="nx">of</span> <span class="nx">some</span> <span class="nx">applications</span> <span class="nx">which</span> <span class="nx">may</span> <span class="nx">provide</span> <span class="nx">useful</span> <span class="nx">features</span><span class="p">.</span>
+<span class="err">##</span> <span class="nx">Also</span><span class="p">,</span> <span class="nx">please</span> <span class="nx">note</span> <span class="nx">that</span> <span class="nx">software</span> <span class="nx">in</span> <span class="nx">backports</span> <span class="nx">WILL</span> <span class="nx">NOT</span> <span class="nx">receive</span> <span class="nx">any</span> <span class="nx">review</span>
+<span class="err">##</span> <span class="nx">or</span> <span class="nx">updates</span> <span class="nx">from</span> <span class="nx">the</span> <span class="nx">Ubuntu</span> <span class="nx">security</span> <span class="nx">team</span><span class="p">.</span>
+<span class="nx">deb</span> <span class="nx">http</span><span class="p">:</span><span class="c1">//cn.archive.ubuntu.com/ubuntu/ trusty-backports main restricted universe multiverse
+</span><span class="c1"></span><span class="nx">deb</span><span class="o">-</span><span class="nx">src</span> <span class="nx">http</span><span class="p">:</span><span class="c1">//cn.archive.ubuntu.com/ubuntu/ trusty-backports main restricted universe multiverse
+</span><span class="c1"></span>
+<span class="nx">deb</span> <span class="nx">http</span><span class="p">:</span><span class="c1">//security.ubuntu.com/ubuntu trusty-security main restricted
+</span><span class="c1"></span><span class="nx">deb</span><span class="o">-</span><span class="nx">src</span> <span class="nx">http</span><span class="p">:</span><span class="c1">//security.ubuntu.com/ubuntu trusty-security main restricted
+</span><span class="c1"></span><span class="nx">deb</span> <span class="nx">http</span><span class="p">:</span><span class="c1">//security.ubuntu.com/ubuntu trusty-security universe
+</span><span class="c1"></span><span class="nx">deb</span><span class="o">-</span><span class="nx">src</span> <span class="nx">http</span><span class="p">:</span><span class="c1">//security.ubuntu.com/ubuntu trusty-security universe
+</span><span class="c1"></span><span class="nx">deb</span> <span class="nx">http</span><span class="p">:</span><span class="c1">//security.ubuntu.com/ubuntu trusty-security multiverse
+</span><span class="c1"></span><span class="nx">deb</span><span class="o">-</span><span class="nx">src</span> <span class="nx">http</span><span class="p">:</span><span class="c1">//security.ubuntu.com/ubuntu trusty-security multiverse
+</span><span class="c1"></span>
+<span class="err">##</span> <span class="nx">Uncomment</span> <span class="nx">the</span> <span class="nx">following</span> <span class="nx">two</span> <span class="nx">lines</span> <span class="nx">to</span> <span class="nx">add</span> <span class="nx">software</span> <span class="nx">from</span> <span class="nx">Canonical</span><span class="err">&#39;</span><span class="nx">s</span>
+<span class="err">##</span> <span class="err">&#39;</span><span class="nx">partner</span><span class="err">&#39;</span> <span class="nx">repository</span><span class="p">.</span>
+<span class="err">##</span> <span class="nx">This</span> <span class="nx">software</span> <span class="nx">is</span> <span class="nx">not</span> <span class="nx">part</span> <span class="nx">of</span> <span class="nx">Ubuntu</span><span class="p">,</span> <span class="nx">but</span> <span class="nx">is</span> <span class="nx">offered</span> <span class="nx">by</span> <span class="nx">Canonical</span> <span class="nx">and</span> <span class="nx">the</span>
+<span class="err">##</span> <span class="nx">respective</span> <span class="nx">vendors</span> <span class="nx">as</span> <span class="nx">a</span> <span class="nx">service</span> <span class="nx">to</span> <span class="nx">Ubuntu</span> <span class="nx">users</span><span class="p">.</span>
+<span class="err">#</span> <span class="nx">deb</span> <span class="nx">http</span><span class="p">:</span><span class="c1">//archive.canonical.com/ubuntu trusty partner
+</span><span class="c1"></span><span class="err">#</span> <span class="nx">deb</span><span class="o">-</span><span class="nx">src</span> <span class="nx">http</span><span class="p">:</span><span class="c1">//archive.canonical.com/ubuntu trusty partner
+</span><span class="c1"></span>
+<span class="err">##</span> <span class="nx">Uncomment</span> <span class="nx">the</span> <span class="nx">following</span> <span class="nx">two</span> <span class="nx">lines</span> <span class="nx">to</span> <span class="nx">add</span> <span class="nx">software</span> <span class="nx">from</span> <span class="nx">Ubuntu</span><span class="err">&#39;</span><span class="nx">s</span>
+<span class="err">##</span> <span class="err">&#39;</span><span class="nx">extras</span><span class="err">&#39;</span> <span class="nx">repository</span><span class="p">.</span>
+<span class="err">##</span> <span class="nx">This</span> <span class="nx">software</span> <span class="nx">is</span> <span class="nx">not</span> <span class="nx">part</span> <span class="nx">of</span> <span class="nx">Ubuntu</span><span class="p">,</span> <span class="nx">but</span> <span class="nx">is</span> <span class="nx">offered</span> <span class="nx">by</span> <span class="nx">third</span><span class="o">-</span><span class="nx">party</span>
+<span class="err">##</span> <span class="nx">developers</span> <span class="nx">who</span> <span class="nx">want</span> <span class="nx">to</span> <span class="nx">ship</span> <span class="nx">their</span> <span class="nx">latest</span> <span class="nx">software</span><span class="p">.</span>
+<span class="err">#</span> <span class="nx">deb</span> <span class="nx">http</span><span class="p">:</span><span class="c1">//extras.ubuntu.com/ubuntu trusty main
+</span><span class="c1"></span><span class="err">#</span> <span class="nx">deb</span><span class="o">-</span><span class="nx">src</span> <span class="nx">http</span><span class="p">:</span><span class="c1">//extras.ubuntu.com/ubuntu trusty main
+</span></code></pre></div><p>如果还觉得不快，可以参考 <a href="http://blog.csdn.net/fly542/article/details/6758342">http://blog.csdn.net/fly542/article/details/6758342 </a></p>
+
+</div>
+
+
+    </main>
+
+    
+      
+    
+  </body>
+</html>

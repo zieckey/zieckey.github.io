@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN" lang="zh-CN">
+<head>
+  <link href="https://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="generator" content="Hugo 0.89.4" />
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Nginx源码研究（3）——Nginx数组ngx_array_t和示例 &middot; CodeG Blog</title>
+  <meta name="description" content="本文主要介绍Nginx数组ngx_array_t这一重要的数据结构的使用方法和具体实现。" />
+
+  
+  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/print.css" media="print">
+  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/poole.css">
+  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/syntax.css">
+  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/hyde.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
+
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="http://blog.codeg.cn/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="http://blog.codeg.cn/favicon.png">
+
+  
+  
+</head>
+
+  <body class=" ">
+  <aside class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <a href="http://blog.codeg.cn/"><h1>CodeG Blog</h1></a>
+      <p class="lead">
+       思路决定出路，态度决定高度。 
+      </p>
+    </div>
+
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="http://blog.codeg.cn/">Home</a> </li>
+        <li><a href="http://blog.codeg.cn/post/"> 技术文章 </a></li><li><a href="http://blog.codeg.cn/about/"> 关于我 </a></li>
+      </ul>
+    </nav>
+
+    <p>&copy; 2021. All rights reserved. </p>
+  </div>
+</aside>
+
+    <main class="content container">
+    <div class="post">
+  <h1>Nginx源码研究（3）——Nginx数组ngx_array_t和示例</h1>
+  <time datetime=2015-01-03T00:00:00Z class="post-date">Sat, Jan 3, 2015</time>
+  <p>本文主要介绍Nginx数组<code>ngx_array_t</code>这一重要的数据结构的使用方法和具体实现。</p>
+<p><code>ngx_array_t</code>是nginx内部使用的数组结构。nginx的数组结构在存储上与大家认知的C语言内置的数组有相似性，比如实际上存储数据的区域也是一大块连续的内存。但是数组除了存储数据的内存以外还包含一些元信息来描述相关的一些信息。ngx_array_t的定义位于<code>src/core/ngx_array.{c,h}</code>里面。</p>
+<p>ngx_array.h实现和注释如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="cp">#include</span> <span class="cpf">&lt;ngx_config.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;ngx_core.h&gt;</span><span class="cp">
+</span><span class="cp"></span>
+<span class="c1">// 动态数组
+</span><span class="c1"></span><span class="k">struct</span> <span class="n">ngx_array_s</span> <span class="p">{</span>
+    <span class="c1">// elts指向数组的首地址
+</span><span class="c1"></span>    <span class="kt">void</span>        <span class="o">*</span><span class="n">elts</span><span class="p">;</span> 
+    <span class="c1">// nelts是数组中已经使用的元素个数
+</span><span class="c1"></span>    <span class="n">ngx_uint_t</span>   <span class="n">nelts</span><span class="p">;</span> 
+    <span class="c1">// 每个数组元素占用的内存大小
+</span><span class="c1"></span>    <span class="n">size_t</span>       <span class="n">size</span><span class="p">;</span>  
+    <span class="c1">// 当前数组中能够容纳元素个数的总大小
+</span><span class="c1"></span>    <span class="n">ngx_uint_t</span>   <span class="n">nalloc</span><span class="p">;</span> 
+    <span class="c1">// 内存池对象
+</span><span class="c1"></span>    <span class="n">ngx_pool_t</span>  <span class="o">*</span><span class="n">pool</span><span class="p">;</span>  
+<span class="p">};</span>
+
+<span class="cm">/*
+</span><span class="cm">从内存池中创建n个元素的数组，元素大小为size
+</span><span class="cm">创建一个新的数组对象，并返回这个对象。
+</span><span class="cm">
+</span><span class="cm">p:	数组分配内存使用的内存池；
+</span><span class="cm">n:	数组的初始容量大小，即在不扩容的情况下最多可以容纳的元素个数。
+</span><span class="cm">size:	单个元素的大小，单位是字节。
+</span><span class="cm">
+</span><span class="cm">注意事项: 由于使用ngx_palloc分配内存，数组在扩容时，旧的内存不会被释放，会造成内存的浪费。
+</span><span class="cm">因此，最好能提前规划好数组的容量，在创建或者初始化的时候一次搞定，避免多次扩容，造成内存浪费。
+</span><span class="cm"> */</span>
+<span class="n">ngx_array_t</span> <span class="o">*</span><span class="nf">ngx_array_create</span><span class="p">(</span><span class="n">ngx_pool_t</span> <span class="o">*</span><span class="n">p</span><span class="p">,</span> <span class="n">ngx_uint_t</span> <span class="n">n</span><span class="p">,</span> <span class="n">size_t</span> <span class="n">size</span><span class="p">);</span>
+
+<span class="c1">// 销毁该数组对象，并释放其分配的内存回内存池。
+</span><span class="c1"></span><span class="kt">void</span> <span class="nf">ngx_array_destroy</span><span class="p">(</span><span class="n">ngx_array_t</span> <span class="o">*</span><span class="n">a</span><span class="p">);</span>
+
+<span class="c1">// 在数组a上新追加一个元素，并返回指向新元素的指针。
+</span><span class="c1">// 需要把返回的指针使用类型转换，转换为具体的类型，然后再给新元素本身或者是各字段（如果数组的元素是复杂类型）赋值。
+</span><span class="c1">// 如果数组已满，则重新分配两倍（nalloc*size)的内存空间，且nalloc更新为2*nalloc
+</span><span class="c1"></span><span class="kt">void</span> <span class="o">*</span><span class="nf">ngx_array_push</span><span class="p">(</span><span class="n">ngx_array_t</span> <span class="o">*</span><span class="n">a</span><span class="p">);</span>
+
+<span class="c1">// 返回将要添加n个元素到数组中其首个元素的地址
+</span><span class="c1"></span><span class="kt">void</span> <span class="o">*</span><span class="nf">ngx_array_push_n</span><span class="p">(</span><span class="n">ngx_array_t</span> <span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="n">ngx_uint_t</span> <span class="n">n</span><span class="p">);</span>
+
+
+<span class="c1">// 如果一个数组对象是被分配在堆上的，那么当调用ngx_array_destroy销毁以后，如果想再次使用，就可以调用此函数。
+</span><span class="c1">// 如果一个数组对象是被分配在栈上的，那么就需要调用此函数，进行初始化的工作以后，才可以使用。
+</span><span class="c1"></span><span class="k">static</span> <span class="n">ngx_inline</span> <span class="n">ngx_int_t</span>
+<span class="nf">ngx_array_init</span><span class="p">(</span><span class="n">ngx_array_t</span> <span class="o">*</span><span class="n">array</span><span class="p">,</span> <span class="n">ngx_pool_t</span> <span class="o">*</span><span class="n">pool</span><span class="p">,</span> <span class="n">ngx_uint_t</span> <span class="n">n</span><span class="p">,</span> <span class="n">size_t</span> <span class="n">size</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="cm">/*
+</span><span class="cm">     * set &#34;array-&gt;nelts&#34; before &#34;array-&gt;elts&#34;, otherwise MSVC thinks
+</span><span class="cm">     * that &#34;array-&gt;nelts&#34; may be used without having been initialized
+</span><span class="cm">     */</span>
+
+    <span class="n">array</span><span class="o">-&gt;</span><span class="n">nelts</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="n">array</span><span class="o">-&gt;</span><span class="n">size</span> <span class="o">=</span> <span class="n">size</span><span class="p">;</span>
+    <span class="n">array</span><span class="o">-&gt;</span><span class="n">nalloc</span> <span class="o">=</span> <span class="n">n</span><span class="p">;</span>
+    <span class="n">array</span><span class="o">-&gt;</span><span class="n">pool</span> <span class="o">=</span> <span class="n">pool</span><span class="p">;</span>
+
+    <span class="n">array</span><span class="o">-&gt;</span><span class="n">elts</span> <span class="o">=</span> <span class="n">ngx_palloc</span><span class="p">(</span><span class="n">pool</span><span class="p">,</span> <span class="n">n</span> <span class="o">*</span> <span class="n">size</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">array</span><span class="o">-&gt;</span><span class="n">elts</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">NGX_ERROR</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">NGX_OK</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div><p>测试代码，完整的工程编译请参考 <a href="https://github.com/zieckey/nginx-research">https://github.com/zieckey/nginx-research项目</a></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cPP" data-lang="cPP"><span class="cp">#include</span> <span class="cpf">&#34;allinc.h&#34;</span><span class="cp">
+</span><span class="cp"></span>
+<span class="k">struct</span> <span class="nc">User</span> <span class="p">{</span>
+    <span class="n">ngx_str_t</span> <span class="n">name</span><span class="p">;</span>
+    <span class="n">ngx_str_t</span> <span class="n">url</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">id</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="cm">/*
+</span><span class="cm">* 
+</span><span class="cm">*/</span>
+<span class="n">TEST_UNIT</span><span class="p">(</span><span class="n">ngx_array_t</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">ngx_array_t</span><span class="o">*</span> <span class="n">a</span> <span class="o">=</span> <span class="n">ngx_array_create</span><span class="p">(</span><span class="n">g_pool</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">User</span><span class="p">));</span>
+
+    <span class="n">H_TEST_ASSERT</span><span class="p">(</span><span class="n">a</span><span class="o">-&gt;</span><span class="n">nalloc</span> <span class="o">==</span> <span class="mi">10</span><span class="p">);</span>
+    <span class="n">H_TEST_ASSERT</span><span class="p">(</span><span class="n">a</span><span class="o">-&gt;</span><span class="n">size</span> <span class="o">==</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">User</span><span class="p">));</span>
+
+    <span class="c1">// Add one element to the array
+</span><span class="c1"></span>    <span class="n">User</span><span class="o">*</span> <span class="n">u</span> <span class="o">=</span> <span class="p">(</span><span class="n">User</span><span class="o">*</span><span class="p">)</span><span class="n">ngx_array_push</span><span class="p">(</span><span class="n">a</span><span class="p">);</span>
+    <span class="n">u</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="n">u_char</span><span class="o">*</span><span class="p">)</span><span class="n">ngx_pcalloc</span><span class="p">(</span><span class="n">g_pool</span><span class="p">,</span> <span class="mi">32</span><span class="p">);</span>
+    <span class="n">strcpy</span><span class="p">((</span><span class="kt">char</span><span class="o">*</span><span class="p">)</span><span class="n">u</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="s">&#34;CodeG&#34;</span><span class="p">);</span>
+    <span class="n">u</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">.</span><span class="n">len</span> <span class="o">=</span> <span class="n">strlen</span><span class="p">(</span><span class="s">&#34;CodeG&#34;</span><span class="p">);</span>
+    <span class="n">ngx_str_set</span><span class="p">(</span><span class="o">&amp;</span><span class="n">u</span><span class="o">-&gt;</span><span class="n">url</span><span class="p">,</span> <span class="s">&#34;http://blog.codeg.cn/2015/01/03/ngx_array_t&#34;</span><span class="p">);</span>
+    <span class="n">u</span><span class="o">-&gt;</span><span class="n">id</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="n">H_TEST_ASSERT</span><span class="p">(</span><span class="n">a</span><span class="o">-&gt;</span><span class="n">nelts</span> <span class="o">==</span> <span class="mi">1</span><span class="p">);</span>
+    <span class="n">H_TEST_ASSERT</span><span class="p">(</span><span class="n">a</span><span class="o">-&gt;</span><span class="n">elts</span> <span class="o">==</span> <span class="n">u</span><span class="p">);</span> <span class="c1">// elts指向数组的首地址，因此与第一个数组元素地址相同
+</span><span class="c1"></span>
+    <span class="c1">// Add another one element to the array
+</span><span class="c1"></span>    <span class="n">u</span> <span class="o">=</span> <span class="p">(</span><span class="n">User</span><span class="o">*</span><span class="p">)</span><span class="n">ngx_array_push</span><span class="p">(</span><span class="n">a</span><span class="p">);</span>
+    <span class="n">u</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="n">u_char</span><span class="o">*</span><span class="p">)</span><span class="n">ngx_pcalloc</span><span class="p">(</span><span class="n">g_pool</span><span class="p">,</span> <span class="mi">32</span><span class="p">);</span>
+    <span class="n">strcpy</span><span class="p">((</span><span class="kt">char</span><span class="o">*</span><span class="p">)</span><span class="n">u</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="s">&#34;zieckey&#34;</span><span class="p">);</span>
+    <span class="n">u</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">.</span><span class="n">len</span> <span class="o">=</span> <span class="n">strlen</span><span class="p">(</span><span class="s">&#34;zieckey&#34;</span><span class="p">);</span>
+    <span class="n">ngx_str_set</span><span class="p">(</span><span class="o">&amp;</span><span class="n">u</span><span class="o">-&gt;</span><span class="n">url</span><span class="p">,</span> <span class="s">&#34;http://blog.codeg.cn/2014/12/13/Hello-CodeG&#34;</span><span class="p">);</span>
+    <span class="n">u</span><span class="o">-&gt;</span><span class="n">id</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="n">H_TEST_ASSERT</span><span class="p">(</span><span class="n">a</span><span class="o">-&gt;</span><span class="n">nelts</span> <span class="o">==</span> <span class="mi">2</span><span class="p">);</span>
+
+    <span class="c1">// Add 3rd element to the array
+</span><span class="c1"></span>    <span class="n">u</span> <span class="o">=</span> <span class="p">(</span><span class="n">User</span><span class="o">*</span><span class="p">)</span><span class="n">ngx_array_push</span><span class="p">(</span><span class="n">a</span><span class="p">);</span>
+    <span class="n">u</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="n">u_char</span><span class="o">*</span><span class="p">)</span><span class="n">ngx_pcalloc</span><span class="p">(</span><span class="n">g_pool</span><span class="p">,</span> <span class="mi">32</span><span class="p">);</span>
+    <span class="n">strcpy</span><span class="p">((</span><span class="kt">char</span><span class="o">*</span><span class="p">)</span><span class="n">u</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="s">&#34;zieckey&#34;</span><span class="p">);</span>
+    <span class="n">u</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">.</span><span class="n">len</span> <span class="o">=</span> <span class="n">strlen</span><span class="p">(</span><span class="s">&#34;zieckey&#34;</span><span class="p">);</span>
+    <span class="n">ngx_str_set</span><span class="p">(</span><span class="o">&amp;</span><span class="n">u</span><span class="o">-&gt;</span><span class="n">url</span><span class="p">,</span> <span class="s">&#34;https://github.com/zieckey&#34;</span><span class="p">);</span>
+    <span class="n">u</span><span class="o">-&gt;</span><span class="n">id</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>
+    <span class="n">H_TEST_ASSERT</span><span class="p">(</span><span class="n">a</span><span class="o">-&gt;</span><span class="n">nelts</span> <span class="o">==</span> <span class="mi">3</span><span class="p">);</span>
+
+    <span class="c1">// Traversal the array
+</span><span class="c1"></span>    <span class="k">for</span> <span class="p">(</span><span class="n">ngx_uint_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">a</span><span class="o">-&gt;</span><span class="n">nelts</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="p">(</span><span class="n">User</span><span class="o">*</span><span class="p">)((</span><span class="kt">char</span><span class="o">*</span><span class="p">)</span><span class="n">a</span><span class="o">-&gt;</span><span class="n">elts</span> <span class="o">+</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">User</span><span class="p">)</span><span class="o">*</span><span class="n">i</span><span class="p">);</span>
+        <span class="n">H_TEST_ASSERT</span><span class="p">(</span><span class="n">u</span><span class="o">-&gt;</span><span class="n">id</span> <span class="o">==</span> <span class="n">i</span><span class="p">);</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&#34;id=%d name=[%s] url=[%s]</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">u</span><span class="o">-&gt;</span><span class="n">id</span><span class="p">,</span> <span class="p">(</span><span class="kt">char</span><span class="o">*</span><span class="p">)</span><span class="n">u</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="p">(</span><span class="kt">char</span><span class="o">*</span><span class="p">)</span><span class="n">u</span><span class="o">-&gt;</span><span class="n">url</span><span class="p">.</span><span class="n">data</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div><p>上述代码输出如下：</p>
+<pre><code>id=0 name=[CodeG] url=[http://blog.codeg.cn/2015/01/03/ngx_array_t]
+id=1 name=[zieckey] url=[http://blog.codeg.cn/2014/12/13/Hello-CodeG]
+id=2 name=[zieckey] url=[https://github.com/zieckey]
+</code></pre>
+<h3 id="参考">参考：</h3>
+<ul>
+<li><a href="http://tengine.taobao.org/book/chapter_02.html#ngx-array-t-100">淘宝：Nginx开发从入门到精通 http://tengine.taobao.org/book/chapter_02.html#ngx-array-t-100</a></li>
+<li><a href="https://github.com/zieckey/nginx-1.0.14_comment/blob/master/src/core/ngx_array.h">nginx源码注释 https://github.com/zieckey/nginx-1.0.14_comment/blob/master/src/core/ngx_array.h</a></li>
+<li><a href="https://github.com/zieckey/nginx-1.0.14_comment/blob/master/src/core/ngx_array.c">nginx源码注释 https://github.com/zieckey/nginx-1.0.14_comment/blob/master/src/core/ngx_array.c</a></li>
+</ul>
+
+</div>
+
+
+    </main>
+
+    
+      
+    
+  </body>
+</html>

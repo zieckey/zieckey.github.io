@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>S3 on CodeG Blog</title>
+    <link>http://blog.codeg.cn/tags/S3/</link>
+    <description>Recent content in S3 on CodeG Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <copyright>Copyright (c) 2015. All rights reserved.</copyright>
+    <lastBuildDate>Tue, 06 Sep 2016 11:52:00 +0000</lastBuildDate><atom:link href="http://blog.codeg.cn/tags/S3/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>minio源码阅读</title>
+      <link>http://blog.codeg.cn/post/blog/2016-09-06-minio-source-code-reading/</link>
+      <pubDate>Tue, 06 Sep 2016 11:52:00 +0000</pubDate>
+      
+      <guid>http://blog.codeg.cn/post/blog/2016-09-06-minio-source-code-reading/</guid>
+      <description>简介 minio是Go实现的一个完全兼容S3的服务，和大多Go项目一样，干净小巧，没有依赖，编译运行一键搞定，便利之极。 源码阅读 HTTP事件注</description>
+    </item>
+    
+  </channel>
+</rss>

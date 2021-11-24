@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>多线程 on CodeG Blog</title>
+    <link>http://blog.codeg.cn/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/</link>
+    <description>Recent content in 多线程 on CodeG Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <copyright>Copyright (c) 2015. All rights reserved.</copyright>
+    <lastBuildDate>Wed, 27 Jan 2016 00:00:00 +0000</lastBuildDate><atom:link href="http://blog.codeg.cn/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>应用双缓冲技术完美解决资源数据优雅无损的热加载问题</title>
+      <link>http://blog.codeg.cn/2016/01/27/double-buffering/</link>
+      <pubDate>Wed, 27 Jan 2016 00:00:00 +0000</pubDate>
+      
+      <guid>http://blog.codeg.cn/2016/01/27/double-buffering/</guid>
+      <description>简介 在一个网络服务器不间断运行过程中，有一些资源数据需要实时更新，例如需要及时更新一份白名单列表，怎么做才能做到优雅无损的更新到服务的进程空</description>
+    </item>
+    
+  </channel>
+</rss>
