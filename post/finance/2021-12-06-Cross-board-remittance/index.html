@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN" lang="zh-CN">
+<head>
+  <link href="https://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="generator" content="Hugo 0.89.4" />
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>跨境汇款的资金流过程简析（支付宝网络） &middot; CodeG Blog</title>
+  <meta name="description" content="简单介绍了张三给国内用户李四的汇款过程" />
+
+  
+  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/print.css" media="print">
+  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/poole.css">
+  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/syntax.css">
+  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/hyde.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
+
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="http://blog.codeg.cn/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="http://blog.codeg.cn/favicon.png">
+
+  
+  
+</head>
+
+  <body class=" ">
+  <aside class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <a href="http://blog.codeg.cn/"><h1>CodeG Blog</h1></a>
+      <p class="lead">
+       思路决定出路，态度决定高度。 
+      </p>
+    </div>
+
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="http://blog.codeg.cn/">Home</a> </li>
+        <li><a href="http://blog.codeg.cn/post/"> 技术文章 </a></li><li><a href="http://blog.codeg.cn/about/"> 关于我 </a></li>
+      </ul>
+    </nav>
+
+    <p>&copy; 2021. All rights reserved. </p>
+  </div>
+</aside>
+
+    <main class="content container">
+    <div class="post">
+  <h1>跨境汇款的资金流过程简析（支付宝网络）</h1>
+  <time datetime=2021-12-06T01:00:00Z class="post-date">Mon, Dec 6, 2021</time>
+  <p>假设张三在美国，准备通过华美银行给中国的李四的工行卡汇款。假设汇款网络走的支付宝渠道。</p>
+<h3 id="前期各机构准备工作">前期各机构准备工作</h3>
+<ol start="3">
+<li>美国华美银行跟支付宝国际进行系统对接，主要有接口
+<ul>
+<li>鉴权认证</li>
+<li>汇款</li>
+<li>回调通知</li>
+</ul>
+</li>
+<li>支付宝国际、支付宝国内之间的对接</li>
+<li>支付宝国际跟花旗银行之间的对接</li>
+<li>支付宝国内跟杭州银行的对接</li>
+<li>张三在美国华美银行开户</li>
+<li>李四在国内工商银行开户</li>
+<li>美国华美银行在支付宝国际开户，并存入备用金（假设是50w美元）到支付指定的银行账户</li>
+<li>支付宝国内在杭州银行开户，并存入备付金（假设是100w人民币）</li>
+</ol>
+<h3 id="汇款过程">汇款过程</h3>
+<p>直接看图</p>
+<p><img src="http://blog.codeg.cn/images/finance/Cross-board-remittance-by-alipay.png" alt=""></p>
+<p>这里有几个问题待讨论：</p>
+<ol>
+<li>支付宝国际、支付宝国内之间的交互是信息流，真正的资金流是怎么做的？是支付宝通过花旗银行跟杭州银行之间做结算么？</li>
+<li>支付宝在花旗银行里的账户，是不是应该至少有两个账户？一个是自己的现金账户（这个可以随时提现转账走完全自己控制），另一个是其他客户存入的备付金的托管账户（不能随意动用只能通过特殊接口调账）？</li>
+</ol>
+<ul>
+<li>附录：http://chartmage.com/ 源码如下</li>
+</ul>
+<pre tabindex="0"><code>participant 华美银行
+participant 支付宝国际
+participant 支付宝国内
+participant 花旗银行
+participant 杭州银行
+participant 银联
+participant 工商银行
+
+华美银行 -&gt;&gt; 支付宝国际: 开户
+支付宝国际 -&gt;&gt; 支付宝国际: 在支付宝内部给华美银行开一个账户
+支付宝国际 --&gt;&gt; 华美银行: OK
+
+支付宝国际 -&gt;&gt; 花旗银行: 开一个大账户
+花旗银行 --&gt;&gt; 支付宝国际: OK
+
+华美银行 -&gt;&gt; 花旗银行: 向支付宝指定的账户存款50w美元备付金
+花旗银行 --&gt;&gt; 华美银行: OK
+华美银行 -&gt;&gt; 支付宝国际: 通知支付调账
+支付宝国际 -&gt;&gt; 支付宝国际: 支付宝给给华美银行的账户调账，增加50w美元
+支付宝国际 --&gt;&gt; 华美银行: 备付金准备完毕
+
+华美银行 -&gt;&gt; 华美银行: 张三在华美银行开户
+工商银行 -&gt;&gt; 工商银行: 李四在工商银行开户
+支付宝国内 -&gt;&gt; 杭州银行: 开户、存款
+杭州银行 -&gt;&gt; 杭州银行: 支付宝在杭州银行开户，并存入100w人民币备付金
+杭州银行 --&gt;&gt; 支付宝国内: 开户成功、备付金准备完毕
+
+note over 华美银行: 张三来到华美银行准备给国内的李四汇款1w美元
+华美银行 -&gt;&gt; 华美银行: 检查张三的账户余额是否足够
+华美银行 -&gt;&gt; 支付宝国际: 张三向李四汇款1w美元
+支付宝国际 -&gt;&gt; 支付宝国际: 检查华美银行的账户余额是否充足，冻结1w美元
+支付宝国际 -&gt;&gt; 支付宝国内: 张三向李四汇款1w美元、6.5w人民币、汇率6.5
+支付宝国内 -&gt;&gt; 杭州银行: 汇款指令
+杭州银行 -&gt;&gt; 杭州银行: 检查支付宝的账户下余额是否充足，冻结6.5w人民币
+杭州银行 -&gt;&gt; 银联: 汇款指令
+银联 -&gt;&gt; 工商银行: 汇款指令
+工商银行 -&gt;&gt; 工商银行: 检查李四账户信息是否正确
+工商银行 -&gt;&gt; 工商银行: 李四的账户上增加6.5w人民币
+工商银行 --&gt;&gt; 银联: OK
+银联 --&gt;&gt; 杭州银行: OK
+杭州银行 --&gt;&gt; 杭州银行: 支付宝账户上冻结的6.5w人民币正式扣减掉
+杭州银行 --&gt;&gt; 支付宝国内: OK
+支付宝国内 --&gt;&gt; 支付宝国际: OK
+支付宝国际 --&gt;&gt; 支付宝国际: 把华美银行账户上冻结的1w美元正式扣减掉
+支付宝国际 --&gt;&gt; 华美银行: OK
+
+</code></pre>
+</div>
+
+
+    </main>
+
+    
+      
+    
+  </body>
+</html>
