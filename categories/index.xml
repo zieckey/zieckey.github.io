@@ -7,7 +7,16 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
     <copyright>Copyright (c) 2015. All rights reserved.</copyright>
-    <lastBuildDate>Mon, 06 Dec 2021 01:00:00 +0000</lastBuildDate><atom:link href="http://blog.codeg.cn/categories/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 09 Dec 2021 00:00:00 +0000</lastBuildDate><atom:link href="http://blog.codeg.cn/categories/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>opinion</title>
+      <link>http://blog.codeg.cn/categories/opinion/</link>
+      <pubDate>Thu, 09 Dec 2021 00:00:00 +0000</pubDate>
+      
+      <guid>http://blog.codeg.cn/categories/opinion/</guid>
+      <description></description>
+    </item>
+    
     <item>
       <title>finance</title>
       <link>http://blog.codeg.cn/categories/finance/</link>
@@ -23,15 +32,6 @@
       <pubDate>Mon, 06 Dec 2021 00:00:00 +0000</pubDate>
       
       <guid>http://blog.codeg.cn/categories/study/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>opinion</title>
-      <link>http://blog.codeg.cn/categories/opinion/</link>
-      <pubDate>Mon, 29 Nov 2021 00:00:00 +0000</pubDate>
-      
-      <guid>http://blog.codeg.cn/categories/opinion/</guid>
       <description></description>
     </item>
     

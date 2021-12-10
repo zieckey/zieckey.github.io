@@ -3,18 +3,27 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>http://blog.codeg.cn/categories/</loc>
-    <lastmod>2021-12-06T01:00:00+00:00</lastmod>
+    <lastmod>2021-12-09T00:00:00+00:00</lastmod>
   </url><url>
     <loc>http://blog.codeg.cn/</loc>
-    <lastmod>2021-12-06T01:00:00+00:00</lastmod>
+    <lastmod>2021-12-09T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://blog.codeg.cn/categories/finance/</loc>
-    <lastmod>2021-12-06T01:00:00+00:00</lastmod>
+    <loc>http://blog.codeg.cn/categories/opinion/</loc>
+    <lastmod>2021-12-09T00:00:00+00:00</lastmod>
   </url><url>
     <loc>http://blog.codeg.cn/post/</loc>
-    <lastmod>2021-12-06T01:00:00+00:00</lastmod>
+    <lastmod>2021-12-09T00:00:00+00:00</lastmod>
   </url><url>
     <loc>http://blog.codeg.cn/tags/</loc>
+    <lastmod>2021-12-09T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://blog.codeg.cn/post/opinion/2021-12-09-How-to-evaluate-the-performance-of-tech-leaders/</loc>
+    <lastmod>2021-12-09T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://blog.codeg.cn/tags/%E7%AE%A1%E7%90%86%E6%9D%82%E8%B0%88/</loc>
+    <lastmod>2021-12-09T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://blog.codeg.cn/categories/finance/</loc>
     <lastmod>2021-12-06T01:00:00+00:00</lastmod>
   </url><url>
     <loc>http://blog.codeg.cn/tags/%E8%B5%84%E9%87%91%E6%B5%81/</loc>
@@ -41,11 +50,11 @@
     <loc>http://blog.codeg.cn/tags/%E8%B7%A8%E8%A1%8C%E6%B1%87%E6%AC%BE/</loc>
     <lastmod>2021-12-06T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://blog.codeg.cn/categories/opinion/</loc>
-    <lastmod>2021-11-29T00:00:00+00:00</lastmod>
-  </url><url>
     <loc>http://blog.codeg.cn/post/opinion/2021-11-29-A-litle-view-of-management-2-Leapfrog-communication-and-leapfrog-management/</loc>
     <lastmod>2021-11-29T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://blog.codeg.cn/tags/%E5%9B%BD%E6%BD%AE/</loc>
+    <lastmod>2021-11-25T00:00:00+00:00</lastmod>
   </url><url>
     <loc>http://blog.codeg.cn/post/opinion/2021-11-25-national-tide/</loc>
     <lastmod>2021-11-25T00:00:00+00:00</lastmod>
