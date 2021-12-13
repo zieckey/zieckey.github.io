@@ -7,7 +7,16 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
     <copyright>Copyright (c) 2015. All rights reserved.</copyright>
-    <lastBuildDate>Sun, 28 May 2017 18:11:01 +0000</lastBuildDate><atom:link href="http://blog.codeg.cn/categories/blog/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 12 Dec 2021 20:43:00 +0000</lastBuildDate><atom:link href="http://blog.codeg.cn/categories/blog/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>关于我自己</title>
+      <link>http://blog.codeg.cn/about/</link>
+      <pubDate>Sun, 12 Dec 2021 20:43:00 +0000</pubDate>
+      
+      <guid>http://blog.codeg.cn/about/</guid>
+      <description>本科期间不算学霸，但学业成绩也不算差，课外参加一些电赛、嵌入式竞赛之类的，也获得一些奖项，然后保送混了个研究生文凭。 大四和研究生期间在某大专</description>
+    </item>
+    
     <item>
       <title>手把手制作一个vcpkg的安装包及port file相关说明</title>
       <link>http://blog.codeg.cn/post/blog/2017-05-28-how-to-build-a-vcpkg/</link>
@@ -465,15 +474,6 @@
       
       <guid>http://blog.codeg.cn/2014/12/13/github-pages/</guid>
       <description>本博客框架是直接在 BeiYuu：使用Github Pages建独立博客 上改造而来的。增加了下列特性： 文章Tags Tags聚合 时间显示 作者显示 感</description>
-    </item>
-    
-    <item>
-      <title>关于我自己</title>
-      <link>http://blog.codeg.cn/about/</link>
-      <pubDate>Fri, 12 Dec 2014 20:43:00 +0000</pubDate>
-      
-      <guid>http://blog.codeg.cn/about/</guid>
-      <description>本科期间不算学霸，但学业成绩也不算差，课外参加一些电赛、嵌入式竞赛之类的，也获得一些奖项，然后保送混了个研究生文凭。 大四和研究生期间在某大专</description>
     </item>
     
   </channel>
