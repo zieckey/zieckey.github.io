@@ -3,7 +3,7 @@
 <head>
   <link href="https://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <meta name="generator" content="Hugo 0.89.4" />
+  <meta name="generator" content="Hugo 0.127.0">
 
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -44,7 +44,7 @@
       </ul>
     </nav>
 
-    <p>&copy; 2021. All rights reserved. </p>
+    <p>&copy; 2024. All rights reserved. </p>
   </div>
 </aside>
 
@@ -54,63 +54,63 @@
   <time datetime=2015-02-12T00:00:00Z class="post-date">Thu, Feb 12, 2015</time>
   <p>其实golang里是不提倡继承的，也不提倡重载的。但是有些场景下，我们还是想试验一下传统C++或Java语言里的继承和重载能否用在golang里。</p>
 <h2 id="实现">实现</h2>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
-
-<span class="kn">import</span> <span class="p">(</span>
-	<span class="s">&#34;fmt&#34;</span>
-<span class="p">)</span>
-
-
-<span class="kd">type</span> <span class="nx">Person</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="nx">Id</span>   <span class="kt">int</span>
-	<span class="nx">Name</span> <span class="kt">string</span>
-<span class="p">}</span>
-
-<span class="kd">type</span> <span class="nx">Tester</span> <span class="kd">interface</span> <span class="p">{</span>
-	<span class="nf">Test</span><span class="p">()</span>
-	<span class="nf">Eat</span><span class="p">()</span>
-<span class="p">}</span>
-
-<span class="kd">func</span> <span class="p">(</span><span class="nx">this</span> <span class="o">*</span><span class="nx">Person</span><span class="p">)</span> <span class="nf">Test</span><span class="p">()</span> <span class="p">{</span>
-	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;\tthis =&#34;</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">this</span><span class="p">,</span> <span class="s">&#34;Person.Test&#34;</span><span class="p">)</span>
-<span class="p">}</span>
-
-<span class="kd">func</span> <span class="p">(</span><span class="nx">this</span> <span class="o">*</span><span class="nx">Person</span><span class="p">)</span> <span class="nf">Eat</span><span class="p">()</span> <span class="p">{</span>
-	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;\tthis =&#34;</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">this</span><span class="p">,</span> <span class="s">&#34;Person.Eat&#34;</span><span class="p">)</span>
-<span class="p">}</span>
-
-<span class="c1">// Employee 从Person继承, 直接继承了 Eat 方法，并且将 Test 方法覆盖了。
-</span><span class="c1"></span><span class="kd">type</span> <span class="nx">Employee</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="nx">Person</span>
-<span class="p">}</span>
-
-<span class="kd">func</span> <span class="p">(</span><span class="nx">this</span> <span class="o">*</span><span class="nx">Employee</span><span class="p">)</span> <span class="nf">Test</span><span class="p">()</span> <span class="p">{</span>
-	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;\tthis =&#34;</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">this</span><span class="p">,</span> <span class="s">&#34;Employee.Test&#34;</span><span class="p">)</span>
-	<span class="nx">this</span><span class="p">.</span><span class="nx">Person</span><span class="p">.</span><span class="nf">Test</span><span class="p">()</span> <span class="c1">// 调用父类的方法，且该方法被子类覆盖了
-</span><span class="c1"></span><span class="p">}</span>
-
-<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;An Employee instance :&#34;</span><span class="p">)</span>
-	<span class="kd">var</span> <span class="nx">nu</span> <span class="nx">Employee</span>
-	<span class="nx">nu</span><span class="p">.</span><span class="nx">Id</span> <span class="p">=</span> <span class="mi">2</span>
-	<span class="nx">nu</span><span class="p">.</span><span class="nx">Name</span> <span class="p">=</span> <span class="s">&#34;NTom&#34;</span>
-	<span class="nx">nu</span><span class="p">.</span><span class="nf">Test</span><span class="p">()</span>
-	<span class="nx">nu</span><span class="p">.</span><span class="nf">Eat</span><span class="p">()</span>
-	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">()</span>
-	
-	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;A Tester interface to Employee instance :&#34;</span><span class="p">)</span>
-	<span class="kd">var</span> <span class="nx">t</span> <span class="nx">Tester</span>
-	<span class="nx">t</span> <span class="p">=</span> <span class="o">&amp;</span><span class="nx">nu</span>
-	<span class="nx">t</span><span class="p">.</span><span class="nf">Test</span><span class="p">()</span>
-	<span class="nx">t</span><span class="p">.</span><span class="nf">Eat</span><span class="p">()</span>
-	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">()</span>
-	
-	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;A Tester interface to Person instance :&#34;</span><span class="p">)</span>
-	<span class="nx">t</span> <span class="p">=</span> <span class="o">&amp;</span><span class="nx">nu</span><span class="p">.</span><span class="nx">Person</span>
-	<span class="nx">t</span><span class="p">.</span><span class="nf">Test</span><span class="p">()</span>
-	<span class="nx">t</span><span class="p">.</span><span class="nf">Eat</span><span class="p">()</span>
-<span class="p">}</span>
-</code></pre></div><p>输出如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;fmt&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">Person</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">Id</span>   <span class="kt">int</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">Name</span> <span class="kt">string</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">Tester</span> <span class="kd">interface</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">Test</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">Eat</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">this</span> <span class="o">*</span><span class="nx">Person</span><span class="p">)</span> <span class="nf">Test</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;\tthis =&#34;</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">this</span><span class="p">,</span> <span class="s">&#34;Person.Test&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">this</span> <span class="o">*</span><span class="nx">Person</span><span class="p">)</span> <span class="nf">Eat</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;\tthis =&#34;</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">this</span><span class="p">,</span> <span class="s">&#34;Person.Eat&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// Employee 从Person继承, 直接继承了 Eat 方法，并且将 Test 方法覆盖了。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">type</span> <span class="nx">Employee</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">Person</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">this</span> <span class="o">*</span><span class="nx">Employee</span><span class="p">)</span> <span class="nf">Test</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;\tthis =&#34;</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">this</span><span class="p">,</span> <span class="s">&#34;Employee.Test&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">this</span><span class="p">.</span><span class="nx">Person</span><span class="p">.</span><span class="nf">Test</span><span class="p">()</span> <span class="c1">// 调用父类的方法，且该方法被子类覆盖了
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;An Employee instance :&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">var</span> <span class="nx">nu</span> <span class="nx">Employee</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">nu</span><span class="p">.</span><span class="nx">Id</span> <span class="p">=</span> <span class="mi">2</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">nu</span><span class="p">.</span><span class="nx">Name</span> <span class="p">=</span> <span class="s">&#34;NTom&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">nu</span><span class="p">.</span><span class="nf">Test</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">nu</span><span class="p">.</span><span class="nf">Eat</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;A Tester interface to Employee instance :&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">var</span> <span class="nx">t</span> <span class="nx">Tester</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">t</span> <span class="p">=</span> <span class="o">&amp;</span><span class="nx">nu</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">t</span><span class="p">.</span><span class="nf">Test</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">t</span><span class="p">.</span><span class="nf">Eat</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;A Tester interface to Person instance :&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">t</span> <span class="p">=</span> <span class="o">&amp;</span><span class="nx">nu</span><span class="p">.</span><span class="nx">Person</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">t</span><span class="p">.</span><span class="nf">Test</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">t</span><span class="p">.</span><span class="nf">Eat</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>输出如下：</p>
 <pre tabindex="0"><code>An Employee instance :
 	this = 0xc082024020 Employee.Test
 	this = 0xc082024028 Person.Test
@@ -134,6 +134,9 @@ A Tester interface to Person instance :
 
     
       
+  
+
+
     
   </body>
 </html>

@@ -4,18 +4,17 @@
     <title>Ubuntu on CodeG Blog</title>
     <link>http://blog.codeg.cn/tags/Ubuntu/</link>
     <description>Recent content in Ubuntu on CodeG Blog</description>
-    <generator>Hugo -- gohugo.io</generator>
+    <generator>Hugo</generator>
     <language>zh-CN</language>
     <copyright>Copyright (c) 2015. All rights reserved.</copyright>
-    <lastBuildDate>Mon, 15 Dec 2014 00:00:00 +0000</lastBuildDate><atom:link href="http://blog.codeg.cn/tags/Ubuntu/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 15 Dec 2014 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://blog.codeg.cn/tags/Ubuntu/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Ubuntu中国源地址列表及更改方法</title>
       <link>http://blog.codeg.cn/2014/12/15/ubuntu-source-list-of-china/</link>
       <pubDate>Mon, 15 Dec 2014 00:00:00 +0000</pubDate>
-      
       <guid>http://blog.codeg.cn/2014/12/15/ubuntu-source-list-of-china/</guid>
       <description>首先备份Ubuntu源列表 sudo cp /etc/apt/sources.list /etc/apt/sources.list.backup （备份下当前的源列表） sudo vim /etc/apt/sources.list 将下面的代码粘贴进去（“#”开头的那一行为注释，可以直接复制进文件中）之后，再</description>
     </item>
-    
   </channel>
 </rss>

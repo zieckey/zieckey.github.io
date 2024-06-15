@@ -3,7 +3,7 @@
 <head>
   <link href="https://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <meta name="generator" content="Hugo 0.89.4" />
+  <meta name="generator" content="Hugo 0.127.0">
 
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -44,7 +44,7 @@
       </ul>
     </nav>
 
-    <p>&copy; 2021. All rights reserved. </p>
+    <p>&copy; 2024. All rights reserved. </p>
   </div>
 </aside>
 
@@ -69,22 +69,22 @@
 <pre><code>host_key_checking = False
 </code></pre>
 <p>另外，为避免一些依赖（依赖目标机器上的软件环境），可以使用 <code>-m raw</code> 参数，例如下面是没有加这个参数时会出错：</p>
-<pre tabindex="0"><code>$ ansible builddev -m shell -a &quot;uname -a&quot; -k       
+<pre tabindex="0"><code>$ ansible builddev -m shell -a &#34;uname -a&#34; -k       
 SSH password: 
 10.16.28.17 | FAILED &gt;&gt; {
-    &quot;failed&quot;: true, 
-    &quot;msg&quot;: &quot;/usr/bin/python: not found\n&quot;, 
-    &quot;parsed&quot;: false
+    &#34;failed&#34;: true, 
+    &#34;msg&#34;: &#34;/usr/bin/python: not found\n&#34;, 
+    &#34;parsed&#34;: false
 }
 </code></pre><p>加上这个参数就没有问题： <code>ansible builddev -m shell -m raw -a &quot;uname -a&quot; -k</code></p>
 <h3 id="修改配置文件">修改配置文件</h3>
 <p>ansible使用配置文件 <code>/etc/ansible/hosts</code> 。其格式如下：</p>
 <pre tabindex="0"><code>
-# This is the default ansible 'hosts' file.
+# This is the default ansible &#39;hosts&#39; file.
 #
 # It should live in /etc/ansible/hosts
 #
-#   - Comments begin with the '#' character
+#   - Comments begin with the &#39;#&#39; character
 #   - Blank lines are ignored
 #   - Groups of hosts are delimited by [header] elements
 #   - You can enter hostnames or ip addresses
@@ -97,7 +97,7 @@ blue.example.com
 192.168.100.1
 192.168.100.10
 
-# Ex 2: A collection of hosts belonging to the 'webservers' group
+# Ex 2: A collection of hosts belonging to the &#39;webservers&#39; group
 
 [webservers]
 alpha.example.org
@@ -110,7 +110,7 @@ beta.example.org
 
 www[001:006].example.com
 
-# Ex 3: A collection of database servers in the 'dbservers' group
+# Ex 3: A collection of database servers in the &#39;dbservers&#39; group
 
 [dbservers]
 
@@ -119,7 +119,7 @@ db02.intranet.mydomain.net
 10.25.1.56
 10.25.1.57
 
-# Here's another example of host ranges, this time there are no
+# Here&#39;s another example of host ranges, this time there are no
 # leading 0s:
 
 db-[99:101]-node.example.com
@@ -135,7 +135,7 @@ db-[99:101]-node.example.com
 <pre tabindex="0"><code>[codeg@build ~]$ ansible build -a date -k       
 SSH password: 
 
-paramiko: The authenticity of host '10.16.29.88' can't be established.
+paramiko: The authenticity of host &#39;10.16.29.88&#39; can&#39;t be established.
 The ssh-rsa key fingerprint is 3151f8e35301c476af609c3bb31b5e37.
 Are you sure you want to continue connecting (yes/no)?
 yes
@@ -152,7 +152,7 @@ Thu Oct  8 11:50:14 CST 2015
 Thu Oct  8 11:50:18 CST 2015
 </code></pre><h4 id="示例2执行复杂的命令ansible-build--m-shell--a-ls--l--head--1--k">示例2，执行复杂的命令：ansible build -m shell -a &ldquo;ls -l | head -1&rdquo; -k</h4>
 <p>使用shell模块，表明是执行shell指令。</p>
-<pre tabindex="0"><code>$ ansible build -m shell -a &quot;ls -l | head -1&quot; -k
+<pre tabindex="0"><code>$ ansible build -m shell -a &#34;ls -l | head -1&#34; -k
 SSH password: 
 10.16.28.17 | success | rc=0 &gt;&gt;
 total 454360
@@ -167,69 +167,69 @@ total 87776
 total 469384ls: write error: Broken pipe
 </code></pre><h4 id="示例3文件拷贝ansible-build--m-copy--a-srcash-desttmpabcxsh--k">示例3，文件拷贝：ansible build -m copy -a &ldquo;src=a.sh dest=/tmp/abcx.sh&rdquo; -k</h4>
 <p>使用<code>copy</code>模块来传输文件，通过src/dest两个参数来指定原始文件和目标机的目的地址。</p>
-<pre tabindex="0"><code>$ ansible build -m copy -a &quot;src=a.sh dest=/tmp/abcx.sh&quot; -k  
+<pre tabindex="0"><code>$ ansible build -m copy -a &#34;src=a.sh dest=/tmp/abcx.sh&#34; -k  
 SSH password: 
 10.16.28.18 | success &gt;&gt; {
-    &quot;changed&quot;: true, 
-    &quot;checksum&quot;: &quot;b9da991c935ccdda2231e2a3704ef943035dd4d4&quot;, 
-    &quot;dest&quot;: &quot;/tmp/abcx.sh&quot;, 
-    &quot;gid&quot;: 3534, 
-    &quot;group&quot;: &quot;codeg&quot;, 
-    &quot;md5sum&quot;: &quot;1506d51353f96a582b86891999e63091&quot;, 
-    &quot;mode&quot;: &quot;0664&quot;, 
-    &quot;owner&quot;: &quot;codeg&quot;, 
-    &quot;size&quot;: 61, 
-    &quot;src&quot;: &quot;/home/codeg/.ansible/tmp/ansible-tmp-1444292722.63-246642726358339/source&quot;, 
-    &quot;state&quot;: &quot;file&quot;, 
-    &quot;uid&quot;: 3534
+    &#34;changed&#34;: true, 
+    &#34;checksum&#34;: &#34;b9da991c935ccdda2231e2a3704ef943035dd4d4&#34;, 
+    &#34;dest&#34;: &#34;/tmp/abcx.sh&#34;, 
+    &#34;gid&#34;: 3534, 
+    &#34;group&#34;: &#34;codeg&#34;, 
+    &#34;md5sum&#34;: &#34;1506d51353f96a582b86891999e63091&#34;, 
+    &#34;mode&#34;: &#34;0664&#34;, 
+    &#34;owner&#34;: &#34;codeg&#34;, 
+    &#34;size&#34;: 61, 
+    &#34;src&#34;: &#34;/home/codeg/.ansible/tmp/ansible-tmp-1444292722.63-246642726358339/source&#34;, 
+    &#34;state&#34;: &#34;file&#34;, 
+    &#34;uid&#34;: 3534
 }
 
 10.16.28.17 | success &gt;&gt; {
-    &quot;changed&quot;: true, 
-    &quot;checksum&quot;: &quot;b9da991c935ccdda2231e2a3704ef943035dd4d4&quot;, 
-    &quot;dest&quot;: &quot;/tmp/abcx.sh&quot;, 
-    &quot;gid&quot;: 3534, 
-    &quot;group&quot;: &quot;codeg&quot;, 
-    &quot;md5sum&quot;: &quot;1506d51353f96a582b86891999e63091&quot;, 
-    &quot;mode&quot;: &quot;0664&quot;, 
-    &quot;owner&quot;: &quot;codeg&quot;, 
-    &quot;size&quot;: 61, 
-    &quot;src&quot;: &quot;/home/codeg/.ansible/tmp/ansible-tmp-1444292722.67-256074204427798/source&quot;, 
-    &quot;state&quot;: &quot;file&quot;, 
-    &quot;uid&quot;: 3534
+    &#34;changed&#34;: true, 
+    &#34;checksum&#34;: &#34;b9da991c935ccdda2231e2a3704ef943035dd4d4&#34;, 
+    &#34;dest&#34;: &#34;/tmp/abcx.sh&#34;, 
+    &#34;gid&#34;: 3534, 
+    &#34;group&#34;: &#34;codeg&#34;, 
+    &#34;md5sum&#34;: &#34;1506d51353f96a582b86891999e63091&#34;, 
+    &#34;mode&#34;: &#34;0664&#34;, 
+    &#34;owner&#34;: &#34;codeg&#34;, 
+    &#34;size&#34;: 61, 
+    &#34;src&#34;: &#34;/home/codeg/.ansible/tmp/ansible-tmp-1444292722.67-256074204427798/source&#34;, 
+    &#34;state&#34;: &#34;file&#34;, 
+    &#34;uid&#34;: 3534
 }
 
 10.16.29.88 | success &gt;&gt; {
-    &quot;changed&quot;: true, 
-    &quot;checksum&quot;: &quot;b9da991c935ccdda2231e2a3704ef943035dd4d4&quot;, 
-    &quot;dest&quot;: &quot;/tmp/abcx.sh&quot;, 
-    &quot;gid&quot;: 3534, 
-    &quot;group&quot;: &quot;codeg&quot;, 
-    &quot;md5sum&quot;: &quot;1506d51353f96a582b86891999e63091&quot;, 
-    &quot;mode&quot;: &quot;0664&quot;, 
-    &quot;owner&quot;: &quot;codeg&quot;, 
-    &quot;size&quot;: 61, 
-    &quot;src&quot;: &quot;/home/codeg/.ansible/tmp/ansible-tmp-1444292722.64-195326527082374/source&quot;, 
-    &quot;state&quot;: &quot;file&quot;, 
-    &quot;uid&quot;: 3534
+    &#34;changed&#34;: true, 
+    &#34;checksum&#34;: &#34;b9da991c935ccdda2231e2a3704ef943035dd4d4&#34;, 
+    &#34;dest&#34;: &#34;/tmp/abcx.sh&#34;, 
+    &#34;gid&#34;: 3534, 
+    &#34;group&#34;: &#34;codeg&#34;, 
+    &#34;md5sum&#34;: &#34;1506d51353f96a582b86891999e63091&#34;, 
+    &#34;mode&#34;: &#34;0664&#34;, 
+    &#34;owner&#34;: &#34;codeg&#34;, 
+    &#34;size&#34;: 61, 
+    &#34;src&#34;: &#34;/home/codeg/.ansible/tmp/ansible-tmp-1444292722.64-195326527082374/source&#34;, 
+    &#34;state&#34;: &#34;file&#34;, 
+    &#34;uid&#34;: 3534
 }
 
 10.16.29.179 | success &gt;&gt; {
-    &quot;changed&quot;: true, 
-    &quot;checksum&quot;: &quot;b9da991c935ccdda2231e2a3704ef943035dd4d4&quot;, 
-    &quot;dest&quot;: &quot;/tmp/abcx.sh&quot;, 
-    &quot;gid&quot;: 3534, 
-    &quot;group&quot;: &quot;codeg&quot;, 
-    &quot;md5sum&quot;: &quot;1506d51353f96a582b86891999e63091&quot;, 
-    &quot;mode&quot;: &quot;0664&quot;, 
-    &quot;owner&quot;: &quot;codeg&quot;, 
-    &quot;size&quot;: 61, 
-    &quot;src&quot;: &quot;/home/codeg/.ansible/tmp/ansible-tmp-1444292722.68-230895291500491/source&quot;, 
-    &quot;state&quot;: &quot;file&quot;, 
-    &quot;uid&quot;: 3534
+    &#34;changed&#34;: true, 
+    &#34;checksum&#34;: &#34;b9da991c935ccdda2231e2a3704ef943035dd4d4&#34;, 
+    &#34;dest&#34;: &#34;/tmp/abcx.sh&#34;, 
+    &#34;gid&#34;: 3534, 
+    &#34;group&#34;: &#34;codeg&#34;, 
+    &#34;md5sum&#34;: &#34;1506d51353f96a582b86891999e63091&#34;, 
+    &#34;mode&#34;: &#34;0664&#34;, 
+    &#34;owner&#34;: &#34;codeg&#34;, 
+    &#34;size&#34;: 61, 
+    &#34;src&#34;: &#34;/home/codeg/.ansible/tmp/ansible-tmp-1444292722.68-230895291500491/source&#34;, 
+    &#34;state&#34;: &#34;file&#34;, 
+    &#34;uid&#34;: 3534
 }
 
-$ ansible build -m shell -a &quot;ls /tmp/abcx.sh&quot; -k                   
+$ ansible build -m shell -a &#34;ls /tmp/abcx.sh&#34; -k                   
 SSH password: 
 10.16.28.18 | success | rc=0 &gt;&gt;
 /tmp/abcx.sh
@@ -257,6 +257,9 @@ SSH password:
 
     
       
+  
+
+
     
   </body>
 </html>

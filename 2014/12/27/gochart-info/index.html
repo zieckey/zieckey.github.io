@@ -3,7 +3,7 @@
 <head>
   <link href="https://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <meta name="generator" content="Hugo 0.89.4" />
+  <meta name="generator" content="Hugo 0.127.0">
 
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -44,7 +44,7 @@
       </ul>
     </nav>
 
-    <p>&copy; 2021. All rights reserved. </p>
+    <p>&copy; 2024. All rights reserved. </p>
   </div>
 </aside>
 
@@ -76,38 +76,38 @@
 <li>column 纵向柱状图</li>
 <li>area 面积图</li>
 </ul>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="err">#</span> <span class="nx">The</span> <span class="nx">chart</span> <span class="kd">type</span> <span class="p">,</span> <span class="nx">option</span> <span class="p">:</span> <span class="nx">spline</span><span class="o">/</span><span class="nx">line</span><span class="o">/</span><span class="nx">bar</span><span class="o">/</span><span class="nx">column</span><span class="o">/</span><span class="nx">area</span>
-<span class="nx">ChartType</span> <span class="p">=</span> <span class="nx">spline</span>
-<span class="nx">Title</span> <span class="p">=</span> <span class="nx">Source</span><span class="p">:</span> <span class="nx">WorldClimate</span><span class="p">.</span><span class="nx">com</span>
-<span class="nx">SubTitle</span> <span class="p">=</span> <span class="nx">Monthly</span> <span class="nx">Average</span> <span class="nx">Temperature</span>
-<span class="nx">ValueSuffix</span> <span class="p">=</span> <span class="err">°</span><span class="nx">C</span>
-
-<span class="err">#</span> <span class="nx">The</span> <span class="nx">x</span> <span class="nx">Axis</span> <span class="nx">numbers</span><span class="p">.</span> <span class="nx">The</span> <span class="nx">count</span> <span class="nx">this</span> <span class="nx">numbers</span> <span class="nx">MUST</span> <span class="nx">be</span> <span class="nx">the</span> <span class="nx">same</span> <span class="nx">with</span> <span class="nx">the</span> <span class="nx">data</span> <span class="nx">series</span>
-<span class="nx">XAxisNumbers</span> <span class="p">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">12</span>
-
-<span class="err">#</span> <span class="nx">The</span> <span class="nx">y</span> <span class="nx">Axis</span> <span class="nx">text</span>
-<span class="nx">YAxisText</span> <span class="p">=</span> <span class="nf">Temperature</span> <span class="p">(</span><span class="err">°</span><span class="nx">C</span><span class="p">)</span>
-
-<span class="err">#</span> <span class="nx">The</span> <span class="nx">data</span> <span class="nx">and</span> <span class="nx">the</span> <span class="nx">name</span> <span class="nx">of</span> <span class="nx">the</span> <span class="nx">lines</span>
-<span class="nx">Data</span><span class="p">|</span><span class="nx">Tokyo</span> <span class="p">=</span> <span class="mf">7.0</span><span class="p">,</span> <span class="mf">6.9</span><span class="p">,</span> <span class="mf">9.5</span><span class="p">,</span> <span class="mf">14.5</span><span class="p">,</span> <span class="mf">18.2</span><span class="p">,</span> <span class="mf">21.5</span><span class="p">,</span> <span class="mf">25.2</span><span class="p">,</span> <span class="mf">26.5</span><span class="p">,</span> <span class="mf">23.3</span><span class="p">,</span> <span class="mf">18.3</span><span class="p">,</span> <span class="mf">13.9</span><span class="p">,</span> <span class="mf">9.6</span>
-<span class="nx">Data</span><span class="p">|</span><span class="nx">New</span> <span class="nx">York</span> <span class="p">=</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">5.7</span><span class="p">,</span> <span class="mf">11.3</span><span class="p">,</span> <span class="mf">17.0</span><span class="p">,</span> <span class="mf">22.0</span><span class="p">,</span> <span class="mf">24.8</span><span class="p">,</span> <span class="mf">24.1</span><span class="p">,</span> <span class="mf">20.1</span><span class="p">,</span> <span class="mf">14.1</span><span class="p">,</span> <span class="mf">8.6</span><span class="p">,</span> <span class="mf">2.5</span>
-<span class="nx">Data</span><span class="p">|</span><span class="nx">Berlin</span> <span class="p">=</span> <span class="o">-</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">,</span> <span class="mf">8.4</span><span class="p">,</span> <span class="mf">13.5</span><span class="p">,</span> <span class="mf">17.0</span><span class="p">,</span> <span class="mf">18.6</span><span class="p">,</span> <span class="mf">17.9</span><span class="p">,</span> <span class="mf">14.3</span><span class="p">,</span> <span class="mf">9.0</span><span class="p">,</span> <span class="mf">3.9</span><span class="p">,</span> <span class="mf">1.0</span>
-<span class="nx">Data</span><span class="p">|</span><span class="nx">London</span> <span class="p">=</span> <span class="mf">3.9</span><span class="p">,</span> <span class="mf">4.2</span><span class="p">,</span> <span class="mf">5.7</span><span class="p">,</span> <span class="mf">8.5</span><span class="p">,</span> <span class="mf">11.9</span><span class="p">,</span> <span class="mf">15.2</span><span class="p">,</span> <span class="mf">17.0</span><span class="p">,</span> <span class="mf">16.6</span><span class="p">,</span> <span class="mf">14.2</span><span class="p">,</span> <span class="mf">10.3</span><span class="p">,</span> <span class="mf">6.6</span><span class="p">,</span> <span class="mf">4.8</span>
-</code></pre></div><h3 id="示例2饼图数据格式样例">示例2:饼图数据格式样例</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="err">#</span> <span class="nx">The</span> <span class="nx">chart</span> <span class="kd">type</span> <span class="p">,</span> <span class="nx">option</span> <span class="p">:</span> <span class="nx">spline</span><span class="o">/</span><span class="nx">line</span><span class="o">/</span><span class="nx">bar</span><span class="o">/</span><span class="nx">column</span><span class="o">/</span><span class="nx">area</span>
+</span></span><span class="line"><span class="cl"><span class="nx">ChartType</span> <span class="p">=</span> <span class="nx">spline</span>
+</span></span><span class="line"><span class="cl"><span class="nx">Title</span> <span class="p">=</span> <span class="nx">Source</span><span class="p">:</span> <span class="nx">WorldClimate</span><span class="p">.</span><span class="nx">com</span>
+</span></span><span class="line"><span class="cl"><span class="nx">SubTitle</span> <span class="p">=</span> <span class="nx">Monthly</span> <span class="nx">Average</span> <span class="nx">Temperature</span>
+</span></span><span class="line"><span class="cl"><span class="nx">ValueSuffix</span> <span class="p">=</span> <span class="err">°</span><span class="nx">C</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="err">#</span> <span class="nx">The</span> <span class="nx">x</span> <span class="nx">Axis</span> <span class="nx">numbers</span><span class="p">.</span> <span class="nx">The</span> <span class="nx">count</span> <span class="nx">this</span> <span class="nx">numbers</span> <span class="nx">MUST</span> <span class="nx">be</span> <span class="nx">the</span> <span class="nx">same</span> <span class="nx">with</span> <span class="nx">the</span> <span class="nx">data</span> <span class="nx">series</span>
+</span></span><span class="line"><span class="cl"><span class="nx">XAxisNumbers</span> <span class="p">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">12</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="err">#</span> <span class="nx">The</span> <span class="nx">y</span> <span class="nx">Axis</span> <span class="nx">text</span>
+</span></span><span class="line"><span class="cl"><span class="nx">YAxisText</span> <span class="p">=</span> <span class="nf">Temperature</span> <span class="p">(</span><span class="err">°</span><span class="nx">C</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="err">#</span> <span class="nx">The</span> <span class="nx">data</span> <span class="nx">and</span> <span class="nx">the</span> <span class="nx">name</span> <span class="nx">of</span> <span class="nx">the</span> <span class="nx">lines</span>
+</span></span><span class="line"><span class="cl"><span class="nx">Data</span><span class="p">|</span><span class="nx">Tokyo</span> <span class="p">=</span> <span class="mf">7.0</span><span class="p">,</span> <span class="mf">6.9</span><span class="p">,</span> <span class="mf">9.5</span><span class="p">,</span> <span class="mf">14.5</span><span class="p">,</span> <span class="mf">18.2</span><span class="p">,</span> <span class="mf">21.5</span><span class="p">,</span> <span class="mf">25.2</span><span class="p">,</span> <span class="mf">26.5</span><span class="p">,</span> <span class="mf">23.3</span><span class="p">,</span> <span class="mf">18.3</span><span class="p">,</span> <span class="mf">13.9</span><span class="p">,</span> <span class="mf">9.6</span>
+</span></span><span class="line"><span class="cl"><span class="nx">Data</span><span class="p">|</span><span class="nx">New</span> <span class="nx">York</span> <span class="p">=</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">5.7</span><span class="p">,</span> <span class="mf">11.3</span><span class="p">,</span> <span class="mf">17.0</span><span class="p">,</span> <span class="mf">22.0</span><span class="p">,</span> <span class="mf">24.8</span><span class="p">,</span> <span class="mf">24.1</span><span class="p">,</span> <span class="mf">20.1</span><span class="p">,</span> <span class="mf">14.1</span><span class="p">,</span> <span class="mf">8.6</span><span class="p">,</span> <span class="mf">2.5</span>
+</span></span><span class="line"><span class="cl"><span class="nx">Data</span><span class="p">|</span><span class="nx">Berlin</span> <span class="p">=</span> <span class="o">-</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">,</span> <span class="mf">8.4</span><span class="p">,</span> <span class="mf">13.5</span><span class="p">,</span> <span class="mf">17.0</span><span class="p">,</span> <span class="mf">18.6</span><span class="p">,</span> <span class="mf">17.9</span><span class="p">,</span> <span class="mf">14.3</span><span class="p">,</span> <span class="mf">9.0</span><span class="p">,</span> <span class="mf">3.9</span><span class="p">,</span> <span class="mf">1.0</span>
+</span></span><span class="line"><span class="cl"><span class="nx">Data</span><span class="p">|</span><span class="nx">London</span> <span class="p">=</span> <span class="mf">3.9</span><span class="p">,</span> <span class="mf">4.2</span><span class="p">,</span> <span class="mf">5.7</span><span class="p">,</span> <span class="mf">8.5</span><span class="p">,</span> <span class="mf">11.9</span><span class="p">,</span> <span class="mf">15.2</span><span class="p">,</span> <span class="mf">17.0</span><span class="p">,</span> <span class="mf">16.6</span><span class="p">,</span> <span class="mf">14.2</span><span class="p">,</span> <span class="mf">10.3</span><span class="p">,</span> <span class="mf">6.6</span><span class="p">,</span> <span class="mf">4.8</span>
+</span></span></code></pre></div><h3 id="示例2饼图数据格式样例">示例2:饼图数据格式样例</h3>
 <p>该示例数据格式展示了如何绘制一个饼图。</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="nx">ChartType</span>  <span class="p">=</span> <span class="nx">pie</span>
-<span class="nx">Title</span> 	   <span class="p">=</span> <span class="nx">Browser</span> <span class="nx">market</span> <span class="nx">shares</span> <span class="nx">at</span> <span class="nx">a</span> <span class="nx">specific</span> <span class="nx">website</span><span class="p">,</span> <span class="mi">2014</span>
-<span class="nx">SubTitle</span>   <span class="p">=</span> <span class="nx">from</span> <span class="nx">website</span><span class="p">.</span><span class="nx">com</span>
-<span class="nx">SeriesName</span> <span class="p">=</span> <span class="nx">Browser</span> <span class="nx">shares</span>
-
-<span class="err">#</span> <span class="nx">The</span> <span class="nx">data</span> <span class="nx">and</span> <span class="nx">the</span> <span class="nx">name</span> <span class="nx">of</span> <span class="nx">the</span> <span class="nx">pieces</span> <span class="nx">of</span> <span class="nx">the</span> <span class="nx">pie</span> 
-<span class="nx">Data</span><span class="p">|</span><span class="nx">Firefox</span> <span class="p">=</span> <span class="mf">45.0</span>
-<span class="nx">Data</span><span class="p">|</span><span class="nx">IE</span> 	 <span class="p">=</span> <span class="mf">26.8</span>
-<span class="nx">Data</span><span class="p">|</span><span class="nx">Chrome</span>  <span class="p">=</span> <span class="mf">12.8</span>
-<span class="nx">Data</span><span class="p">|</span><span class="nx">Safari</span>  <span class="p">=</span> <span class="mf">8.5</span>
-<span class="nx">Data</span><span class="p">|</span><span class="nx">Opera</span>   <span class="p">=</span> <span class="mf">6.2</span>
-<span class="nx">Data</span><span class="p">|</span><span class="nx">Others</span>  <span class="p">=</span> <span class="mf">0.7</span>    
-</code></pre></div><h3 id="曲线图">曲线图</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="nx">ChartType</span>  <span class="p">=</span> <span class="nx">pie</span>
+</span></span><span class="line"><span class="cl"><span class="nx">Title</span> 	   <span class="p">=</span> <span class="nx">Browser</span> <span class="nx">market</span> <span class="nx">shares</span> <span class="nx">at</span> <span class="nx">a</span> <span class="nx">specific</span> <span class="nx">website</span><span class="p">,</span> <span class="mi">2014</span>
+</span></span><span class="line"><span class="cl"><span class="nx">SubTitle</span>   <span class="p">=</span> <span class="nx">from</span> <span class="nx">website</span><span class="p">.</span><span class="nx">com</span>
+</span></span><span class="line"><span class="cl"><span class="nx">SeriesName</span> <span class="p">=</span> <span class="nx">Browser</span> <span class="nx">shares</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="err">#</span> <span class="nx">The</span> <span class="nx">data</span> <span class="nx">and</span> <span class="nx">the</span> <span class="nx">name</span> <span class="nx">of</span> <span class="nx">the</span> <span class="nx">pieces</span> <span class="nx">of</span> <span class="nx">the</span> <span class="nx">pie</span> 
+</span></span><span class="line"><span class="cl"><span class="nx">Data</span><span class="p">|</span><span class="nx">Firefox</span> <span class="p">=</span> <span class="mf">45.0</span>
+</span></span><span class="line"><span class="cl"><span class="nx">Data</span><span class="p">|</span><span class="nx">IE</span> 	 <span class="p">=</span> <span class="mf">26.8</span>
+</span></span><span class="line"><span class="cl"><span class="nx">Data</span><span class="p">|</span><span class="nx">Chrome</span>  <span class="p">=</span> <span class="mf">12.8</span>
+</span></span><span class="line"><span class="cl"><span class="nx">Data</span><span class="p">|</span><span class="nx">Safari</span>  <span class="p">=</span> <span class="mf">8.5</span>
+</span></span><span class="line"><span class="cl"><span class="nx">Data</span><span class="p">|</span><span class="nx">Opera</span>   <span class="p">=</span> <span class="mf">6.2</span>
+</span></span><span class="line"><span class="cl"><span class="nx">Data</span><span class="p">|</span><span class="nx">Others</span>  <span class="p">=</span> <span class="mf">0.7</span>    
+</span></span></code></pre></div><h3 id="曲线图">曲线图</h3>
 <p><img src="https://raw.githubusercontent.com/zieckey/gochart/master/image/spline.png" alt=""></p>
 <h3 id="饼图">饼图</h3>
 <p><img src="https://raw.githubusercontent.com/zieckey/gochart/master/image/pie.png" alt=""></p>
@@ -127,6 +127,9 @@
 
     
       
+  
+
+
     
   </body>
 </html>

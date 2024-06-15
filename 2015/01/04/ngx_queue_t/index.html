@@ -3,7 +3,7 @@
 <head>
   <link href="https://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <meta name="generator" content="Hugo 0.89.4" />
+  <meta name="generator" content="Hugo 0.127.0">
 
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -44,7 +44,7 @@
       </ul>
     </nav>
 
-    <p>&copy; 2021. All rights reserved. </p>
+    <p>&copy; 2024. All rights reserved. </p>
   </div>
 </aside>
 
@@ -78,108 +78,108 @@
 <p>src/core/ngx_queue.{h,c}</p>
 <h2 id="源码分析">源码分析</h2>
 <p>除了<code>ngx_queue_data</code>值得一说外，其他都是双向链表的基本操作，与教科书里的定义完全一致，不在累述。</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="c1">//获取队列中节点数据， q是队列中的节点，type队列类型，field是队列类型中ngx_queue_t的元素名
-</span><span class="c1"></span><span class="cp">#define ngx_queue_data(q, type, field)                                         \
-</span><span class="cp">    (type *) ((u_char *) q - offsetof(type, field))
-</span><span class="cp"></span>
-<span class="c1">//offsetof也是一个宏定义，如下：
-</span><span class="c1"></span><span class="cp">#define offsetof(p_type,field) ((size_t)&amp;(((p_type *)0)-&gt;field))
-</span></code></pre></div><h2 id="测试代码">测试代码</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">//获取队列中节点数据， q是队列中的节点，type队列类型，field是队列类型中ngx_queue_t的元素名
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="cp">#define ngx_queue_data(q, type, field)                                         \
+</span></span></span><span class="line"><span class="cl"><span class="cp">    (type *) ((u_char *) q - offsetof(type, field))
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="c1">//offsetof也是一个宏定义，如下：
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="cp">#define offsetof(p_type,field) ((size_t)&amp;(((p_type *)0)-&gt;field))
+</span></span></span></code></pre></div><h2 id="测试代码">测试代码</h2>
 <p>该测试代码的完整工程的编译和运行方式请参考 <a href="https://github.com/zieckey/nginx-research">https://github.com/zieckey/nginx-research项目</a>。Linux&amp;Windows都测试通过。</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="cp">#include</span> <span class="cpf">&#34;allinc.h&#34;</span><span class="cp">
-</span><span class="cp"></span>
-
-<span class="n">namespace</span> <span class="p">{</span>
-    <span class="k">struct</span> <span class="n">QueueElement</span> <span class="p">{</span>
-        <span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">name</span><span class="p">;</span>
-        <span class="kt">int</span> <span class="n">id</span><span class="p">;</span>
-        <span class="n">ngx_queue_t</span> <span class="n">queue</span><span class="p">;</span>
-    <span class="p">};</span>
-
-    <span class="k">static</span> <span class="kt">int</span> <span class="n">ids</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">4</span> <span class="p">};</span>
-    <span class="k">static</span> <span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">names</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span> <span class="s">&#34;codeg&#34;</span><span class="p">,</span> <span class="s">&#34;jane&#34;</span><span class="p">,</span> <span class="s">&#34;zieckey&#34;</span><span class="p">,</span> <span class="s">&#34;codeg4&#34;</span><span class="p">,</span> <span class="s">&#34;codeg5&#34;</span><span class="p">,</span> <span class="s">&#34;codeg6&#34;</span><span class="p">,</span> <span class="s">&#34;codeg7&#34;</span><span class="p">,</span> <span class="s">&#34;codeg8&#34;</span><span class="p">,</span> <span class="s">&#34;codeg9&#34;</span><span class="p">,</span> <span class="s">&#34;codeg10&#34;</span> <span class="p">};</span>
-<span class="p">}</span>
-
-<span class="kt">void</span> <span class="n">dump_queue_from_tail</span><span class="p">(</span><span class="n">ngx_queue_t</span> <span class="o">*</span><span class="n">que</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="n">ngx_queue_t</span> <span class="o">*</span><span class="n">q</span> <span class="o">=</span> <span class="n">ngx_queue_last</span><span class="p">(</span><span class="n">que</span><span class="p">);</span>
-
-    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;(0x%p: (0x%p, 0x%p)) &lt;==&gt; </span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">que</span><span class="p">,</span> <span class="n">que</span><span class="o">-&gt;</span><span class="n">prev</span><span class="p">,</span> <span class="n">que</span><span class="o">-&gt;</span><span class="n">next</span><span class="p">);</span>
-
-    <span class="k">for</span> <span class="p">(;</span> <span class="n">q</span> <span class="o">!=</span> <span class="n">ngx_queue_sentinel</span><span class="p">(</span><span class="n">que</span><span class="p">);</span> <span class="n">q</span> <span class="o">=</span> <span class="n">ngx_queue_prev</span><span class="p">(</span><span class="n">q</span><span class="p">))</span>
-    <span class="p">{</span>
-        <span class="n">QueueElement</span> <span class="o">*</span><span class="n">u</span> <span class="o">=</span> <span class="n">ngx_queue_data</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">QueueElement</span><span class="p">,</span> <span class="n">queue</span><span class="p">);</span>
-        <span class="n">printf</span><span class="p">(</span><span class="s">&#34;(0x%p: (id=%d %s), 0x%p: (0x%p, 0x%p)) &lt;==&gt; </span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">u</span><span class="o">-&gt;</span><span class="n">id</span><span class="p">,</span>
-            <span class="n">u</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">u</span><span class="o">-&gt;</span><span class="n">queue</span><span class="p">,</span> <span class="n">u</span><span class="o">-&gt;</span><span class="n">queue</span><span class="p">.</span><span class="n">prev</span><span class="p">,</span> <span class="n">u</span><span class="o">-&gt;</span><span class="n">queue</span><span class="p">.</span><span class="n">next</span><span class="p">);</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-
-<span class="kt">void</span> <span class="n">dump_queue_from_head</span><span class="p">(</span><span class="n">ngx_queue_t</span> <span class="o">*</span><span class="n">que</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="n">ngx_queue_t</span> <span class="o">*</span><span class="n">q</span> <span class="o">=</span> <span class="n">ngx_queue_head</span><span class="p">(</span><span class="n">que</span><span class="p">);</span>
-
-    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;(0x%x: (0x%x, 0x%x)) &lt;==&gt; </span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">que</span><span class="p">,</span> <span class="n">que</span><span class="o">-&gt;</span><span class="n">prev</span><span class="p">,</span> <span class="n">que</span><span class="o">-&gt;</span><span class="n">next</span><span class="p">);</span>
-
-    <span class="k">for</span> <span class="p">(;</span> <span class="n">q</span> <span class="o">!=</span> <span class="n">ngx_queue_sentinel</span><span class="p">(</span><span class="n">que</span><span class="p">);</span> <span class="n">q</span> <span class="o">=</span> <span class="n">ngx_queue_next</span><span class="p">(</span><span class="n">q</span><span class="p">))</span>
-    <span class="p">{</span>
-        <span class="n">QueueElement</span> <span class="o">*</span><span class="n">u</span> <span class="o">=</span> <span class="n">ngx_queue_data</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">QueueElement</span><span class="p">,</span> <span class="n">queue</span><span class="p">);</span>
-        <span class="n">printf</span><span class="p">(</span><span class="s">&#34;(0x%p: (id=%d %s), 0x%p: (0x%p, 0x%p)) &lt;==&gt; </span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">u</span><span class="o">-&gt;</span><span class="n">id</span><span class="p">,</span>
-            <span class="n">u</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">u</span><span class="o">-&gt;</span><span class="n">queue</span><span class="p">,</span> <span class="n">u</span><span class="o">-&gt;</span><span class="n">queue</span><span class="p">.</span><span class="n">prev</span><span class="p">,</span> <span class="n">u</span><span class="o">-&gt;</span><span class="n">queue</span><span class="p">.</span><span class="n">next</span><span class="p">);</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-
-<span class="c1">//sort from small to big  
-</span><span class="c1"></span><span class="n">ngx_int_t</span> <span class="n">my_point_cmp</span><span class="p">(</span><span class="k">const</span> <span class="n">ngx_queue_t</span><span class="o">*</span> <span class="n">lhs</span><span class="p">,</span> <span class="k">const</span> <span class="n">ngx_queue_t</span><span class="o">*</span> <span class="n">rhs</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="n">QueueElement</span> <span class="o">*</span><span class="n">pt1</span> <span class="o">=</span> <span class="n">ngx_queue_data</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">QueueElement</span><span class="p">,</span> <span class="n">queue</span><span class="p">);</span>
-    <span class="n">QueueElement</span> <span class="o">*</span><span class="n">pt2</span> <span class="o">=</span> <span class="n">ngx_queue_data</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">QueueElement</span><span class="p">,</span> <span class="n">queue</span><span class="p">);</span>
-
-    <span class="k">if</span> <span class="p">(</span><span class="n">pt1</span><span class="o">-&gt;</span><span class="n">id</span> <span class="o">&lt;</span> <span class="n">pt2</span><span class="o">-&gt;</span><span class="n">id</span><span class="p">)</span>
-        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="n">TEST_UNIT_P</span><span class="p">(</span><span class="n">ngx_queue</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;--------------------------------</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
-    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;a new pool created:</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
-    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;--------------------------------</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
-    <span class="n">pool</span> <span class="o">=</span> <span class="n">ngx_create_pool</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
-    <span class="n">dump_pool</span><span class="p">(</span><span class="n">pool</span><span class="p">);</span>
-
-    <span class="n">ngx_queue_t</span> <span class="o">*</span><span class="n">myque</span><span class="p">;</span>
-
-    <span class="n">myque</span> <span class="o">=</span> <span class="p">(</span><span class="n">ngx_queue_t</span><span class="o">*</span><span class="p">)</span><span class="n">ngx_palloc</span><span class="p">(</span><span class="n">pool</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">ngx_queue_t</span><span class="p">));</span>  <span class="c1">//alloc a queue head  
-</span><span class="c1"></span>    <span class="n">ngx_queue_init</span><span class="p">(</span><span class="n">myque</span><span class="p">);</span>  <span class="c1">//init the queue  
-</span><span class="c1"></span>
-    <span class="c1">//insert  some points into the queue  
-</span><span class="c1"></span>    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">H_ARRAYSIZE</span><span class="p">(</span><span class="n">names</span><span class="p">);</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
-    <span class="p">{</span>
-        <span class="n">QueueElement</span> <span class="o">*</span><span class="n">e</span> <span class="o">=</span> <span class="p">(</span><span class="n">QueueElement</span><span class="o">*</span><span class="p">)</span><span class="n">ngx_palloc</span><span class="p">(</span><span class="n">pool</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">QueueElement</span><span class="p">));</span>
-        <span class="n">e</span><span class="o">-&gt;</span><span class="n">name</span> <span class="o">=</span> <span class="n">names</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
-        <span class="n">e</span><span class="o">-&gt;</span><span class="n">id</span> <span class="o">=</span> <span class="n">ids</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
-        <span class="n">ngx_queue_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">queue</span><span class="p">);</span>
-
-        <span class="c1">//insert this point into the points queue  
-</span><span class="c1"></span>        <span class="n">ngx_queue_insert_head</span><span class="p">(</span><span class="n">myque</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">queue</span><span class="p">);</span>
-    <span class="p">}</span>
-
-    <span class="n">dump_queue_from_tail</span><span class="p">(</span><span class="n">myque</span><span class="p">);</span>
-    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
-
-    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;--------------------------------</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
-    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;sort the queue:</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
-    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;--------------------------------</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
-    <span class="n">ngx_queue_sort</span><span class="p">(</span><span class="n">myque</span><span class="p">,</span> <span class="n">my_point_cmp</span><span class="p">);</span>
-    <span class="n">dump_queue_from_head</span><span class="p">(</span><span class="n">myque</span><span class="p">);</span>
-    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
-
-    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;--------------------------------</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
-    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;the pool at the end:</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
-    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;--------------------------------</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
-    <span class="n">dump_pool</span><span class="p">(</span><span class="n">pool</span><span class="p">);</span>
-<span class="p">}</span>
-</code></pre></div><p>上述例子运行到最后，排序之后的链表正好是升序排列，可以通过下面的调试截图来看到实际内存情况：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;allinc.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">namespace</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">struct</span> <span class="n">QueueElement</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">name</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">int</span> <span class="n">id</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">ngx_queue_t</span> <span class="n">queue</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">static</span> <span class="kt">int</span> <span class="n">ids</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">4</span> <span class="p">};</span>
+</span></span><span class="line"><span class="cl">    <span class="k">static</span> <span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">names</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span> <span class="s">&#34;codeg&#34;</span><span class="p">,</span> <span class="s">&#34;jane&#34;</span><span class="p">,</span> <span class="s">&#34;zieckey&#34;</span><span class="p">,</span> <span class="s">&#34;codeg4&#34;</span><span class="p">,</span> <span class="s">&#34;codeg5&#34;</span><span class="p">,</span> <span class="s">&#34;codeg6&#34;</span><span class="p">,</span> <span class="s">&#34;codeg7&#34;</span><span class="p">,</span> <span class="s">&#34;codeg8&#34;</span><span class="p">,</span> <span class="s">&#34;codeg9&#34;</span><span class="p">,</span> <span class="s">&#34;codeg10&#34;</span> <span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">dump_queue_from_tail</span><span class="p">(</span><span class="kt">ngx_queue_t</span> <span class="o">*</span><span class="n">que</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">ngx_queue_t</span> <span class="o">*</span><span class="n">q</span> <span class="o">=</span> <span class="nf">ngx_queue_last</span><span class="p">(</span><span class="n">que</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;(0x%p: (0x%p, 0x%p)) &lt;==&gt; </span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">que</span><span class="p">,</span> <span class="n">que</span><span class="o">-&gt;</span><span class="n">prev</span><span class="p">,</span> <span class="n">que</span><span class="o">-&gt;</span><span class="n">next</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(;</span> <span class="n">q</span> <span class="o">!=</span> <span class="nf">ngx_queue_sentinel</span><span class="p">(</span><span class="n">que</span><span class="p">);</span> <span class="n">q</span> <span class="o">=</span> <span class="nf">ngx_queue_prev</span><span class="p">(</span><span class="n">q</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">QueueElement</span> <span class="o">*</span><span class="n">u</span> <span class="o">=</span> <span class="nf">ngx_queue_data</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">QueueElement</span><span class="p">,</span> <span class="n">queue</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;(0x%p: (id=%d %s), 0x%p: (0x%p, 0x%p)) &lt;==&gt; </span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">u</span><span class="o">-&gt;</span><span class="n">id</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">u</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">u</span><span class="o">-&gt;</span><span class="n">queue</span><span class="p">,</span> <span class="n">u</span><span class="o">-&gt;</span><span class="n">queue</span><span class="p">.</span><span class="n">prev</span><span class="p">,</span> <span class="n">u</span><span class="o">-&gt;</span><span class="n">queue</span><span class="p">.</span><span class="n">next</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">dump_queue_from_head</span><span class="p">(</span><span class="kt">ngx_queue_t</span> <span class="o">*</span><span class="n">que</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">ngx_queue_t</span> <span class="o">*</span><span class="n">q</span> <span class="o">=</span> <span class="nf">ngx_queue_head</span><span class="p">(</span><span class="n">que</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;(0x%x: (0x%x, 0x%x)) &lt;==&gt; </span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">que</span><span class="p">,</span> <span class="n">que</span><span class="o">-&gt;</span><span class="n">prev</span><span class="p">,</span> <span class="n">que</span><span class="o">-&gt;</span><span class="n">next</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(;</span> <span class="n">q</span> <span class="o">!=</span> <span class="nf">ngx_queue_sentinel</span><span class="p">(</span><span class="n">que</span><span class="p">);</span> <span class="n">q</span> <span class="o">=</span> <span class="nf">ngx_queue_next</span><span class="p">(</span><span class="n">q</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">QueueElement</span> <span class="o">*</span><span class="n">u</span> <span class="o">=</span> <span class="nf">ngx_queue_data</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">QueueElement</span><span class="p">,</span> <span class="n">queue</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;(0x%p: (id=%d %s), 0x%p: (0x%p, 0x%p)) &lt;==&gt; </span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">u</span><span class="o">-&gt;</span><span class="n">id</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">u</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">u</span><span class="o">-&gt;</span><span class="n">queue</span><span class="p">,</span> <span class="n">u</span><span class="o">-&gt;</span><span class="n">queue</span><span class="p">.</span><span class="n">prev</span><span class="p">,</span> <span class="n">u</span><span class="o">-&gt;</span><span class="n">queue</span><span class="p">.</span><span class="n">next</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">//sort from small to big  
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">ngx_int_t</span> <span class="nf">my_point_cmp</span><span class="p">(</span><span class="k">const</span> <span class="kt">ngx_queue_t</span><span class="o">*</span> <span class="n">lhs</span><span class="p">,</span> <span class="k">const</span> <span class="kt">ngx_queue_t</span><span class="o">*</span> <span class="n">rhs</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">QueueElement</span> <span class="o">*</span><span class="n">pt1</span> <span class="o">=</span> <span class="nf">ngx_queue_data</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">QueueElement</span><span class="p">,</span> <span class="n">queue</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">QueueElement</span> <span class="o">*</span><span class="n">pt2</span> <span class="o">=</span> <span class="nf">ngx_queue_data</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">QueueElement</span><span class="p">,</span> <span class="n">queue</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">pt1</span><span class="o">-&gt;</span><span class="n">id</span> <span class="o">&lt;</span> <span class="n">pt2</span><span class="o">-&gt;</span><span class="n">id</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nf">TEST_UNIT_P</span><span class="p">(</span><span class="n">ngx_queue</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;--------------------------------</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;a new pool created:</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;--------------------------------</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">pool</span> <span class="o">=</span> <span class="nf">ngx_create_pool</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">dump_pool</span><span class="p">(</span><span class="n">pool</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kt">ngx_queue_t</span> <span class="o">*</span><span class="n">myque</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">myque</span> <span class="o">=</span> <span class="p">(</span><span class="kt">ngx_queue_t</span><span class="o">*</span><span class="p">)</span><span class="nf">ngx_palloc</span><span class="p">(</span><span class="n">pool</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">ngx_queue_t</span><span class="p">));</span>  <span class="c1">//alloc a queue head  
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nf">ngx_queue_init</span><span class="p">(</span><span class="n">myque</span><span class="p">);</span>  <span class="c1">//init the queue  
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//insert  some points into the queue  
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="nf">H_ARRAYSIZE</span><span class="p">(</span><span class="n">names</span><span class="p">);</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">QueueElement</span> <span class="o">*</span><span class="n">e</span> <span class="o">=</span> <span class="p">(</span><span class="n">QueueElement</span><span class="o">*</span><span class="p">)</span><span class="nf">ngx_palloc</span><span class="p">(</span><span class="n">pool</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">QueueElement</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">        <span class="n">e</span><span class="o">-&gt;</span><span class="n">name</span> <span class="o">=</span> <span class="n">names</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">        <span class="n">e</span><span class="o">-&gt;</span><span class="n">id</span> <span class="o">=</span> <span class="n">ids</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">ngx_queue_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">queue</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">//insert this point into the points queue  
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="nf">ngx_queue_insert_head</span><span class="p">(</span><span class="n">myque</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">queue</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nf">dump_queue_from_tail</span><span class="p">(</span><span class="n">myque</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;--------------------------------</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;sort the queue:</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;--------------------------------</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">ngx_queue_sort</span><span class="p">(</span><span class="n">myque</span><span class="p">,</span> <span class="n">my_point_cmp</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">dump_queue_from_head</span><span class="p">(</span><span class="n">myque</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;--------------------------------</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;the pool at the end:</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;--------------------------------</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">dump_pool</span><span class="p">(</span><span class="n">pool</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>上述例子运行到最后，排序之后的链表正好是升序排列，可以通过下面的调试截图来看到实际内存情况：</p>
 <p><a href="http://blog.codeg.cn/images/githubpages/nginx/ngx_queue_t.png"><img src="http://blog.codeg.cn/images/githubpages/nginx/ngx_queue_t.png" alt=""></a></p>
 <p>其中watch变量表达式为<code>(QueueElement*)((u_char *)myque-&gt;next-&gt;next-&gt;next-&gt;next-&gt;next-&gt;next-&gt;next - (size_t)&amp;(((QueueElement *)0)-&gt;queue))</code></p>
 <h2 id="参考">参考：</h2>
@@ -197,6 +197,9 @@
 
     
       
+  
+
+
     
   </body>
 </html>

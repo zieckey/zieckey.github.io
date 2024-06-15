@@ -3,7 +3,7 @@
 <head>
   <link href="https://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <meta name="generator" content="Hugo 0.89.4" />
+  <meta name="generator" content="Hugo 0.127.0">
 
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -44,7 +44,7 @@
       </ul>
     </nav>
 
-    <p>&copy; 2021. All rights reserved. </p>
+    <p>&copy; 2024. All rights reserved. </p>
   </div>
 </aside>
 
@@ -58,12 +58,12 @@
 <p>在官方网站 <a href="https://www.serfdom.io/downloads.html">https://www.serfdom.io/downloads.html</a> 下载合适的版本。</p>
 <h3 id="简单使用">简单使用</h3>
 <p>新建一个事件处理器脚本，例如 handler.sh ：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="cp">#!/bin/bash
-</span><span class="cp"></span><span class="k">if</span> <span class="o">[</span> <span class="s2">&#34;</span><span class="si">${</span><span class="nv">SERF_USER_EVENT</span><span class="si">}</span><span class="s2">&#34;</span> <span class="o">=</span> <span class="s2">&#34;memresponse&#34;</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
-    cat &gt;&gt; /tmp/mem.txt
-    <span class="nb">echo</span> <span class="s2">&#34;\n&#34;</span> &gt;&gt; /tmp/mem.txt
-<span class="k">fi</span>
-</code></pre></div><p>再启动 serf 服务，绑定<code>handler.sh</code>为默认的事件处理器：
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="cp">#!/bin/bash
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="k">if</span> <span class="o">[</span> <span class="s2">&#34;</span><span class="si">${</span><span class="nv">SERF_USER_EVENT</span><span class="si">}</span><span class="s2">&#34;</span> <span class="o">=</span> <span class="s2">&#34;memresponse&#34;</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
+</span></span><span class="line"><span class="cl">    cat &gt;&gt; /tmp/mem.txt
+</span></span><span class="line"><span class="cl">    <span class="nb">echo</span> <span class="s2">&#34;\n&#34;</span> &gt;&gt; /tmp/mem.txt
+</span></span><span class="line"><span class="cl"><span class="k">fi</span>
+</span></span></code></pre></div><p>再启动 serf 服务，绑定<code>handler.sh</code>为默认的事件处理器：
 ./serf agent -bind=133.130.106.57:5001 -rpc-addr=133.130.106.57:7373   -log-level=debug -event-handler=./handler.sh</p>
 <p>再再再另一个console窗口利用serf命令发送一个事件到之前启动的serf：
 ./serf event -rpc-addr=133.130.106.57:7373 memresponse xcxx</p>
@@ -110,6 +110,9 @@
 
     
       
+  
+
+
     
   </body>
 </html>

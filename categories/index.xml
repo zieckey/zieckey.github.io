@@ -4,54 +4,45 @@
     <title>Categories on CodeG Blog</title>
     <link>http://blog.codeg.cn/categories/</link>
     <description>Recent content in Categories on CodeG Blog</description>
-    <generator>Hugo -- gohugo.io</generator>
+    <generator>Hugo</generator>
     <language>zh-CN</language>
     <copyright>Copyright (c) 2015. All rights reserved.</copyright>
-    <lastBuildDate>Sun, 12 Dec 2021 20:43:00 +0000</lastBuildDate><atom:link href="http://blog.codeg.cn/categories/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 12 Dec 2021 20:43:00 +0000</lastBuildDate>
+    <atom:link href="http://blog.codeg.cn/categories/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>blog</title>
+      <title>Blog</title>
       <link>http://blog.codeg.cn/categories/blog/</link>
-      <pubDate>Sun, 12 Dec 2021 20:43:00 +0000</pubDate>
-      
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>http://blog.codeg.cn/categories/blog/</guid>
       <description></description>
     </item>
-    
     <item>
-      <title>finance</title>
+      <title>Finance</title>
       <link>http://blog.codeg.cn/categories/finance/</link>
-      <pubDate>Mon, 06 Dec 2021 01:00:00 +0000</pubDate>
-      
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>http://blog.codeg.cn/categories/finance/</guid>
       <description></description>
     </item>
-    
     <item>
-      <title>study</title>
+      <title>Study</title>
       <link>http://blog.codeg.cn/categories/study/</link>
-      <pubDate>Mon, 06 Dec 2021 00:00:00 +0000</pubDate>
-      
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>http://blog.codeg.cn/categories/study/</guid>
       <description></description>
     </item>
-    
     <item>
-      <title>opinion</title>
+      <title>Opinion</title>
       <link>http://blog.codeg.cn/categories/opinion/</link>
-      <pubDate>Mon, 29 Nov 2021 00:00:00 +0000</pubDate>
-      
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>http://blog.codeg.cn/categories/opinion/</guid>
       <description></description>
     </item>
-    
     <item>
-      <title>project</title>
+      <title>Project</title>
       <link>http://blog.codeg.cn/categories/project/</link>
-      <pubDate>Fri, 12 Apr 2013 00:00:00 +0000</pubDate>
-      
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>http://blog.codeg.cn/categories/project/</guid>
       <description></description>
     </item>
-    
   </channel>
 </rss>

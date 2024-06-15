@@ -3,7 +3,7 @@
 <head>
   <link href="https://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <meta name="generator" content="Hugo 0.89.4" />
+  <meta name="generator" content="Hugo 0.127.0">
 
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -44,7 +44,7 @@
       </ul>
     </nav>
 
-    <p>&copy; 2021. All rights reserved. </p>
+    <p>&copy; 2024. All rights reserved. </p>
   </div>
 </aside>
 
@@ -56,56 +56,56 @@
 <p><code>go build</code>和<code>go install</code>命令，可以使用参数 <code>-buildmode</code> 来指定生成哪种类型的二进制目标文件。请见<a href="https://golang.org/cmd/go/">https://golang.org/cmd/go/#Description of build modes</a> 详细说明。</p>
 <p>当前我们使用 <code>-buildmode=c-archive</code> 来示例和测试。</p>
 <p>Golang源文件：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go">
-<span class="c1">// file hello.go
-</span><span class="c1"></span><span class="kn">package</span> <span class="nx">main</span>
-
-  <span class="nx">port</span> <span class="s">&#34;C&#34;</span>
-<span class="kn">import</span> <span class="s">&#34;fmt&#34;</span>
-
-<span class="c1">//export SayHello
-</span><span class="c1"></span><span class="kd">func</span> <span class="nf">SayHello</span><span class="p">(</span><span class="nx">name</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;func in Golang SayHello says: Hello, %s!\n&#34;</span><span class="p">,</span> <span class="nx">name</span><span class="p">)</span>
-<span class="p">}</span>
-
-<span class="c1">//export SayHelloByte
-</span><span class="c1"></span><span class="kd">func</span> <span class="nf">SayHelloByte</span><span class="p">(</span><span class="nx">name</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;func in Golang SayHelloByte says: Hello, %s!\n&#34;</span><span class="p">,</span> <span class="nb">string</span><span class="p">(</span><span class="nx">name</span><span class="p">))</span>
-<span class="p">}</span>
-
-<span class="c1">//export SayBye
-</span><span class="c1"></span><span class="kd">func</span> <span class="nf">SayBye</span><span class="p">()</span> <span class="p">{</span>
-    <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;func in Golang SayBye says: Bye!&#34;</span><span class="p">)</span>
-<span class="p">}</span>
-
-<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-    <span class="c1">// We need the main function to make possible
-</span><span class="c1"></span>    <span class="c1">// CGO compiler to compile the package as C shared library
-</span><span class="c1"></span><span class="p">}</span>
-</code></pre></div><p>使用命令<code>go build -buildmode=c-archive -o libhello.a hello.go</code>可以生成一个C语言静态库<code>libhello.a</code>和头文件<code>libhello.h</code>。
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// file hello.go
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="nx">port</span> <span class="s">&#34;C&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="s">&#34;fmt&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">//export SayHello
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="nf">SayHello</span><span class="p">(</span><span class="nx">name</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;func in Golang SayHello says: Hello, %s!\n&#34;</span><span class="p">,</span> <span class="nx">name</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">//export SayHelloByte
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="nf">SayHelloByte</span><span class="p">(</span><span class="nx">name</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;func in Golang SayHelloByte says: Hello, %s!\n&#34;</span><span class="p">,</span> <span class="nb">string</span><span class="p">(</span><span class="nx">name</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">//export SayBye
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="nf">SayBye</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;func in Golang SayBye says: Bye!&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// We need the main function to make possible
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// CGO compiler to compile the package as C shared library
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></div><p>使用命令<code>go build -buildmode=c-archive -o libhello.a hello.go</code>可以生成一个C语言静态库<code>libhello.a</code>和头文件<code>libhello.h</code>。
 然后我们再写个C语言程序来调用这个库，如下：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="c1">// file hello.c
-</span><span class="c1"></span><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
-</span><span class="cp">#include</span> <span class="cpf">&#34;libhello.h&#34;</span><span class="cp">
-</span><span class="cp"></span>
-<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-  <span class="n">printf</span><span class="p">(</span><span class="s">&#34;This is a C Application.</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
-  <span class="n">GoString</span> <span class="n">name</span> <span class="o">=</span> <span class="p">{(</span><span class="kt">char</span><span class="o">*</span><span class="p">)</span><span class="s">&#34;Jane&#34;</span><span class="p">,</span> <span class="mi">4</span><span class="p">};</span>
-  <span class="n">SayHello</span><span class="p">(</span><span class="n">name</span><span class="p">);</span>
-  <span class="n">GoSlice</span> <span class="n">buf</span> <span class="o">=</span> <span class="p">{(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="s">&#34;Jane&#34;</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">};</span>
-  <span class="n">SayHelloByte</span><span class="p">(</span><span class="n">buf</span><span class="p">);</span>
-  <span class="n">SayBye</span><span class="p">();</span>
-  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-<span class="p">}</span>
-</code></pre></div><p>使用命令<code>gcc -o hello hello.c libhello.a -pthread</code>来编译生成一个可执行文件<code>hello</code>。执行命令如下：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell">$ go build -buildmode<span class="o">=</span>c-archive -o libhello.a hello.go
-$ gcc -o hello hello.c libhello.a -pthread
-$ ./hello 
-This is a C Application.
-func in Golang SayHello says: Hello, Jane!
-func in Golang SayHelloByte says: Hello, Jane!
-func in Golang SayBye says: Bye!
-</code></pre></div><p>备注：目前Golang还不支持将一个struct结构导出到C库中。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">// file hello.c
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;libhello.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;This is a C Application.</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="n">GoString</span> <span class="n">name</span> <span class="o">=</span> <span class="p">{(</span><span class="kt">char</span><span class="o">*</span><span class="p">)</span><span class="s">&#34;Jane&#34;</span><span class="p">,</span> <span class="mi">4</span><span class="p">};</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">SayHello</span><span class="p">(</span><span class="n">name</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="n">GoSlice</span> <span class="n">buf</span> <span class="o">=</span> <span class="p">{(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="s">&#34;Jane&#34;</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">};</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">SayHelloByte</span><span class="p">(</span><span class="n">buf</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">SayBye</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>使用命令<code>gcc -o hello hello.c libhello.a -pthread</code>来编译生成一个可执行文件<code>hello</code>。执行命令如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ go build -buildmode<span class="o">=</span>c-archive -o libhello.a hello.go
+</span></span><span class="line"><span class="cl">$ gcc -o hello hello.c libhello.a -pthread
+</span></span><span class="line"><span class="cl">$ ./hello 
+</span></span><span class="line"><span class="cl">This is a C Application.
+</span></span><span class="line"><span class="cl">func in Golang SayHello says: Hello, Jane!
+</span></span><span class="line"><span class="cl">func in Golang SayHelloByte says: Hello, Jane!
+</span></span><span class="line"><span class="cl">func in Golang SayBye says: Bye!
+</span></span></code></pre></div><p>备注：目前Golang还不支持将一个struct结构导出到C库中。</p>
 <h2 id="参考">参考</h2>
 <ol>
 <li><a href="http://blog.ralch.com/tutorial/golang-sharing-libraries/">Sharing Golang packages to C and Go</a></li>
@@ -118,6 +118,9 @@ func in Golang SayBye says: Bye!
 
     
       
+  
+
+
     
   </body>
 </html>

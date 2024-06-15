@@ -3,7 +3,7 @@
 <head>
   <link href="https://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <meta name="generator" content="Hugo 0.89.4" />
+  <meta name="generator" content="Hugo 0.127.0">
 
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -44,7 +44,7 @@
       </ul>
     </nav>
 
-    <p>&copy; 2021. All rights reserved. </p>
+    <p>&copy; 2024. All rights reserved. </p>
   </div>
 </aside>
 
@@ -55,12 +55,12 @@
   <h3 id="wait-和-waitpid">wait 和 waitpid</h3>
 <p>当一个进程正常或异常退出时，内核就向其父进程发送<code>SIGCHLD</code>信号。因为子进程退出是一个异步事件，所以该信号也是内核向父进程发送的异步信号。</p>
 <p>wait的函数原型是：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="cp">#include</span> <span class="cpf">&lt;sys/types.h&gt;</span><span class="cp">
-</span><span class="cp">#include</span> <span class="cpf">&lt;sys/wait.h&gt;</span><span class="cp">
-</span><span class="cp"></span>
-<span class="n">pid_t</span> <span class="nf">wait</span><span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">status</span><span class="p">);</span>
-<span class="n">pid_t</span> <span class="nf">waitpid</span><span class="p">(</span><span class="n">pid_t</span> <span class="n">pid</span><span class="p">,</span> <span class="kt">int</span> <span class="o">*</span><span class="n">status</span><span class="p">,</span> <span class="kt">int</span> <span class="n">options</span><span class="p">);</span>
-</code></pre></div><p>参数status用来保存被收集进程退出时的一些状态信息，它是一个指向int类型的指针。进程一旦调用了wait或waitpid，则可能发生：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sys/types.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sys/wait.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">pid_t</span> <span class="nf">wait</span><span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">status</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="kt">pid_t</span> <span class="nf">waitpid</span><span class="p">(</span><span class="kt">pid_t</span> <span class="n">pid</span><span class="p">,</span> <span class="kt">int</span> <span class="o">*</span><span class="n">status</span><span class="p">,</span> <span class="kt">int</span> <span class="n">options</span><span class="p">);</span>
+</span></span></code></pre></div><p>参数status用来保存被收集进程退出时的一些状态信息，它是一个指向int类型的指针。进程一旦调用了wait或waitpid，则可能发生：</p>
 <ul>
 <li>如果其所有子进程都还在运行，则阻塞</li>
 <li>如果某个子进程已经退出， wait/waitpid就会收集这个子进程的信息，并把它彻底销毁后返回</li>
@@ -75,56 +75,56 @@
 <li>wait(&amp;status) 的功能就等于waitpid(-1, &amp;status, 0);</li>
 </ul>
 <p>下面看一个示例代码：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="cp">#include</span><span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
-</span><span class="cp">#include</span><span class="cpf">&lt;sys/types.h&gt;</span><span class="cp">
-</span><span class="cp">#include</span><span class="cpf">&lt;sys/wait.h&gt;</span><span class="cp">
-</span><span class="cp">#include</span><span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
-</span><span class="cp">#include</span><span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
-</span><span class="cp"></span>
-<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
-<span class="p">{</span>
-    <span class="n">pid_t</span> <span class="n">child</span><span class="p">;</span>
-    <span class="kt">int</span> <span class="n">i</span><span class="p">;</span>
-    <span class="n">child</span> <span class="o">=</span> <span class="n">fork</span><span class="p">();</span>
-    <span class="k">if</span><span class="p">(</span><span class="n">child</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">){</span>
-        <span class="n">printf</span><span class="p">(</span><span class="s">&#34;create failed!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
-        <span class="k">return</span> <span class="p">(</span><span class="mi">1</span><span class="p">);</span>
-    <span class="p">}</span>
-    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="mi">0</span> <span class="o">==</span> <span class="n">child</span><span class="p">){</span>
-        <span class="n">printf</span><span class="p">(</span><span class="s">&#34;this is the child process pid= %d</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span><span class="n">getpid</span><span class="p">());</span>
-        <span class="k">for</span><span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="mi">5</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">){</span>
-            <span class="n">printf</span><span class="p">(</span><span class="s">&#34;this is the child process print %d !</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">);</span>
-        <span class="p">}</span>
-        <span class="n">printf</span><span class="p">(</span><span class="s">&#34;the child end</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
-    <span class="p">}</span>
-    <span class="k">else</span><span class="p">{</span>
-        <span class="n">printf</span><span class="p">(</span><span class="s">&#34;this is the father process,ppid=%d</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span><span class="n">getppid</span><span class="p">());</span>
-        <span class="n">printf</span><span class="p">(</span><span class="s">&#34;father wait the child end</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
-        <span class="n">wait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">child</span><span class="p">);</span>
-        <span class="n">printf</span><span class="p">(</span><span class="s">&#34;father end</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
-    <span class="p">}</span>
-
-    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="err">运行结果：</span>
-<span class="err">$</span> <span class="p">.</span><span class="o">/</span><span class="n">wait</span> 
-<span class="n">this</span> <span class="n">is</span> <span class="n">the</span> <span class="n">father</span> <span class="n">process</span><span class="p">,</span><span class="n">ppid</span><span class="o">=</span><span class="mi">21831</span>
-<span class="n">father</span> <span class="n">wait</span> <span class="n">the</span> <span class="n">child</span> <span class="n">end</span>
-<span class="n">this</span> <span class="n">is</span> <span class="n">the</span> <span class="n">child</span> <span class="n">process</span> <span class="n">pid</span><span class="o">=</span> <span class="mi">22126</span>
-<span class="n">this</span> <span class="n">is</span> <span class="n">the</span> <span class="n">child</span> <span class="n">process</span> <span class="n">print</span> <span class="mi">1</span> <span class="o">!</span>
-<span class="n">this</span> <span class="n">is</span> <span class="n">the</span> <span class="n">child</span> <span class="n">process</span> <span class="n">print</span> <span class="mi">2</span> <span class="o">!</span>
-<span class="n">this</span> <span class="n">is</span> <span class="n">the</span> <span class="n">child</span> <span class="n">process</span> <span class="n">print</span> <span class="mi">3</span> <span class="o">!</span>
-<span class="n">this</span> <span class="n">is</span> <span class="n">the</span> <span class="n">child</span> <span class="n">process</span> <span class="n">print</span> <span class="mi">4</span> <span class="o">!</span>
-<span class="n">this</span> <span class="n">is</span> <span class="n">the</span> <span class="n">child</span> <span class="n">process</span> <span class="n">print</span> <span class="mi">5</span> <span class="o">!</span>
-<span class="n">the</span> <span class="n">child</span> <span class="n">end</span>
-<span class="n">father</span> <span class="n">end</span>
-</code></pre></div><h3 id="sigprocmask">sigprocmask</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span><span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span><span class="cpf">&lt;sys/types.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span><span class="cpf">&lt;sys/wait.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span><span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span><span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">pid_t</span> <span class="n">child</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">i</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">child</span> <span class="o">=</span> <span class="nf">fork</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span><span class="p">(</span><span class="n">child</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;create failed!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="mi">0</span> <span class="o">==</span> <span class="n">child</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;this is the child process pid= %d</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span><span class="nf">getpid</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span><span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="mi">5</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">            <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;this is the child process print %d !</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;the child end</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">else</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;this is the father process,ppid=%d</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span><span class="nf">getppid</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;father wait the child end</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">wait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">child</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;father end</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="err">运行结果：</span>
+</span></span><span class="line"><span class="cl"><span class="err">$</span> <span class="p">.</span><span class="o">/</span><span class="n">wait</span> 
+</span></span><span class="line"><span class="cl"><span class="n">this</span> <span class="n">is</span> <span class="n">the</span> <span class="n">father</span> <span class="n">process</span><span class="p">,</span><span class="n">ppid</span><span class="o">=</span><span class="mi">21831</span>
+</span></span><span class="line"><span class="cl"><span class="n">father</span> <span class="n">wait</span> <span class="n">the</span> <span class="n">child</span> <span class="n">end</span>
+</span></span><span class="line"><span class="cl"><span class="n">this</span> <span class="n">is</span> <span class="n">the</span> <span class="n">child</span> <span class="n">process</span> <span class="n">pid</span><span class="o">=</span> <span class="mi">22126</span>
+</span></span><span class="line"><span class="cl"><span class="n">this</span> <span class="n">is</span> <span class="n">the</span> <span class="n">child</span> <span class="n">process</span> <span class="n">print</span> <span class="mi">1</span> <span class="o">!</span>
+</span></span><span class="line"><span class="cl"><span class="n">this</span> <span class="n">is</span> <span class="n">the</span> <span class="n">child</span> <span class="n">process</span> <span class="n">print</span> <span class="mi">2</span> <span class="o">!</span>
+</span></span><span class="line"><span class="cl"><span class="n">this</span> <span class="n">is</span> <span class="n">the</span> <span class="n">child</span> <span class="n">process</span> <span class="n">print</span> <span class="mi">3</span> <span class="o">!</span>
+</span></span><span class="line"><span class="cl"><span class="n">this</span> <span class="n">is</span> <span class="n">the</span> <span class="n">child</span> <span class="n">process</span> <span class="n">print</span> <span class="mi">4</span> <span class="o">!</span>
+</span></span><span class="line"><span class="cl"><span class="n">this</span> <span class="n">is</span> <span class="n">the</span> <span class="n">child</span> <span class="n">process</span> <span class="n">print</span> <span class="mi">5</span> <span class="o">!</span>
+</span></span><span class="line"><span class="cl"><span class="n">the</span> <span class="n">child</span> <span class="n">end</span>
+</span></span><span class="line"><span class="cl"><span class="n">father</span> <span class="n">end</span>
+</span></span></code></pre></div><h3 id="sigprocmask">sigprocmask</h3>
 <p>有时候不希望在接到信号时就立即停止当前执行去处理信号，同时也不希望忽略该信号，而是延时一段时间去调用信号处理函数。这种情况是通过阻塞信号实现的，即调用<code>sigprocmask</code>系统函数。</p>
 <p><code>sigprocmask</code>功能描述：设定对信号屏蔽集内的信号的处理方式(阻塞或不阻塞)。函数原型：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="cp">#include</span> <span class="cpf">&lt;signal.h&gt;</span><span class="cp">
-</span><span class="cp"></span><span class="kt">int</span> <span class="nf">sigprocmask</span><span class="p">(</span><span class="kt">int</span> <span class="n">how</span><span class="p">,</span> <span class="k">const</span> <span class="n">sigset_t</span> <span class="o">*</span><span class="n">set</span><span class="p">,</span> <span class="n">sigset_t</span> <span class="o">*</span><span class="n">oldset</span><span class="p">);</span>
-</code></pre></div><p>参数<code>how</code>用于指定信号修改的方式，可能选择有三种</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;signal.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="kt">int</span> <span class="nf">sigprocmask</span><span class="p">(</span><span class="kt">int</span> <span class="n">how</span><span class="p">,</span> <span class="k">const</span> <span class="kt">sigset_t</span> <span class="o">*</span><span class="n">set</span><span class="p">,</span> <span class="kt">sigset_t</span> <span class="o">*</span><span class="n">oldset</span><span class="p">);</span>
+</span></span></code></pre></div><p>参数<code>how</code>用于指定信号修改的方式，可能选择有三种</p>
 <ul>
 <li>SIG_BLOCK   将set信号集合加入进程的信号屏蔽列表中</li>
 <li>SIG_UNBLOCK 将set信号集合从进程的信号屏蔽列表中删除</li>
@@ -140,6 +140,9 @@
 
     
       
+  
+
+
     
   </body>
 </html>

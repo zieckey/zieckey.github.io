@@ -3,7 +3,7 @@
 <head>
   <link href="https://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <meta name="generator" content="Hugo 0.89.4" />
+  <meta name="generator" content="Hugo 0.127.0">
 
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -44,7 +44,7 @@
       </ul>
     </nav>
 
-    <p>&copy; 2021. All rights reserved. </p>
+    <p>&copy; 2024. All rights reserved. </p>
   </div>
 </aside>
 
@@ -91,35 +91,35 @@ libnginx.so :
 <p>详情请见<a href="https://github.com/zieckey/nginx-research/blob/master/libnginx/Makefile">Makefile</a></p>
 <p>将该<a href="https://github.com/zieckey/nginx-research/blob/master/libnginx/Makefile">Makefile</a>和<a href="https://github.com/zieckey/nginx-research/blob/master/libnginx/build.mk">build.mk</a>两个文件保存到一个目录下，然后在该目录下执行<code>make</code>命令即可将最新的<a href="http://nginx.org/download/nginx-1.7.9.tar.gz">nginx-1.7.9.tar.gz</a>（2014-12-23发布）下载下来，然后解压、编译为一个libnginx.a的静态库。</p>
 <h3 id="写测试程序">写测试程序</h3>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c">	<span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
-</span><span class="cp"></span>	<span class="cp">#include</span> <span class="cpf">&#34;ngx_config.h&#34;</span><span class="cp">
-</span><span class="cp"></span>	<span class="cp">#include</span> <span class="cpf">&#34;ngx_conf_file.h&#34;</span><span class="cp">
-</span><span class="cp"></span>	<span class="cp">#include</span> <span class="cpf">&#34;nginx.h&#34;</span><span class="cp">
-</span><span class="cp"></span>	<span class="cp">#include</span> <span class="cpf">&#34;ngx_core.h&#34;</span><span class="cp">
-</span><span class="cp"></span>	<span class="cp">#include</span> <span class="cpf">&#34;ngx_string.h&#34;</span><span class="cp">
-</span><span class="cp"></span>	<span class="cp">#include</span> <span class="cpf">&#34;ngx_string.h&#34;</span><span class="cp">
-</span><span class="cp"></span>	
-	<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-	    <span class="n">ngx_str_t</span> <span class="n">enc</span><span class="p">;</span>
-	    <span class="n">ngx_str_t</span> <span class="n">dec</span><span class="p">;</span>
-	    <span class="n">ngx_str_t</span> <span class="n">mystr</span> <span class="o">=</span> <span class="n">ngx_string</span><span class="p">(</span><span class="s">&#34;https://github.com/zieckey/gochart&#34;</span><span class="p">);</span>
-	    <span class="kt">int</span> <span class="n">enc_len</span> <span class="o">=</span> <span class="n">ngx_base64_encoded_length</span><span class="p">(</span><span class="n">mystr</span><span class="p">.</span><span class="n">len</span><span class="p">);</span>
-	    <span class="n">enc</span><span class="p">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">(</span><span class="n">enc_len</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
-	    <span class="n">dec</span><span class="p">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">(</span><span class="n">mystr</span><span class="p">.</span><span class="n">len</span><span class="p">);</span>
-	    <span class="n">ngx_encode_base64</span><span class="p">(</span><span class="o">&amp;</span><span class="n">enc</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">mystr</span><span class="p">);</span>
-	    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;source string is [%s] , base64 encoded string is [%s]</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">mystr</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="n">enc</span><span class="p">.</span><span class="n">data</span><span class="p">);</span>
-	    <span class="n">ngx_decode_base64</span><span class="p">(</span><span class="o">&amp;</span><span class="n">dec</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">enc</span><span class="p">);</span>
-	    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;base64 encoded string is [%s] , base64 decoded string is [%s]</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">enc</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="n">dec</span><span class="p">.</span><span class="n">data</span><span class="p">);</span>
-	    <span class="k">if</span> <span class="p">(</span><span class="n">ngx_strncmp</span><span class="p">(</span><span class="n">mystr</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="n">dec</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="n">dec</span><span class="p">.</span><span class="n">len</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
-	        <span class="n">printf</span><span class="p">(</span><span class="s">&#34;base64 encode/decode OK</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
-	    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-	        <span class="n">printf</span><span class="p">(</span><span class="s">&#34;base64 encode/decode FAILED</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
-	    <span class="p">}</span>
-	    <span class="n">free</span><span class="p">(</span><span class="n">enc</span><span class="p">.</span><span class="n">data</span><span class="p">);</span>
-	    <span class="n">free</span><span class="p">(</span><span class="n">dec</span><span class="p">.</span><span class="n">data</span><span class="p">);</span>
-	    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-	<span class="p">}</span>
-</code></pre></div><p>编译连接：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl">	<span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>	<span class="cp">#include</span> <span class="cpf">&#34;ngx_config.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>	<span class="cp">#include</span> <span class="cpf">&#34;ngx_conf_file.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>	<span class="cp">#include</span> <span class="cpf">&#34;nginx.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>	<span class="cp">#include</span> <span class="cpf">&#34;ngx_core.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>	<span class="cp">#include</span> <span class="cpf">&#34;ngx_string.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>	<span class="cp">#include</span> <span class="cpf">&#34;ngx_string.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>	
+</span></span><span class="line"><span class="cl">	<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	    <span class="kt">ngx_str_t</span> <span class="n">enc</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	    <span class="kt">ngx_str_t</span> <span class="n">dec</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	    <span class="kt">ngx_str_t</span> <span class="n">mystr</span> <span class="o">=</span> <span class="nf">ngx_string</span><span class="p">(</span><span class="s">&#34;https://github.com/zieckey/gochart&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	    <span class="kt">int</span> <span class="n">enc_len</span> <span class="o">=</span> <span class="nf">ngx_base64_encoded_length</span><span class="p">(</span><span class="n">mystr</span><span class="p">.</span><span class="n">len</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	    <span class="n">enc</span><span class="p">.</span><span class="n">data</span> <span class="o">=</span> <span class="nf">malloc</span><span class="p">(</span><span class="n">enc_len</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	    <span class="n">dec</span><span class="p">.</span><span class="n">data</span> <span class="o">=</span> <span class="nf">malloc</span><span class="p">(</span><span class="n">mystr</span><span class="p">.</span><span class="n">len</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	    <span class="nf">ngx_encode_base64</span><span class="p">(</span><span class="o">&amp;</span><span class="n">enc</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">mystr</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;source string is [%s] , base64 encoded string is [%s]</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">mystr</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="n">enc</span><span class="p">.</span><span class="n">data</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	    <span class="nf">ngx_decode_base64</span><span class="p">(</span><span class="o">&amp;</span><span class="n">dec</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">enc</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;base64 encoded string is [%s] , base64 decoded string is [%s]</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">enc</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="n">dec</span><span class="p">.</span><span class="n">data</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	    <span class="k">if</span> <span class="p">(</span><span class="nf">ngx_strncmp</span><span class="p">(</span><span class="n">mystr</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="n">dec</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="n">dec</span><span class="p">.</span><span class="n">len</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	        <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;base64 encode/decode OK</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	        <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;base64 encode/decode FAILED</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">	    <span class="nf">free</span><span class="p">(</span><span class="n">enc</span><span class="p">.</span><span class="n">data</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	    <span class="nf">free</span><span class="p">(</span><span class="n">dec</span><span class="p">.</span><span class="n">data</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span></code></pre></div><p>编译连接：</p>
 <pre><code>gcc -c -pipe -O -fPIC \
 	-W -Wall -Wpointer-arith \
 	-Wunused-value -Wno-unused-parameter \
@@ -148,6 +148,9 @@ base64 encode/decode OK
 
     
       
+  
+
+
     
   </body>
 </html>
