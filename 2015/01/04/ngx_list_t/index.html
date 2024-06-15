@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN" lang="zh-CN">
-<head>
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
   <link href="https://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
   <meta name="generator" content="Hugo 0.127.0">
@@ -12,16 +12,16 @@
   <meta name="description" content="本文主要介绍Nginx单向链表结构`ngx_list_t`这一重要的数据结构的使用方法和具体实现。`ngx_list_t`的节点却是一个固定大小的数组，可以存放多个元素。" />
 
   
-  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/print.css" media="print">
-  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/poole.css">
-  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/syntax.css">
-  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/hyde.css">
+  <link type="text/css" rel="stylesheet" href="http://localhost:1313/css/print.css" media="print">
+  <link type="text/css" rel="stylesheet" href="http://localhost:1313/css/poole.css">
+  <link type="text/css" rel="stylesheet" href="http://localhost:1313/css/syntax.css">
+  <link type="text/css" rel="stylesheet" href="http://localhost:1313/css/hyde.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
 
 
   
-  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="http://blog.codeg.cn/apple-touch-icon-144-precomposed.png">
-  <link rel="shortcut icon" href="http://blog.codeg.cn/favicon.png">
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="http://localhost:1313/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="http://localhost:1313/favicon.png">
 
   
   
@@ -31,7 +31,7 @@
   <aside class="sidebar">
   <div class="container sidebar-sticky">
     <div class="sidebar-about">
-      <a href="http://blog.codeg.cn/"><h1>CodeG Blog</h1></a>
+      <a href="http://localhost:1313/"><h1>CodeG Blog</h1></a>
       <p class="lead">
        思路决定出路，态度决定高度。 
       </p>
@@ -39,8 +39,8 @@
 
     <nav>
       <ul class="sidebar-nav">
-        <li><a href="http://blog.codeg.cn/">Home</a> </li>
-        <li><a href="http://blog.codeg.cn/post/"> 技术文章 </a></li><li><a href="http://blog.codeg.cn/about/"> 关于我 </a></li>
+        <li><a href="http://localhost:1313/">Home</a> </li>
+        <li><a href="http://localhost:1313/post/"> 技术文章 </a></li><li><a href="http://localhost:1313/about/"> 关于我 </a></li>
       </ul>
     </nav>
 
@@ -80,7 +80,7 @@
 </span></span><span class="line"><span class="cl"><span class="c1">// 具体实现比较简单，就不在累述。
 </span></span></span></code></pre></div><h2 id="内存结构图">内存结构图</h2>
 <p>阅读源码时，请参考下方的内存结构。</p>
-<p><a href="http://blog.codeg.cn/images/githubpages/nginx/ngx_list_t.png"><img src="http://blog.codeg.cn/images/githubpages/nginx/ngx_list_t.png" alt=""></a>
+<p><a href="http://localhost:1313/images/githubpages/nginx/ngx_list_t.png"><img src="http://localhost:1313/images/githubpages/nginx/ngx_list_t.png" alt=""></a>
 备注：从参考博客4摘录</p>
 <h2 id="测试代码">测试代码</h2>
 <p>该测试代码的完整工程的编译和运行方式请参考 <a href="https://github.com/zieckey/nginx-research">https://github.com/zieckey/nginx-research项目</a>。Linux&amp;Windows都测试通过。</p>
@@ -128,7 +128,7 @@
 </span></span><span class="line"><span class="cl">    <span class="nf">H_TEST_ASSERT</span><span class="p">(</span><span class="n">count</span> <span class="o">==</span> <span class="nf">H_ARRAYSIZE</span><span class="p">(</span><span class="n">names</span><span class="p">));</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span>
 </span></span></code></pre></div><p>从下面运行调试截图可以较为清晰的看出<code>ngx_list_t</code>的三级结构<code>list --&gt; node --&gt; element</code>。上述例子的list中有10个元素，分为三个节点存储，前两个节点都存满了(4个)，最后一个节点存放了两个元素，但内存都已经分配好了。</p>
-<p><a href="http://blog.codeg.cn/images/githubpages/nginx/ngx_list_win_debug.png"><img src="http://blog.codeg.cn/images/githubpages/nginx/ngx_list_win_debug.png" alt=""></a></p>
+<p><a href="http://localhost:1313/images/githubpages/nginx/ngx_list_win_debug.png"><img src="http://localhost:1313/images/githubpages/nginx/ngx_list_win_debug.png" alt=""></a></p>
 <h2 id="参考">参考：</h2>
 <ol>
 <li><a href="http://tengine.taobao.org/book/chapter_02.html#ngx-list-t-100">淘宝：Nginx开发从入门到精通 http://tengine.taobao.org/book/chapter_02.html#ngx-list-t-100</a></li>
@@ -141,11 +141,6 @@
 
 
     </main>
-
-    
-      
-  
-
 
     
   </body>

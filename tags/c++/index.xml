@@ -2,39 +2,39 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>C&#43;&#43; on CodeG Blog</title>
-    <link>http://blog.codeg.cn/tags/C&#43;&#43;/</link>
+    <link>http://localhost:1313/tags/C&#43;&#43;/</link>
     <description>Recent content in C&#43;&#43; on CodeG Blog</description>
     <generator>Hugo</generator>
     <language>zh-CN</language>
     <copyright>Copyright (c) 2015. All rights reserved.</copyright>
     <lastBuildDate>Fri, 19 Feb 2016 00:00:00 +0000</lastBuildDate>
-    <atom:link href="http://blog.codeg.cn/tags/C++/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:1313/tags/C++/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>编译Golang包为C语言库文件</title>
-      <link>http://blog.codeg.cn/2016/02/19/sharing-golang-package-to-C/</link>
+      <link>http://localhost:1313/2016/02/19/sharing-golang-package-to-C/</link>
       <pubDate>Fri, 19 Feb 2016 00:00:00 +0000</pubDate>
-      <guid>http://blog.codeg.cn/2016/02/19/sharing-golang-package-to-C/</guid>
+      <guid>http://localhost:1313/2016/02/19/sharing-golang-package-to-C/</guid>
       <description>Go 1.5发布后，其包含一个特性：可以编译生成C语言动态链接库或静态库。本文给出了示例代码和用法。 go build和go install命令，可以使</description>
     </item>
     <item>
       <title>应用双缓冲技术完美解决资源数据优雅无损的热加载问题</title>
-      <link>http://blog.codeg.cn/2016/01/27/double-buffering/</link>
+      <link>http://localhost:1313/2016/01/27/double-buffering/</link>
       <pubDate>Wed, 27 Jan 2016 00:00:00 +0000</pubDate>
-      <guid>http://blog.codeg.cn/2016/01/27/double-buffering/</guid>
+      <guid>http://localhost:1313/2016/01/27/double-buffering/</guid>
       <description>简介 在一个网络服务器不间断运行过程中，有一些资源数据需要实时更新，例如需要及时更新一份白名单列表，怎么做才能做到优雅无损的更新到服务的进程空</description>
     </item>
     <item>
       <title>C&#43;&#43;11中std::move示例</title>
-      <link>http://blog.codeg.cn/2015/01/01/c&#43;&#43;11-move/</link>
+      <link>http://localhost:1313/2015/01/01/c&#43;&#43;11-move/</link>
       <pubDate>Thu, 01 Jan 2015 00:00:00 +0000</pubDate>
-      <guid>http://blog.codeg.cn/2015/01/01/c&#43;&#43;11-move/</guid>
+      <guid>http://localhost:1313/2015/01/01/c&#43;&#43;11-move/</guid>
       <description>std::move作用：如果其类型支持移动的话，会无条件的将其参数（可能是左值）强制转换为右值引用，从而表示其可以移动，它使得编译器随后能够</description>
     </item>
     <item>
       <title>C&#43;&#43;与Java垃圾回收的区别</title>
-      <link>http://blog.codeg.cn/2014/12/14/gc-cpp-java/</link>
+      <link>http://localhost:1313/2014/12/14/gc-cpp-java/</link>
       <pubDate>Sun, 14 Dec 2014 00:00:00 +0000</pubDate>
-      <guid>http://blog.codeg.cn/2014/12/14/gc-cpp-java/</guid>
+      <guid>http://localhost:1313/2014/12/14/gc-cpp-java/</guid>
       <description></description>
     </item>
   </channel>

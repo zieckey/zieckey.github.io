@@ -2,18 +2,18 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Enable_shared_from_this on CodeG Blog</title>
-    <link>http://blog.codeg.cn/tags/enable_shared_from_this/</link>
+    <link>http://localhost:1313/tags/enable_shared_from_this/</link>
     <description>Recent content in Enable_shared_from_this on CodeG Blog</description>
     <generator>Hugo</generator>
     <language>zh-CN</language>
     <copyright>Copyright (c) 2015. All rights reserved.</copyright>
     <lastBuildDate>Wed, 19 Apr 2017 10:11:01 +0000</lastBuildDate>
-    <atom:link href="http://blog.codeg.cn/tags/enable_shared_from_this/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:1313/tags/enable_shared_from_this/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>evpp设计细节系列(1)：利用 enable_shared_from_this 实现一个自管理的定时器</title>
-      <link>http://blog.codeg.cn/post/blog/2017-04-19-the-detail-design-of-evpp-invoke-timer/</link>
+      <link>http://localhost:1313/post/blog/2017-04-19-the-detail-design-of-evpp-invoke-timer/</link>
       <pubDate>Wed, 19 Apr 2017 10:11:01 +0000</pubDate>
-      <guid>http://blog.codeg.cn/post/blog/2017-04-19-the-detail-design-of-evpp-invoke-timer/</guid>
+      <guid>http://localhost:1313/post/blog/2017-04-19-the-detail-design-of-evpp-invoke-timer/</guid>
       <description>0. 前言 https://github.com/Qihoo360/evpp是一个高性能的Reactor模式的现代化的C++11版本的高性能网络库</description>
     </item>
   </channel>

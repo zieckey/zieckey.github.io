@@ -2,18 +2,18 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Etcd on CodeG Blog</title>
-    <link>http://blog.codeg.cn/tags/etcd/</link>
+    <link>http://localhost:1313/tags/etcd/</link>
     <description>Recent content in Etcd on CodeG Blog</description>
     <generator>Hugo</generator>
     <language>zh-CN</language>
     <copyright>Copyright (c) 2015. All rights reserved.</copyright>
     <lastBuildDate>Wed, 24 Feb 2016 20:43:00 +0000</lastBuildDate>
-    <atom:link href="http://blog.codeg.cn/tags/etcd/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:1313/tags/etcd/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>使用Golang利用ectd实现一个分布式锁</title>
-      <link>http://blog.codeg.cn/post/blog/2016-02-24-distrubute-lock-over-etcd/</link>
+      <link>http://localhost:1313/post/blog/2016-02-24-distrubute-lock-over-etcd/</link>
       <pubDate>Wed, 24 Feb 2016 20:43:00 +0000</pubDate>
-      <guid>http://blog.codeg.cn/post/blog/2016-02-24-distrubute-lock-over-etcd/</guid>
+      <guid>http://localhost:1313/post/blog/2016-02-24-distrubute-lock-over-etcd/</guid>
       <description>etcd是随着CoreOS项目一起成长起来的，随着Golang和CoreOS等项目在开源社区日益火热， etcd作为一个高可用、强一致性的分布</description>
     </item>
   </channel>

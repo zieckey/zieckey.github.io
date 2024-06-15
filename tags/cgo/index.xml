@@ -2,25 +2,25 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Cgo on CodeG Blog</title>
-    <link>http://blog.codeg.cn/tags/cgo/</link>
+    <link>http://localhost:1313/tags/cgo/</link>
     <description>Recent content in Cgo on CodeG Blog</description>
     <generator>Hugo</generator>
     <language>zh-CN</language>
     <copyright>Copyright (c) 2015. All rights reserved.</copyright>
     <lastBuildDate>Wed, 25 May 2016 20:12:01 +0000</lastBuildDate>
-    <atom:link href="http://blog.codeg.cn/tags/cgo/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:1313/tags/cgo/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>如何在win7 64位系统下安装gopcap包及使用</title>
-      <link>http://blog.codeg.cn/post/blog/2016-05-26-howto-build-gopcap-on-windows-x64/</link>
+      <link>http://localhost:1313/post/blog/2016-05-26-howto-build-gopcap-on-windows-x64/</link>
       <pubDate>Wed, 25 May 2016 20:12:01 +0000</pubDate>
-      <guid>http://blog.codeg.cn/post/blog/2016-05-26-howto-build-gopcap-on-windows-x64/</guid>
+      <guid>http://localhost:1313/post/blog/2016-05-26-howto-build-gopcap-on-windows-x64/</guid>
       <description>gopcap是libpcap库的Golang封装，其项目地址在这里 https://github.com/akrennmair/gopcap 。 本文简要介绍一下如何在win7 64位系统平台上使用 gopcap 库。 安装步骤如下：</description>
     </item>
     <item>
       <title>Golang CGO编程之调用返回char*指针及长度的C函数库</title>
-      <link>http://blog.codeg.cn/post/blog/2016-04-20-golang-cgo/</link>
+      <link>http://localhost:1313/post/blog/2016-04-20-golang-cgo/</link>
       <pubDate>Wed, 20 Apr 2016 21:43:00 +0000</pubDate>
-      <guid>http://blog.codeg.cn/post/blog/2016-04-20-golang-cgo/</guid>
+      <guid>http://localhost:1313/post/blog/2016-04-20-golang-cgo/</guid>
       <description>现代所有主流操作系统几乎都是用C语音实现的，几乎所有高级语言都能调用C语言，例如PHP可以调用C语言写的PHP扩展，Python也可以调用C</description>
     </item>
   </channel>

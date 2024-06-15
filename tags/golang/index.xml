@@ -2,186 +2,186 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Golang on CodeG Blog</title>
-    <link>http://blog.codeg.cn/tags/Golang/</link>
+    <link>http://localhost:1313/tags/Golang/</link>
     <description>Recent content in Golang on CodeG Blog</description>
     <generator>Hugo</generator>
     <language>zh-CN</language>
     <copyright>Copyright (c) 2015. All rights reserved.</copyright>
     <lastBuildDate>Tue, 06 Sep 2016 11:52:00 +0000</lastBuildDate>
-    <atom:link href="http://blog.codeg.cn/tags/Golang/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:1313/tags/Golang/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>minio源码阅读</title>
-      <link>http://blog.codeg.cn/post/blog/2016-09-06-minio-source-code-reading/</link>
+      <link>http://localhost:1313/post/blog/2016-09-06-minio-source-code-reading/</link>
       <pubDate>Tue, 06 Sep 2016 11:52:00 +0000</pubDate>
-      <guid>http://blog.codeg.cn/post/blog/2016-09-06-minio-source-code-reading/</guid>
+      <guid>http://localhost:1313/post/blog/2016-09-06-minio-source-code-reading/</guid>
       <description>简介 minio是Go实现的一个完全兼容S3的服务，和大多Go项目一样，干净小巧，没有依赖，编译运行一键搞定，便利之极。 源码阅读 HTTP事件注</description>
     </item>
     <item>
       <title>发布一个Golang版本的INI解析器</title>
-      <link>http://blog.codeg.cn/post/blog/2016-05-29-a-new-ini-parser-for-golang/</link>
+      <link>http://localhost:1313/post/blog/2016-05-29-a-new-ini-parser-for-golang/</link>
       <pubDate>Sun, 29 May 2016 13:14:00 +0000</pubDate>
-      <guid>http://blog.codeg.cn/post/blog/2016-05-29-a-new-ini-parser-for-golang/</guid>
+      <guid>http://localhost:1313/post/blog/2016-05-29-a-new-ini-parser-for-golang/</guid>
       <description>goini 这是一个为Golang开发的读取INI格式文件的库，它还能读取类似于INI格式的key/value对数据。 goini 的设计目标是简单、灵活、高效，</description>
     </item>
     <item>
       <title>Trafik源代码阅读</title>
-      <link>http://blog.codeg.cn/post/blog/2016-05-26-trafik-source-code-reading/</link>
+      <link>http://localhost:1313/post/blog/2016-05-26-trafik-source-code-reading/</link>
       <pubDate>Thu, 26 May 2016 07:00:00 +0000</pubDate>
-      <guid>http://blog.codeg.cn/post/blog/2016-05-26-trafik-source-code-reading/</guid>
+      <guid>http://localhost:1313/post/blog/2016-05-26-trafik-source-code-reading/</guid>
       <description>Trafik介绍 其官网是这么介绍的： Træfɪk is a modern HTTP reverse proxy and load balancer made to deploy microservices with ease. It supports several backends (Docker, Swarm, Mesos/Marathon, Consul, Etcd, Zookeeper, BoltDB, Rest API, file...) to manage its configuration automatically and dynamically. 翻译过来就是：Træ</description>
     </item>
     <item>
       <title>如何在win7 64位系统下安装gopcap包及使用</title>
-      <link>http://blog.codeg.cn/post/blog/2016-05-26-howto-build-gopcap-on-windows-x64/</link>
+      <link>http://localhost:1313/post/blog/2016-05-26-howto-build-gopcap-on-windows-x64/</link>
       <pubDate>Wed, 25 May 2016 20:12:01 +0000</pubDate>
-      <guid>http://blog.codeg.cn/post/blog/2016-05-26-howto-build-gopcap-on-windows-x64/</guid>
+      <guid>http://localhost:1313/post/blog/2016-05-26-howto-build-gopcap-on-windows-x64/</guid>
       <description>gopcap是libpcap库的Golang封装，其项目地址在这里 https://github.com/akrennmair/gopcap 。 本文简要介绍一下如何在win7 64位系统平台上使用 gopcap 库。 安装步骤如下：</description>
     </item>
     <item>
       <title>Golang CGO编程之调用返回char*指针及长度的C函数库</title>
-      <link>http://blog.codeg.cn/post/blog/2016-04-20-golang-cgo/</link>
+      <link>http://localhost:1313/post/blog/2016-04-20-golang-cgo/</link>
       <pubDate>Wed, 20 Apr 2016 21:43:00 +0000</pubDate>
-      <guid>http://blog.codeg.cn/post/blog/2016-04-20-golang-cgo/</guid>
+      <guid>http://localhost:1313/post/blog/2016-04-20-golang-cgo/</guid>
       <description>现代所有主流操作系统几乎都是用C语音实现的，几乎所有高级语言都能调用C语言，例如PHP可以调用C语言写的PHP扩展，Python也可以调用C</description>
     </item>
     <item>
       <title>使用Golang利用ectd实现一个分布式锁</title>
-      <link>http://blog.codeg.cn/post/blog/2016-02-24-distrubute-lock-over-etcd/</link>
+      <link>http://localhost:1313/post/blog/2016-02-24-distrubute-lock-over-etcd/</link>
       <pubDate>Wed, 24 Feb 2016 20:43:00 +0000</pubDate>
-      <guid>http://blog.codeg.cn/post/blog/2016-02-24-distrubute-lock-over-etcd/</guid>
+      <guid>http://localhost:1313/post/blog/2016-02-24-distrubute-lock-over-etcd/</guid>
       <description>etcd是随着CoreOS项目一起成长起来的，随着Golang和CoreOS等项目在开源社区日益火热， etcd作为一个高可用、强一致性的分布</description>
     </item>
     <item>
       <title>编译Golang包为C语言库文件</title>
-      <link>http://blog.codeg.cn/2016/02/19/sharing-golang-package-to-C/</link>
+      <link>http://localhost:1313/2016/02/19/sharing-golang-package-to-C/</link>
       <pubDate>Fri, 19 Feb 2016 00:00:00 +0000</pubDate>
-      <guid>http://blog.codeg.cn/2016/02/19/sharing-golang-package-to-C/</guid>
+      <guid>http://localhost:1313/2016/02/19/sharing-golang-package-to-C/</guid>
       <description>Go 1.5发布后，其包含一个特性：可以编译生成C语言动态链接库或静态库。本文给出了示例代码和用法。 go build和go install命令，可以使</description>
     </item>
     <item>
       <title>Golang发送邮件</title>
-      <link>http://blog.codeg.cn/2016/02/14/send-email-for-golang/</link>
+      <link>http://localhost:1313/2016/02/14/send-email-for-golang/</link>
       <pubDate>Sun, 14 Feb 2016 00:00:00 +0000</pubDate>
-      <guid>http://blog.codeg.cn/2016/02/14/send-email-for-golang/</guid>
+      <guid>http://localhost:1313/2016/02/14/send-email-for-golang/</guid>
       <description>本文介绍一个简单的方法使用Go语言发送邮件。直接调用系统自带的mail命令发送邮件。 在网上找了很多例子，基本上都是基于Golang本身自带的</description>
     </item>
     <item>
       <title>Golang版本的remove_if函数实现</title>
-      <link>http://blog.codeg.cn/2016/02/14/golang-remove_if/</link>
+      <link>http://localhost:1313/2016/02/14/golang-remove_if/</link>
       <pubDate>Sun, 14 Feb 2016 00:00:00 +0000</pubDate>
-      <guid>http://blog.codeg.cn/2016/02/14/golang-remove_if/</guid>
+      <guid>http://localhost:1313/2016/02/14/golang-remove_if/</guid>
       <description>C++中的std::remove_if函数实现了一个算法，可以将一个容器中的元素按照一定的规则进行删除，但Go语言中却没有类似的函数。代码其</description>
     </item>
     <item>
       <title>使用grafana&#43;influxdb搭建炫酷的实时可视化监控平台</title>
-      <link>http://blog.codeg.cn/2016/02/05/influxdb-grafana/</link>
+      <link>http://localhost:1313/2016/02/05/influxdb-grafana/</link>
       <pubDate>Fri, 05 Feb 2016 00:00:00 +0000</pubDate>
-      <guid>http://blog.codeg.cn/2016/02/05/influxdb-grafana/</guid>
+      <guid>http://localhost:1313/2016/02/05/influxdb-grafana/</guid>
       <description>最近看到一篇介绍influxdb的文章，然后又看到用grafana配合图形展示，就简单试用了一下，确实还不错。但其中也遇到一些低级问题，这篇</description>
     </item>
     <item>
       <title>源码阅读-悟空搜索引擎</title>
-      <link>http://blog.codeg.cn/2016/02/02/wukong-source-code-reading/</link>
+      <link>http://localhost:1313/2016/02/02/wukong-source-code-reading/</link>
       <pubDate>Tue, 02 Feb 2016 00:00:00 +0000</pubDate>
-      <guid>http://blog.codeg.cn/2016/02/02/wukong-source-code-reading/</guid>
+      <guid>http://localhost:1313/2016/02/02/wukong-source-code-reading/</guid>
       <description>一个最简单的例子 我们还是从一个最简单的示例代码开始： package main import ( &amp;#34;github.com/huichen/wukong/engine&amp;#34; &amp;#34;github.com/huichen/wukong/types&amp;#34; &amp;#34;log&amp;#34; ) var ( // searcher是协程安全的 searcher = engine.Engine{} ) func main() { // 初始化 searcher.Init(types.EngineInitOptions{ SegmenterDictionaries: &amp;#34;./data/dictionary.txt&amp;#34;}) defer searcher.Close() // 将文</description>
     </item>
     <item>
       <title>应用双缓冲技术完美解决资源数据优雅无损的热加载问题</title>
-      <link>http://blog.codeg.cn/2016/01/27/double-buffering/</link>
+      <link>http://localhost:1313/2016/01/27/double-buffering/</link>
       <pubDate>Wed, 27 Jan 2016 00:00:00 +0000</pubDate>
-      <guid>http://blog.codeg.cn/2016/01/27/double-buffering/</guid>
+      <guid>http://localhost:1313/2016/01/27/double-buffering/</guid>
       <description>简介 在一个网络服务器不间断运行过程中，有一些资源数据需要实时更新，例如需要及时更新一份白名单列表，怎么做才能做到优雅无损的更新到服务的进程空</description>
     </item>
     <item>
       <title>godotenv介绍</title>
-      <link>http://blog.codeg.cn/2015/12/15/godotenv/</link>
+      <link>http://localhost:1313/2015/12/15/godotenv/</link>
       <pubDate>Tue, 15 Dec 2015 00:00:00 +0000</pubDate>
-      <guid>http://blog.codeg.cn/2015/12/15/godotenv/</guid>
+      <guid>http://localhost:1313/2015/12/15/godotenv/</guid>
       <description>简介 godotenv是ruby社区的dotenv的Golang移植版本。该库会解析 .env 文件，该文件是一个典型的INI格式的文件，类似于下面： SOME_ENV_VAR=somevalue</description>
     </item>
     <item>
       <title>Golang开源项目源码阅读</title>
-      <link>http://blog.codeg.cn/2015/09/19/golang-project-source-code-reading/</link>
+      <link>http://localhost:1313/2015/09/19/golang-project-source-code-reading/</link>
       <pubDate>Sat, 19 Sep 2015 00:00:00 +0000</pubDate>
-      <guid>http://blog.codeg.cn/2015/09/19/golang-project-source-code-reading/</guid>
+      <guid>http://localhost:1313/2015/09/19/golang-project-source-code-reading/</guid>
       <description>总览 github.com/julienschmidt/httproute httprouter 是一个轻量级的高性能HTTP请求分发器，英文称之为multiplexer，简称mux。 httproute特性 仅支持精确匹配，及只匹配</description>
     </item>
     <item>
       <title>golang学习之如何构造一个multipart/form格式的HTTP请求</title>
-      <link>http://blog.codeg.cn/2015/03/18/golang-how-to-make-a-multipart-http-request/</link>
+      <link>http://localhost:1313/2015/03/18/golang-how-to-make-a-multipart-http-request/</link>
       <pubDate>Wed, 18 Mar 2015 00:00:00 +0000</pubDate>
-      <guid>http://blog.codeg.cn/2015/03/18/golang-how-to-make-a-multipart-http-request/</guid>
+      <guid>http://localhost:1313/2015/03/18/golang-how-to-make-a-multipart-http-request/</guid>
       <description>使用PHP里面的curl扩展库可以方便的从一个php array来构造一个multipart/form格式的HTTP请求，但golang里构造</description>
     </item>
     <item>
       <title>golang学习之继承和重载</title>
-      <link>http://blog.codeg.cn/2015/02/12/golang-derive-override/</link>
+      <link>http://localhost:1313/2015/02/12/golang-derive-override/</link>
       <pubDate>Thu, 12 Feb 2015 00:00:00 +0000</pubDate>
-      <guid>http://blog.codeg.cn/2015/02/12/golang-derive-override/</guid>
+      <guid>http://localhost:1313/2015/02/12/golang-derive-override/</guid>
       <description>其实golang里是不提倡继承的，也不提倡重载的。但是有些场景下，我们还是想试验一下传统C++或Java语言里的继承和重载能否用在golan</description>
     </item>
     <item>
       <title>golang解析MIME数据格式的代码示例</title>
-      <link>http://blog.codeg.cn/2015/01/23/mime-golang-parsing/</link>
+      <link>http://localhost:1313/2015/01/23/mime-golang-parsing/</link>
       <pubDate>Fri, 23 Jan 2015 00:00:00 +0000</pubDate>
-      <guid>http://blog.codeg.cn/2015/01/23/mime-golang-parsing/</guid>
+      <guid>http://localhost:1313/2015/01/23/mime-golang-parsing/</guid>
       <description>MIME格式 MIME是multipurpose Internet mail extensions 的缩写。它是一种协议，可使电子邮件除包含一般纯文本以外，还可加上彩色图片、视频、声音或二</description>
     </item>
     <item>
       <title>多进程编程</title>
-      <link>http://blog.codeg.cn/2015/01/13/linux-system-programming/</link>
+      <link>http://localhost:1313/2015/01/13/linux-system-programming/</link>
       <pubDate>Tue, 13 Jan 2015 00:00:00 +0000</pubDate>
-      <guid>http://blog.codeg.cn/2015/01/13/linux-system-programming/</guid>
+      <guid>http://localhost:1313/2015/01/13/linux-system-programming/</guid>
       <description>wait 和 waitpid 当一个进程正常或异常退出时，内核就向其父进程发送SIGCHLD信号。因为子进程退出是一个异步事件，所以该信号也是内核向父进程发送的异步</description>
     </item>
     <item>
       <title>Golang源码阅读——crypto/subtle.ConstantTimeByteEq 深度解析</title>
-      <link>http://blog.codeg.cn/2015/01/12/go-source-code-reading-ConstantTimeByteEq/</link>
+      <link>http://localhost:1313/2015/01/12/go-source-code-reading-ConstantTimeByteEq/</link>
       <pubDate>Mon, 12 Jan 2015 00:00:00 +0000</pubDate>
-      <guid>http://blog.codeg.cn/2015/01/12/go-source-code-reading-ConstantTimeByteEq/</guid>
+      <guid>http://localhost:1313/2015/01/12/go-source-code-reading-ConstantTimeByteEq/</guid>
       <description>根据文档说明，ConstantTimeByteEq返回1，如果 x == y；相反则返回0。为什么一个简单整数比较操作要搞一个单独的函数出来实现？并</description>
     </item>
     <item>
       <title>golang网络编程-udp客户端示例代码</title>
-      <link>http://blog.codeg.cn/2015/01/07/golang-udp-client/</link>
+      <link>http://localhost:1313/2015/01/07/golang-udp-client/</link>
       <pubDate>Wed, 07 Jan 2015 00:00:00 +0000</pubDate>
-      <guid>http://blog.codeg.cn/2015/01/07/golang-udp-client/</guid>
+      <guid>http://localhost:1313/2015/01/07/golang-udp-client/</guid>
       <description>最简单的一个客户端 编程步骤： 创建一个udp socket并连接服务器 发送数据给服务器 从服务器接收数据 关闭udp socket package main import ( &amp;#34;fmt&amp;#34; &amp;#34;net&amp;#34; &amp;#34;os&amp;#34; ) func main() { hostport := &amp;#34;10.16.28.17:1053&amp;#34; if</description>
     </item>
     <item>
       <title>发布一个批量转码工具:gbk2utf8</title>
-      <link>http://blog.codeg.cn/2015/01/03/gbk2utf8-by-golang/</link>
+      <link>http://localhost:1313/2015/01/03/gbk2utf8-by-golang/</link>
       <pubDate>Sat, 03 Jan 2015 00:00:00 +0000</pubDate>
-      <guid>http://blog.codeg.cn/2015/01/03/gbk2utf8-by-golang/</guid>
+      <guid>http://localhost:1313/2015/01/03/gbk2utf8-by-golang/</guid>
       <description>Linux下的iconv是针对单个文件处理，但是转码后的数据直接输出到STDOUT，不方便批量处理。gbk2utf8工具可以针对一个目录以及</description>
     </item>
     <item>
       <title>Golang源码阅读</title>
-      <link>http://blog.codeg.cn/2014/12/28/go-source-code-reading/</link>
+      <link>http://localhost:1313/2014/12/28/go-source-code-reading/</link>
       <pubDate>Sun, 28 Dec 2014 00:00:00 +0000</pubDate>
-      <guid>http://blog.codeg.cn/2014/12/28/go-source-code-reading/</guid>
+      <guid>http://localhost:1313/2014/12/28/go-source-code-reading/</guid>
       <description>总览 src/cmd/dist/buf.c 该文件提供两个数据结构：Buf、Vec，分别用来取代char*和char**的相关操作。Buf和Vec这两个数据结构非常简单易懂，其他</description>
     </item>
     <item>
       <title>发布一个使用简单的绘图工具</title>
-      <link>http://blog.codeg.cn/2014/12/27/gochart-info/</link>
+      <link>http://localhost:1313/2014/12/27/gochart-info/</link>
       <pubDate>Sat, 27 Dec 2014 00:00:00 +0000</pubDate>
-      <guid>http://blog.codeg.cn/2014/12/27/gochart-info/</guid>
+      <guid>http://localhost:1313/2014/12/27/gochart-info/</guid>
       <description>gochart是仿照goplot使用golang和highcharts开源库制作的一个使用起来非常简单的绘制图表的工具，图表风格有曲线图、折</description>
     </item>
     <item>
       <title>Golang1.4资源下载</title>
-      <link>http://blog.codeg.cn/2014/12/15/golang1.4-resource-download/</link>
+      <link>http://localhost:1313/2014/12/15/golang1.4-resource-download/</link>
       <pubDate>Mon, 15 Dec 2014 00:00:00 +0000</pubDate>
-      <guid>http://blog.codeg.cn/2014/12/15/golang1.4-resource-download/</guid>
+      <guid>http://localhost:1313/2014/12/15/golang1.4-resource-download/</guid>
       <description>当前golang官方主页背墙，且有些golang.org/x下面的库也下载不到，因此我将这项资源统一放在这里供大家下载。 golang.org</description>
     </item>
     <item>
       <title>Golang写的HTTP服务与Nginx对比</title>
-      <link>http://blog.codeg.cn/2014/12/13/golang-vs-nginx-at-httpecho/</link>
+      <link>http://localhost:1313/2014/12/13/golang-vs-nginx-at-httpecho/</link>
       <pubDate>Sat, 13 Dec 2014 00:00:00 +0000</pubDate>
-      <guid>http://blog.codeg.cn/2014/12/13/golang-vs-nginx-at-httpecho/</guid>
+      <guid>http://localhost:1313/2014/12/13/golang-vs-nginx-at-httpecho/</guid>
       <description>Golang写网络程序的确很简单，一个HTTP Echo服务，几行源码就可以搞定。Golang源码如下： package main import ( &amp;#34;log&amp;#34; &amp;#34;net/http&amp;#34; &amp;#34;io/ioutil&amp;#34; ) func handler(w http.ResponseWriter, r *http.Request) { buf, err := ioutil.ReadAll(r.Body) //Read</description>
     </item>
   </channel>
