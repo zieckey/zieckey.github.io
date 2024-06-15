@@ -3,7 +3,7 @@
 <head>
   <link href="https://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <meta name="generator" content="Hugo 0.89.4" />
+  <meta name="generator" content="Hugo 0.127.0">
 
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -44,7 +44,7 @@
       </ul>
     </nav>
 
-    <p>&copy; 2021. All rights reserved. </p>
+    <p>&copy; 2024. All rights reserved. </p>
   </div>
 </aside>
 
@@ -53,19 +53,19 @@
   <h1>Golang版本的remove_if函数实现</h1>
   <time datetime=2016-02-14T00:00:00Z class="post-date">Sun, Feb 14, 2016</time>
   <p>C++中的std::remove_if函数实现了一个算法，可以将一个容器中的元素按照一定的规则进行删除，但Go语言中却没有类似的函数。代码其实很简单，如下：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">RemoveIf</span><span class="p">(</span><span class="nx">s</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">f</span> <span class="kd">func</span><span class="p">(</span><span class="kt">rune</span><span class="p">)</span> <span class="kt">bool</span><span class="p">)</span> <span class="kt">string</span> <span class="p">{</span>
-	<span class="nx">runes</span> <span class="o">:=</span> <span class="p">[]</span><span class="nb">rune</span><span class="p">(</span><span class="nx">s</span><span class="p">)</span>
-	<span class="nx">result</span> <span class="o">:=</span> <span class="mi">0</span>
-	<span class="k">for</span> <span class="nx">i</span><span class="p">,</span> <span class="nx">r</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">runes</span>  <span class="p">{</span>
-		<span class="k">if</span> <span class="p">!</span><span class="nf">f</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span> <span class="p">{</span>
-			<span class="nx">runes</span><span class="p">[</span><span class="nx">result</span><span class="p">]</span> <span class="p">=</span> <span class="nx">runes</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span>
-			<span class="nx">result</span><span class="o">++</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
-
-	<span class="k">return</span> <span class="nb">string</span><span class="p">(</span><span class="nx">runes</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="nx">result</span><span class="p">])</span>
-<span class="p">}</span>
-</code></pre></div><p>上述算法是参考C++标准库中的实现(<code>bits/stl_algo.h:remove_if</code>)，但比C++的效率低，因为多了两次转换（<code>string</code>与<code>[]rune</code>互相转换两次）。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">RemoveIf</span><span class="p">(</span><span class="nx">s</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">f</span> <span class="kd">func</span><span class="p">(</span><span class="kt">rune</span><span class="p">)</span> <span class="kt">bool</span><span class="p">)</span> <span class="kt">string</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">runes</span> <span class="o">:=</span> <span class="p">[]</span><span class="nb">rune</span><span class="p">(</span><span class="nx">s</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">result</span> <span class="o">:=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="nx">i</span><span class="p">,</span> <span class="nx">r</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">runes</span>  <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="p">!</span><span class="nf">f</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">runes</span><span class="p">[</span><span class="nx">result</span><span class="p">]</span> <span class="p">=</span> <span class="nx">runes</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">result</span><span class="o">++</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nb">string</span><span class="p">(</span><span class="nx">runes</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="nx">result</span><span class="p">])</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>上述算法是参考C++标准库中的实现(<code>bits/stl_algo.h:remove_if</code>)，但比C++的效率低，因为多了两次转换（<code>string</code>与<code>[]rune</code>互相转换两次）。</p>
 <p>进一步思考：这两次转换不知道是否可以通过其他方式节省掉？类似于C++的实现，就地删除（并没有新开辟内存空间）。</p>
 <p>上述源码放到这里了： <a href="https://github.com/zieckey/gocom/tree/master/tstrings">https://github.com/zieckey/gocom/tree/master/tstrings</a></p>
 <p>必须要吐槽一下Go语言没有泛型，如果要针对<code>[]byte</code>就又得要重复实现一遍类似的代码。</p>
@@ -77,6 +77,9 @@
 
     
       
+  
+
+
     
   </body>
 </html>

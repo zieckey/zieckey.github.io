@@ -3,7 +3,7 @@
 <head>
   <link href="https://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <meta name="generator" content="Hugo 0.89.4" />
+  <meta name="generator" content="Hugo 0.127.0">
 
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -44,7 +44,7 @@
       </ul>
     </nav>
 
-    <p>&copy; 2021. All rights reserved. </p>
+    <p>&copy; 2024. All rights reserved. </p>
   </div>
 </aside>
 
@@ -69,14 +69,14 @@
 <ol>
 <li>编译过程中如果出现下列错误</li>
 </ol>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"> $ go build
- <span class="c1"># github.com/akrennmair/gopcap</span>
- In file included from C:/WpdPack/Include/pcap.h:43:0,
-              from ..<span class="se">\.</span>.<span class="se">\.</span>.<span class="se">\a</span>krennmair<span class="se">\g</span>opcap<span class="se">\p</span>cap.go:12:
- C:/WpdPack/Include/pcap/pcap.h:450:1: error: unknown <span class="nb">type</span> name <span class="s1">&#39;Adapter&#39;</span>
- Adapter *pcap_get_adapter<span class="o">(</span>pcap_t *p<span class="o">)</span><span class="p">;</span>
- ^
-</code></pre></div><pre><code>就将 pcap/pcap.h 中这一行注释掉。
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"> $ go build
+</span></span><span class="line"><span class="cl"> <span class="c1"># github.com/akrennmair/gopcap</span>
+</span></span><span class="line"><span class="cl"> In file included from C:/WpdPack/Include/pcap.h:43:0,
+</span></span><span class="line"><span class="cl">              from ..<span class="se">\.</span>.<span class="se">\.</span>.<span class="se">\a</span>krennmair<span class="se">\g</span>opcap<span class="se">\p</span>cap.go:12:
+</span></span><span class="line"><span class="cl"> C:/WpdPack/Include/pcap/pcap.h:450:1: error: unknown <span class="nb">type</span> name <span class="s1">&#39;Adapter&#39;</span>
+</span></span><span class="line"><span class="cl"> Adapter *pcap_get_adapter<span class="o">(</span>pcap_t *p<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> ^
+</span></span></code></pre></div><pre><code>就将 pcap/pcap.h 中这一行注释掉。
 </code></pre>
 <ol>
 <li>至此，应该再不会有问题了，编译成功。 gopcap 库的toots目录有很多使用用例，可以看看以了解如何使用。</li>
@@ -94,6 +94,9 @@
 
     
       
+  
+
+
     
   </body>
 </html>

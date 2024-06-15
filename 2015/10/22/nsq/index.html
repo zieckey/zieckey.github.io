@@ -3,7 +3,7 @@
 <head>
   <link href="https://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <meta name="generator" content="Hugo 0.89.4" />
+  <meta name="generator" content="Hugo 0.127.0">
 
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -44,7 +44,7 @@
       </ul>
     </nav>
 
-    <p>&copy; 2021. All rights reserved. </p>
+    <p>&copy; 2024. All rights reserved. </p>
   </div>
 </aside>
 
@@ -81,10 +81,10 @@
 <p>另外，NSQ不能保证数据的消费顺序与生产顺序完全一致。</p>
 <h3 id="与nsqlookupd交互">与nsqlookupd交互</h3>
 <p>代码调用路径如下：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go">	<span class="nx">nsqd</span><span class="p">.</span><span class="nf">Main</span><span class="p">()</span>
-	<span class="nx">n</span><span class="p">.</span><span class="nx">waitGroup</span><span class="p">.</span><span class="nf">Wrap</span><span class="p">(</span><span class="kd">func</span><span class="p">()</span> <span class="p">{</span> <span class="nx">n</span><span class="p">.</span><span class="nf">lookupLoop</span><span class="p">()</span> <span class="p">})</span>
-	<span class="kd">func</span> <span class="p">(</span><span class="nx">n</span> <span class="o">*</span><span class="nx">NSQD</span><span class="p">)</span> <span class="nf">lookupLoop</span><span class="p">()</span> <span class="p">:</span> <span class="mi">91</span><span class="nx">行</span><span class="err">：</span> <span class="k">case</span> <span class="nx">val</span> <span class="o">:=</span> <span class="o">&lt;-</span><span class="nx">n</span><span class="p">.</span><span class="nx">notifyChan</span><span class="p">:</span>
-</code></pre></div><h3 id="消息分发">消息分发</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl">	<span class="nx">nsqd</span><span class="p">.</span><span class="nf">Main</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">n</span><span class="p">.</span><span class="nx">waitGroup</span><span class="p">.</span><span class="nf">Wrap</span><span class="p">(</span><span class="kd">func</span><span class="p">()</span> <span class="p">{</span> <span class="nx">n</span><span class="p">.</span><span class="nf">lookupLoop</span><span class="p">()</span> <span class="p">})</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">func</span> <span class="p">(</span><span class="nx">n</span> <span class="o">*</span><span class="nx">NSQD</span><span class="p">)</span> <span class="nf">lookupLoop</span><span class="p">()</span> <span class="p">:</span> <span class="mi">91</span><span class="nx">行</span><span class="err">：</span> <span class="k">case</span> <span class="nx">val</span> <span class="o">:=</span> <span class="o">&lt;-</span><span class="nx">n</span><span class="p">.</span><span class="nx">notifyChan</span><span class="p">:</span>
+</span></span></code></pre></div><h3 id="消息分发">消息分发</h3>
 <p><code>func (t *Topic) messagePump()</code> 这里进行消息的分发，直接将该topic下的消息推送给所有的channel上。</p>
 <h3 id="消息id">消息ID</h3>
 <p><code>func (n *NSQD) idPump()</code> 这里生成新的消息ID，然后放入到 <code>n.idChan</code> 中。64位int64的guid生成算法参考<a href="https://github.com/bmizerany/noeqd">https://github.com/bmizerany/noeqd</a>，主要部分解释如下：</p>
@@ -117,6 +117,9 @@
 
     
       
+  
+
+
     
   </body>
 </html>

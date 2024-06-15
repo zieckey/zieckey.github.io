@@ -3,7 +3,7 @@
 <head>
   <link href="https://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <meta name="generator" content="Hugo 0.89.4" />
+  <meta name="generator" content="Hugo 0.127.0">
 
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -44,7 +44,7 @@
       </ul>
     </nav>
 
-    <p>&copy; 2021. All rights reserved. </p>
+    <p>&copy; 2024. All rights reserved. </p>
   </div>
 </aside>
 
@@ -54,44 +54,44 @@
   <time datetime=2016-02-02T00:00:00Z class="post-date">Tue, Feb 2, 2016</time>
   <h2 id="一个最简单的例子">一个最简单的例子</h2>
 <p>我们还是从一个最简单的示例代码开始：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
-
-<span class="kn">import</span> <span class="p">(</span>
-	<span class="s">&#34;github.com/huichen/wukong/engine&#34;</span>
-	<span class="s">&#34;github.com/huichen/wukong/types&#34;</span>
-	<span class="s">&#34;log&#34;</span>
-<span class="p">)</span>
-
-<span class="kd">var</span> <span class="p">(</span>
-<span class="c1">// searcher是协程安全的
-</span><span class="c1"></span>	<span class="nx">searcher</span> <span class="p">=</span> <span class="nx">engine</span><span class="p">.</span><span class="nx">Engine</span><span class="p">{}</span>
-<span class="p">)</span>
-
-<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-	<span class="c1">// 初始化
-</span><span class="c1"></span>	<span class="nx">searcher</span><span class="p">.</span><span class="nf">Init</span><span class="p">(</span><span class="nx">types</span><span class="p">.</span><span class="nx">EngineInitOptions</span><span class="p">{</span>
-		<span class="nx">SegmenterDictionaries</span><span class="p">:</span> <span class="s">&#34;./data/dictionary.txt&#34;</span><span class="p">})</span>
-	<span class="k">defer</span> <span class="nx">searcher</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
-
-	<span class="c1">// 将文档加入索引
-</span><span class="c1"></span>	<span class="nx">searcher</span><span class="p">.</span><span class="nf">IndexDocument</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nx">types</span><span class="p">.</span><span class="nx">DocumentIndexData</span><span class="p">{</span><span class="nx">Content</span><span class="p">:</span> <span class="s">&#34;此次百度收购将成中国互联网最大并购&#34;</span><span class="p">})</span>
-	<span class="nx">searcher</span><span class="p">.</span><span class="nf">IndexDocument</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nx">types</span><span class="p">.</span><span class="nx">DocumentIndexData</span><span class="p">{</span><span class="nx">Content</span><span class="p">:</span> <span class="s">&#34;百度宣布拟全资收购91无线业务&#34;</span><span class="p">})</span>
-	<span class="nx">searcher</span><span class="p">.</span><span class="nf">IndexDocument</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nx">types</span><span class="p">.</span><span class="nx">DocumentIndexData</span><span class="p">{</span><span class="nx">Content</span><span class="p">:</span> <span class="s">&#34;百度是中国最大的搜索引擎&#34;</span><span class="p">})</span>
-
-	<span class="c1">// 等待索引刷新完毕
-</span><span class="c1"></span>	<span class="nx">searcher</span><span class="p">.</span><span class="nf">FlushIndex</span><span class="p">()</span>
-
-	<span class="c1">// 搜索输出格式见types.SearchResponse结构体
-</span><span class="c1"></span>	<span class="nx">res</span> <span class="o">:=</span> <span class="nx">searcher</span><span class="p">.</span><span class="nf">Search</span><span class="p">(</span><span class="nx">types</span><span class="p">.</span><span class="nx">SearchRequest</span><span class="p">{</span><span class="nx">Text</span><span class="p">:</span><span class="s">&#34;百度中国&#34;</span><span class="p">})</span>
-	<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;num=%d &#34;</span><span class="p">,</span> <span class="nx">res</span><span class="p">.</span><span class="nx">NumDocs</span><span class="p">)</span>
-	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">d</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">res</span><span class="p">.</span><span class="nx">Docs</span> <span class="p">{</span>
-		<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;docId=%d&#34;</span><span class="p">,</span> <span class="nx">d</span><span class="p">.</span><span class="nx">DocId</span><span class="p">)</span>
-		<span class="nx">log</span><span class="p">.</span><span class="nf">Print</span><span class="p">(</span><span class="s">&#34;\tscore:&#34;</span><span class="p">,</span> <span class="nx">d</span><span class="p">.</span><span class="nx">Scores</span><span class="p">)</span>
-		<span class="nx">log</span><span class="p">.</span><span class="nf">Print</span><span class="p">(</span><span class="s">&#34;\tTokenLocations:&#34;</span><span class="p">,</span> <span class="nx">d</span><span class="p">.</span><span class="nx">TokenLocations</span><span class="p">)</span>
-		<span class="nx">log</span><span class="p">.</span><span class="nf">Print</span><span class="p">(</span><span class="s">&#34;\tTokenSnippetLocations:&#34;</span><span class="p">,</span> <span class="nx">d</span><span class="p">.</span><span class="nx">TokenSnippetLocations</span><span class="p">)</span>
-	<span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div><p>悟空搜索引擎不是一个完整的搜索引擎，我们可以把它当做一个搜索引擎基础库来使用。上面的示例代码是一个最简单的例子，展示了如何使用这个库，非常简单，三步即可完成：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;github.com/huichen/wukong/engine&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;github.com/huichen/wukong/types&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;log&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">var</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// searcher是协程安全的
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">searcher</span> <span class="p">=</span> <span class="nx">engine</span><span class="p">.</span><span class="nx">Engine</span><span class="p">{}</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// 初始化
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">searcher</span><span class="p">.</span><span class="nf">Init</span><span class="p">(</span><span class="nx">types</span><span class="p">.</span><span class="nx">EngineInitOptions</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">SegmenterDictionaries</span><span class="p">:</span> <span class="s">&#34;./data/dictionary.txt&#34;</span><span class="p">})</span>
+</span></span><span class="line"><span class="cl">	<span class="k">defer</span> <span class="nx">searcher</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// 将文档加入索引
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">searcher</span><span class="p">.</span><span class="nf">IndexDocument</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nx">types</span><span class="p">.</span><span class="nx">DocumentIndexData</span><span class="p">{</span><span class="nx">Content</span><span class="p">:</span> <span class="s">&#34;此次百度收购将成中国互联网最大并购&#34;</span><span class="p">})</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">searcher</span><span class="p">.</span><span class="nf">IndexDocument</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nx">types</span><span class="p">.</span><span class="nx">DocumentIndexData</span><span class="p">{</span><span class="nx">Content</span><span class="p">:</span> <span class="s">&#34;百度宣布拟全资收购91无线业务&#34;</span><span class="p">})</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">searcher</span><span class="p">.</span><span class="nf">IndexDocument</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nx">types</span><span class="p">.</span><span class="nx">DocumentIndexData</span><span class="p">{</span><span class="nx">Content</span><span class="p">:</span> <span class="s">&#34;百度是中国最大的搜索引擎&#34;</span><span class="p">})</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// 等待索引刷新完毕
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">searcher</span><span class="p">.</span><span class="nf">FlushIndex</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// 搜索输出格式见types.SearchResponse结构体
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">res</span> <span class="o">:=</span> <span class="nx">searcher</span><span class="p">.</span><span class="nf">Search</span><span class="p">(</span><span class="nx">types</span><span class="p">.</span><span class="nx">SearchRequest</span><span class="p">{</span><span class="nx">Text</span><span class="p">:</span><span class="s">&#34;百度中国&#34;</span><span class="p">})</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;num=%d &#34;</span><span class="p">,</span> <span class="nx">res</span><span class="p">.</span><span class="nx">NumDocs</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">d</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">res</span><span class="p">.</span><span class="nx">Docs</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;docId=%d&#34;</span><span class="p">,</span> <span class="nx">d</span><span class="p">.</span><span class="nx">DocId</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">log</span><span class="p">.</span><span class="nf">Print</span><span class="p">(</span><span class="s">&#34;\tscore:&#34;</span><span class="p">,</span> <span class="nx">d</span><span class="p">.</span><span class="nx">Scores</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">log</span><span class="p">.</span><span class="nf">Print</span><span class="p">(</span><span class="s">&#34;\tTokenLocations:&#34;</span><span class="p">,</span> <span class="nx">d</span><span class="p">.</span><span class="nx">TokenLocations</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">log</span><span class="p">.</span><span class="nf">Print</span><span class="p">(</span><span class="s">&#34;\tTokenSnippetLocations:&#34;</span><span class="p">,</span> <span class="nx">d</span><span class="p">.</span><span class="nx">TokenSnippetLocations</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>悟空搜索引擎不是一个完整的搜索引擎，我们可以把它当做一个搜索引擎基础库来使用。上面的示例代码是一个最简单的例子，展示了如何使用这个库，非常简单，三步即可完成：</p>
 <ol>
 <li>初始化引擎： <code>searcher.Init</code></li>
 <li>将文档加入索引列表中： <code>searcher.IndexDocument</code></li>
@@ -110,77 +110,77 @@
 <p>从上面最简单的那个例子可以看出，我们所有的操作都是基于<code>searcher</code>对象（engine.Engine类型），初始化引擎、将文档加入索引列表中、Flush索引列表、执行搜索任务。下面我们详细分析一下初始化过程：</p>
 <h4 id="加载分词词典">加载分词词典</h4>
 <p>有一个参数<code>NotUsingSegmenter</code>可以控制是否加载分词词典。小小吐槽一下：这里没有使用正语义，导致我脑袋需要非非转换，(⊙o⊙)… ，我相信如果使用<code>UsingSegmenter</code>参数的话，应该更好理解一点。</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go">	<span class="k">if</span> <span class="p">!</span><span class="nx">options</span><span class="p">.</span><span class="nx">NotUsingSegmenter</span> <span class="p">{</span>
-		<span class="c1">// 载入分词器词典
-</span><span class="c1"></span>		<span class="nx">engine</span><span class="p">.</span><span class="nx">segmenter</span><span class="p">.</span><span class="nf">LoadDictionary</span><span class="p">(</span><span class="nx">options</span><span class="p">.</span><span class="nx">SegmenterDictionaries</span><span class="p">)</span>
-
-		<span class="c1">// 初始化停用词
-</span><span class="c1"></span>		<span class="nx">engine</span><span class="p">.</span><span class="nx">stopTokens</span><span class="p">.</span><span class="nf">Init</span><span class="p">(</span><span class="nx">options</span><span class="p">.</span><span class="nx">StopTokenFile</span><span class="p">)</span>
-	<span class="p">}</span>
-</code></pre></div><p>分词词典的内部加载过程，可以详细参考 <code>https://github.com/huichen/sego</code> 这个项目，这个可以单独来分析，在这里就不在展开说了。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">!</span><span class="nx">options</span><span class="p">.</span><span class="nx">NotUsingSegmenter</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="c1">// 载入分词器词典
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="nx">engine</span><span class="p">.</span><span class="nx">segmenter</span><span class="p">.</span><span class="nf">LoadDictionary</span><span class="p">(</span><span class="nx">options</span><span class="p">.</span><span class="nx">SegmenterDictionaries</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="c1">// 初始化停用词
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="nx">engine</span><span class="p">.</span><span class="nx">stopTokens</span><span class="p">.</span><span class="nf">Init</span><span class="p">(</span><span class="nx">options</span><span class="p">.</span><span class="nx">StopTokenFile</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span></code></pre></div><p>分词词典的内部加载过程，可以详细参考 <code>https://github.com/huichen/sego</code> 这个项目，这个可以单独来分析，在这里就不在展开说了。</p>
 <h4 id="初始化索引器和排序器">初始化索引器和排序器</h4>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go">	<span class="k">for</span> <span class="nx">shard</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">shard</span> <span class="p">&lt;</span> <span class="nx">options</span><span class="p">.</span><span class="nx">NumShards</span><span class="p">;</span> <span class="nx">shard</span><span class="o">++</span> <span class="p">{</span>
-		<span class="nx">engine</span><span class="p">.</span><span class="nx">indexers</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">engine</span><span class="p">.</span><span class="nx">indexers</span><span class="p">,</span> <span class="nx">core</span><span class="p">.</span><span class="nx">Indexer</span><span class="p">{})</span>
-		<span class="nx">engine</span><span class="p">.</span><span class="nx">indexers</span><span class="p">[</span><span class="nx">shard</span><span class="p">].</span><span class="nf">Init</span><span class="p">(</span><span class="o">*</span><span class="nx">options</span><span class="p">.</span><span class="nx">IndexerInitOptions</span><span class="p">)</span>
-
-		<span class="nx">engine</span><span class="p">.</span><span class="nx">rankers</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">engine</span><span class="p">.</span><span class="nx">rankers</span><span class="p">,</span> <span class="nx">core</span><span class="p">.</span><span class="nx">Ranker</span><span class="p">{})</span>
-		<span class="nx">engine</span><span class="p">.</span><span class="nx">rankers</span><span class="p">[</span><span class="nx">shard</span><span class="p">].</span><span class="nf">Init</span><span class="p">()</span>
-	<span class="p">}</span>
-</code></pre></div><p><code>options.NumShards</code> 参数可以设置<code>shard</code>(分片，项目作者称之为裂分)个数，根据<code>shard</code>个数来初始化索引器(Indexer)、排序器(Rander)的个数。这里是为了方便并行处理，每一个<code>shard</code>都有一个索引器(Indexer)和排序器(Rander)，并提前初始化好。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl">	<span class="k">for</span> <span class="nx">shard</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">shard</span> <span class="p">&lt;</span> <span class="nx">options</span><span class="p">.</span><span class="nx">NumShards</span><span class="p">;</span> <span class="nx">shard</span><span class="o">++</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">engine</span><span class="p">.</span><span class="nx">indexers</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">engine</span><span class="p">.</span><span class="nx">indexers</span><span class="p">,</span> <span class="nx">core</span><span class="p">.</span><span class="nx">Indexer</span><span class="p">{})</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">engine</span><span class="p">.</span><span class="nx">indexers</span><span class="p">[</span><span class="nx">shard</span><span class="p">].</span><span class="nf">Init</span><span class="p">(</span><span class="o">*</span><span class="nx">options</span><span class="p">.</span><span class="nx">IndexerInitOptions</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="nx">engine</span><span class="p">.</span><span class="nx">rankers</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">engine</span><span class="p">.</span><span class="nx">rankers</span><span class="p">,</span> <span class="nx">core</span><span class="p">.</span><span class="nx">Ranker</span><span class="p">{})</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">engine</span><span class="p">.</span><span class="nx">rankers</span><span class="p">[</span><span class="nx">shard</span><span class="p">].</span><span class="nf">Init</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span></code></pre></div><p><code>options.NumShards</code> 参数可以设置<code>shard</code>(分片，项目作者称之为裂分)个数，根据<code>shard</code>个数来初始化索引器(Indexer)、排序器(Rander)的个数。这里是为了方便并行处理，每一个<code>shard</code>都有一个索引器(Indexer)和排序器(Rander)，并提前初始化好。</p>
 <h4 id="初始化分词器通道">初始化分词器通道</h4>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go">	<span class="nx">engine</span><span class="p">.</span><span class="nx">segmenterChannel</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span>
-		<span class="kd">chan</span> <span class="nx">segmenterRequest</span><span class="p">,</span> <span class="nx">options</span><span class="p">.</span><span class="nx">NumSegmenterThreads</span><span class="p">)</span>
-</code></pre></div><h4 id="初始化索引器通道">初始化索引器通道</h4>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go">	<span class="nx">engine</span><span class="p">.</span><span class="nx">indexerAddDocumentChannels</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span>
-		<span class="p">[]</span><span class="kd">chan</span> <span class="nx">indexerAddDocumentRequest</span><span class="p">,</span> <span class="nx">options</span><span class="p">.</span><span class="nx">NumShards</span><span class="p">)</span>
-	<span class="nx">engine</span><span class="p">.</span><span class="nx">indexerRemoveDocChannels</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span>
-		<span class="p">[]</span><span class="kd">chan</span> <span class="nx">indexerRemoveDocRequest</span><span class="p">,</span> <span class="nx">options</span><span class="p">.</span><span class="nx">NumShards</span><span class="p">)</span>
-	<span class="nx">engine</span><span class="p">.</span><span class="nx">indexerLookupChannels</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span>
-		<span class="p">[]</span><span class="kd">chan</span> <span class="nx">indexerLookupRequest</span><span class="p">,</span> <span class="nx">options</span><span class="p">.</span><span class="nx">NumShards</span><span class="p">)</span>
-	<span class="k">for</span> <span class="nx">shard</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">shard</span> <span class="p">&lt;</span> <span class="nx">options</span><span class="p">.</span><span class="nx">NumShards</span><span class="p">;</span> <span class="nx">shard</span><span class="o">++</span> <span class="p">{</span>
-		<span class="nx">engine</span><span class="p">.</span><span class="nx">indexerAddDocumentChannels</span><span class="p">[</span><span class="nx">shard</span><span class="p">]</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span>
-			<span class="kd">chan</span> <span class="nx">indexerAddDocumentRequest</span><span class="p">,</span>
-			<span class="nx">options</span><span class="p">.</span><span class="nx">IndexerBufferLength</span><span class="p">)</span>
-		<span class="nx">engine</span><span class="p">.</span><span class="nx">indexerRemoveDocChannels</span><span class="p">[</span><span class="nx">shard</span><span class="p">]</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span>
-			<span class="kd">chan</span> <span class="nx">indexerRemoveDocRequest</span><span class="p">,</span>
-			<span class="nx">options</span><span class="p">.</span><span class="nx">IndexerBufferLength</span><span class="p">)</span>
-		<span class="nx">engine</span><span class="p">.</span><span class="nx">indexerLookupChannels</span><span class="p">[</span><span class="nx">shard</span><span class="p">]</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span>
-			<span class="kd">chan</span> <span class="nx">indexerLookupRequest</span><span class="p">,</span>
-			<span class="nx">options</span><span class="p">.</span><span class="nx">IndexerBufferLength</span><span class="p">)</span>
-	<span class="p">}</span>
-</code></pre></div><p>从这里可以看出索引器(Indexer)有三个功能：将一个文档添加到索引中、将一个文档从索引中移除、从索引中查找一个文档。每一个<code>shard</code>都有独立的<code>channel</code>，互不冲突。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl">	<span class="nx">engine</span><span class="p">.</span><span class="nx">segmenterChannel</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">		<span class="kd">chan</span> <span class="nx">segmenterRequest</span><span class="p">,</span> <span class="nx">options</span><span class="p">.</span><span class="nx">NumSegmenterThreads</span><span class="p">)</span>
+</span></span></code></pre></div><h4 id="初始化索引器通道">初始化索引器通道</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl">	<span class="nx">engine</span><span class="p">.</span><span class="nx">indexerAddDocumentChannels</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">		<span class="p">[]</span><span class="kd">chan</span> <span class="nx">indexerAddDocumentRequest</span><span class="p">,</span> <span class="nx">options</span><span class="p">.</span><span class="nx">NumShards</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">engine</span><span class="p">.</span><span class="nx">indexerRemoveDocChannels</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">		<span class="p">[]</span><span class="kd">chan</span> <span class="nx">indexerRemoveDocRequest</span><span class="p">,</span> <span class="nx">options</span><span class="p">.</span><span class="nx">NumShards</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">engine</span><span class="p">.</span><span class="nx">indexerLookupChannels</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">		<span class="p">[]</span><span class="kd">chan</span> <span class="nx">indexerLookupRequest</span><span class="p">,</span> <span class="nx">options</span><span class="p">.</span><span class="nx">NumShards</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="nx">shard</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">shard</span> <span class="p">&lt;</span> <span class="nx">options</span><span class="p">.</span><span class="nx">NumShards</span><span class="p">;</span> <span class="nx">shard</span><span class="o">++</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">engine</span><span class="p">.</span><span class="nx">indexerAddDocumentChannels</span><span class="p">[</span><span class="nx">shard</span><span class="p">]</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">			<span class="kd">chan</span> <span class="nx">indexerAddDocumentRequest</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">options</span><span class="p">.</span><span class="nx">IndexerBufferLength</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">engine</span><span class="p">.</span><span class="nx">indexerRemoveDocChannels</span><span class="p">[</span><span class="nx">shard</span><span class="p">]</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">			<span class="kd">chan</span> <span class="nx">indexerRemoveDocRequest</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">options</span><span class="p">.</span><span class="nx">IndexerBufferLength</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">engine</span><span class="p">.</span><span class="nx">indexerLookupChannels</span><span class="p">[</span><span class="nx">shard</span><span class="p">]</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">			<span class="kd">chan</span> <span class="nx">indexerLookupRequest</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">options</span><span class="p">.</span><span class="nx">IndexerBufferLength</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span></code></pre></div><p>从这里可以看出索引器(Indexer)有三个功能：将一个文档添加到索引中、将一个文档从索引中移除、从索引中查找一个文档。每一个<code>shard</code>都有独立的<code>channel</code>，互不冲突。</p>
 <h4 id="初始化排序器通道">初始化排序器通道</h4>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go">	<span class="nx">engine</span><span class="p">.</span><span class="nx">rankerAddDocChannels</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span>
-		<span class="p">[]</span><span class="kd">chan</span> <span class="nx">rankerAddDocRequest</span><span class="p">,</span> <span class="nx">options</span><span class="p">.</span><span class="nx">NumShards</span><span class="p">)</span>
-	<span class="nx">engine</span><span class="p">.</span><span class="nx">rankerRankChannels</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span>
-		<span class="p">[]</span><span class="kd">chan</span> <span class="nx">rankerRankRequest</span><span class="p">,</span> <span class="nx">options</span><span class="p">.</span><span class="nx">NumShards</span><span class="p">)</span>
-	<span class="nx">engine</span><span class="p">.</span><span class="nx">rankerRemoveDocChannels</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span>
-		<span class="p">[]</span><span class="kd">chan</span> <span class="nx">rankerRemoveDocRequest</span><span class="p">,</span> <span class="nx">options</span><span class="p">.</span><span class="nx">NumShards</span><span class="p">)</span>
-	<span class="k">for</span> <span class="nx">shard</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">shard</span> <span class="p">&lt;</span> <span class="nx">options</span><span class="p">.</span><span class="nx">NumShards</span><span class="p">;</span> <span class="nx">shard</span><span class="o">++</span> <span class="p">{</span>
-		<span class="nx">engine</span><span class="p">.</span><span class="nx">rankerAddDocChannels</span><span class="p">[</span><span class="nx">shard</span><span class="p">]</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span>
-			<span class="kd">chan</span> <span class="nx">rankerAddDocRequest</span><span class="p">,</span>
-			<span class="nx">options</span><span class="p">.</span><span class="nx">RankerBufferLength</span><span class="p">)</span>
-		<span class="nx">engine</span><span class="p">.</span><span class="nx">rankerRankChannels</span><span class="p">[</span><span class="nx">shard</span><span class="p">]</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span>
-			<span class="kd">chan</span> <span class="nx">rankerRankRequest</span><span class="p">,</span>
-			<span class="nx">options</span><span class="p">.</span><span class="nx">RankerBufferLength</span><span class="p">)</span>
-		<span class="nx">engine</span><span class="p">.</span><span class="nx">rankerRemoveDocChannels</span><span class="p">[</span><span class="nx">shard</span><span class="p">]</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span>
-			<span class="kd">chan</span> <span class="nx">rankerRemoveDocRequest</span><span class="p">,</span>
-			<span class="nx">options</span><span class="p">.</span><span class="nx">RankerBufferLength</span><span class="p">)</span>
-	<span class="p">}</span>
-</code></pre></div><p>与上面类似，从这里可以看出排序器(Rander)有三个功能：将一个文档添加到排序器中、在排序器中进行排序、将一个文档从排序器中移除。每一个<code>shard</code>都有独立的<code>channel</code>，互不冲突。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl">	<span class="nx">engine</span><span class="p">.</span><span class="nx">rankerAddDocChannels</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">		<span class="p">[]</span><span class="kd">chan</span> <span class="nx">rankerAddDocRequest</span><span class="p">,</span> <span class="nx">options</span><span class="p">.</span><span class="nx">NumShards</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">engine</span><span class="p">.</span><span class="nx">rankerRankChannels</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">		<span class="p">[]</span><span class="kd">chan</span> <span class="nx">rankerRankRequest</span><span class="p">,</span> <span class="nx">options</span><span class="p">.</span><span class="nx">NumShards</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">engine</span><span class="p">.</span><span class="nx">rankerRemoveDocChannels</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">		<span class="p">[]</span><span class="kd">chan</span> <span class="nx">rankerRemoveDocRequest</span><span class="p">,</span> <span class="nx">options</span><span class="p">.</span><span class="nx">NumShards</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="nx">shard</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">shard</span> <span class="p">&lt;</span> <span class="nx">options</span><span class="p">.</span><span class="nx">NumShards</span><span class="p">;</span> <span class="nx">shard</span><span class="o">++</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">engine</span><span class="p">.</span><span class="nx">rankerAddDocChannels</span><span class="p">[</span><span class="nx">shard</span><span class="p">]</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">			<span class="kd">chan</span> <span class="nx">rankerAddDocRequest</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">options</span><span class="p">.</span><span class="nx">RankerBufferLength</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">engine</span><span class="p">.</span><span class="nx">rankerRankChannels</span><span class="p">[</span><span class="nx">shard</span><span class="p">]</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">			<span class="kd">chan</span> <span class="nx">rankerRankRequest</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">options</span><span class="p">.</span><span class="nx">RankerBufferLength</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">engine</span><span class="p">.</span><span class="nx">rankerRemoveDocChannels</span><span class="p">[</span><span class="nx">shard</span><span class="p">]</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">			<span class="kd">chan</span> <span class="nx">rankerRemoveDocRequest</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">options</span><span class="p">.</span><span class="nx">RankerBufferLength</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span></code></pre></div><p>与上面类似，从这里可以看出排序器(Rander)有三个功能：将一个文档添加到排序器中、在排序器中进行排序、将一个文档从排序器中移除。每一个<code>shard</code>都有独立的<code>channel</code>，互不冲突。</p>
 <h4 id="初始化持久化存储通道">初始化持久化存储通道</h4>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go">	<span class="k">if</span> <span class="nx">engine</span><span class="p">.</span><span class="nx">initOptions</span><span class="p">.</span><span class="nx">UsePersistentStorage</span> <span class="p">{</span>
-		<span class="nx">engine</span><span class="p">.</span><span class="nx">persistentStorageIndexDocumentChannels</span> <span class="p">=</span>
-			<span class="nb">make</span><span class="p">([]</span><span class="kd">chan</span> <span class="nx">persistentStorageIndexDocumentRequest</span><span class="p">,</span>
-				<span class="nx">engine</span><span class="p">.</span><span class="nx">initOptions</span><span class="p">.</span><span class="nx">PersistentStorageShards</span><span class="p">)</span>
-		<span class="k">for</span> <span class="nx">shard</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">shard</span> <span class="p">&lt;</span> <span class="nx">engine</span><span class="p">.</span><span class="nx">initOptions</span><span class="p">.</span><span class="nx">PersistentStorageShards</span><span class="p">;</span> <span class="nx">shard</span><span class="o">++</span> <span class="p">{</span>
-			<span class="nx">engine</span><span class="p">.</span><span class="nx">persistentStorageIndexDocumentChannels</span><span class="p">[</span><span class="nx">shard</span><span class="p">]</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span>
-				<span class="kd">chan</span> <span class="nx">persistentStorageIndexDocumentRequest</span><span class="p">)</span>
-		<span class="p">}</span>
-		<span class="nx">engine</span><span class="p">.</span><span class="nx">persistentStorageInitChannel</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span>
-			<span class="kd">chan</span> <span class="kt">bool</span><span class="p">,</span> <span class="nx">engine</span><span class="p">.</span><span class="nx">initOptions</span><span class="p">.</span><span class="nx">PersistentStorageShards</span><span class="p">)</span>
-	<span class="p">}</span>
-</code></pre></div><p>注意：<code>PersistentStorageShards</code>持久化存储的分片数目是独立参数控制的。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">engine</span><span class="p">.</span><span class="nx">initOptions</span><span class="p">.</span><span class="nx">UsePersistentStorage</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">engine</span><span class="p">.</span><span class="nx">persistentStorageIndexDocumentChannels</span> <span class="p">=</span>
+</span></span><span class="line"><span class="cl">			<span class="nb">make</span><span class="p">([]</span><span class="kd">chan</span> <span class="nx">persistentStorageIndexDocumentRequest</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">				<span class="nx">engine</span><span class="p">.</span><span class="nx">initOptions</span><span class="p">.</span><span class="nx">PersistentStorageShards</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="k">for</span> <span class="nx">shard</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">shard</span> <span class="p">&lt;</span> <span class="nx">engine</span><span class="p">.</span><span class="nx">initOptions</span><span class="p">.</span><span class="nx">PersistentStorageShards</span><span class="p">;</span> <span class="nx">shard</span><span class="o">++</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">engine</span><span class="p">.</span><span class="nx">persistentStorageIndexDocumentChannels</span><span class="p">[</span><span class="nx">shard</span><span class="p">]</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">				<span class="kd">chan</span> <span class="nx">persistentStorageIndexDocumentRequest</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">engine</span><span class="p">.</span><span class="nx">persistentStorageInitChannel</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">			<span class="kd">chan</span> <span class="kt">bool</span><span class="p">,</span> <span class="nx">engine</span><span class="p">.</span><span class="nx">initOptions</span><span class="p">.</span><span class="nx">PersistentStorageShards</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span></code></pre></div><p>注意：<code>PersistentStorageShards</code>持久化存储的分片数目是独立参数控制的。</p>
 <h4 id="启动各个功能协程goroutine">启动各个功能协程goroutine</h4>
 <ol>
 <li>启动分词器协程</li>
@@ -190,36 +190,36 @@
 <p>至此，所有初始化工作完毕。</p>
 <h2 id="索引过程分析">索引过程分析</h2>
 <p>下面我们来分析索引过程。</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="c1">// 将文档加入索引
-</span><span class="c1">//
-</span><span class="c1">// 输入参数：
-</span><span class="c1">// 	docId	标识文档编号，必须唯一
-</span><span class="c1">//	data	见DocumentIndexData注释
-</span><span class="c1">//
-</span><span class="c1">// 注意：
-</span><span class="c1">//      1. 这个函数是线程安全的，请尽可能并发调用以提高索引速度
-</span><span class="c1">// 	2. 这个函数调用是非同步的，也就是说在函数返回时有可能文档还没有加入索引中，因此
-</span><span class="c1">//         如果立刻调用Search可能无法查询到这个文档。强制刷新索引请调用FlushIndex函数。
-</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">engine</span> <span class="o">*</span><span class="nx">Engine</span><span class="p">)</span> <span class="nf">IndexDocument</span><span class="p">(</span><span class="nx">docId</span> <span class="kt">uint64</span><span class="p">,</span> <span class="nx">data</span> <span class="nx">types</span><span class="p">.</span><span class="nx">DocumentIndexData</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">engine</span><span class="p">.</span><span class="nf">internalIndexDocument</span><span class="p">(</span><span class="nx">docId</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span>
-
-	<span class="nx">hash</span> <span class="o">:=</span> <span class="nx">murmur</span><span class="p">.</span><span class="nf">Murmur3</span><span class="p">([]</span><span class="nb">byte</span><span class="p">(</span><span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprint</span><span class="p">(</span><span class="s">&#34;%d&#34;</span><span class="p">,</span> <span class="nx">docId</span><span class="p">)))</span> <span class="o">%</span> <span class="nb">uint32</span><span class="p">(</span><span class="nx">engine</span><span class="p">.</span><span class="nx">initOptions</span><span class="p">.</span><span class="nx">PersistentStorageShards</span><span class="p">)</span>
-	<span class="k">if</span> <span class="nx">engine</span><span class="p">.</span><span class="nx">initOptions</span><span class="p">.</span><span class="nx">UsePersistentStorage</span> <span class="p">{</span>
-		<span class="nx">engine</span><span class="p">.</span><span class="nx">persistentStorageIndexDocumentChannels</span><span class="p">[</span><span class="nx">hash</span><span class="p">]</span> <span class="o">&lt;-</span> <span class="nx">persistentStorageIndexDocumentRequest</span><span class="p">{</span><span class="nx">docId</span><span class="p">:</span> <span class="nx">docId</span><span class="p">,</span> <span class="nx">data</span><span class="p">:</span> <span class="nx">data</span><span class="p">}</span>
-	<span class="p">}</span>
-<span class="p">}</span>
-
-<span class="kd">func</span> <span class="p">(</span><span class="nx">engine</span> <span class="o">*</span><span class="nx">Engine</span><span class="p">)</span> <span class="nf">internalIndexDocument</span><span class="p">(</span><span class="nx">docId</span> <span class="kt">uint64</span><span class="p">,</span> <span class="nx">data</span> <span class="nx">types</span><span class="p">.</span><span class="nx">DocumentIndexData</span><span class="p">)</span> <span class="p">{</span>
-	<span class="k">if</span> <span class="p">!</span><span class="nx">engine</span><span class="p">.</span><span class="nx">initialized</span> <span class="p">{</span>
-		<span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="s">&#34;必须先初始化引擎&#34;</span><span class="p">)</span>
-	<span class="p">}</span>
-
-	<span class="nx">atomic</span><span class="p">.</span><span class="nf">AddUint64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">engine</span><span class="p">.</span><span class="nx">numIndexingRequests</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-	<span class="nx">hash</span> <span class="o">:=</span> <span class="nx">murmur</span><span class="p">.</span><span class="nf">Murmur3</span><span class="p">([]</span><span class="nb">byte</span><span class="p">(</span><span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprint</span><span class="p">(</span><span class="s">&#34;%d%s&#34;</span><span class="p">,</span> <span class="nx">docId</span><span class="p">,</span> <span class="nx">data</span><span class="p">.</span><span class="nx">Content</span><span class="p">)))</span>
-	<span class="nx">engine</span><span class="p">.</span><span class="nx">segmenterChannel</span> <span class="o">&lt;-</span> <span class="nx">segmenterRequest</span><span class="p">{</span>
-		<span class="nx">docId</span><span class="p">:</span> <span class="nx">docId</span><span class="p">,</span> <span class="nx">hash</span><span class="p">:</span> <span class="nx">hash</span><span class="p">,</span> <span class="nx">data</span><span class="p">:</span> <span class="nx">data</span><span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div><p>这里需要注意的是，docId参数需要调用者从外部传入，而不是在内部自己创建，这给搜索引擎的实现者更大的自由。
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="c1">// 将文档加入索引
+</span></span></span><span class="line"><span class="cl"><span class="c1">//
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 输入参数：
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 	docId	标识文档编号，必须唯一
+</span></span></span><span class="line"><span class="cl"><span class="c1">//	data	见DocumentIndexData注释
+</span></span></span><span class="line"><span class="cl"><span class="c1">//
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 注意：
+</span></span></span><span class="line"><span class="cl"><span class="c1">//      1. 这个函数是线程安全的，请尽可能并发调用以提高索引速度
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 	2. 这个函数调用是非同步的，也就是说在函数返回时有可能文档还没有加入索引中，因此
+</span></span></span><span class="line"><span class="cl"><span class="c1">//         如果立刻调用Search可能无法查询到这个文档。强制刷新索引请调用FlushIndex函数。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">engine</span> <span class="o">*</span><span class="nx">Engine</span><span class="p">)</span> <span class="nf">IndexDocument</span><span class="p">(</span><span class="nx">docId</span> <span class="kt">uint64</span><span class="p">,</span> <span class="nx">data</span> <span class="nx">types</span><span class="p">.</span><span class="nx">DocumentIndexData</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">engine</span><span class="p">.</span><span class="nf">internalIndexDocument</span><span class="p">(</span><span class="nx">docId</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">hash</span> <span class="o">:=</span> <span class="nx">murmur</span><span class="p">.</span><span class="nf">Murmur3</span><span class="p">([]</span><span class="nb">byte</span><span class="p">(</span><span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprint</span><span class="p">(</span><span class="s">&#34;%d&#34;</span><span class="p">,</span> <span class="nx">docId</span><span class="p">)))</span> <span class="o">%</span> <span class="nb">uint32</span><span class="p">(</span><span class="nx">engine</span><span class="p">.</span><span class="nx">initOptions</span><span class="p">.</span><span class="nx">PersistentStorageShards</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">engine</span><span class="p">.</span><span class="nx">initOptions</span><span class="p">.</span><span class="nx">UsePersistentStorage</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">engine</span><span class="p">.</span><span class="nx">persistentStorageIndexDocumentChannels</span><span class="p">[</span><span class="nx">hash</span><span class="p">]</span> <span class="o">&lt;-</span> <span class="nx">persistentStorageIndexDocumentRequest</span><span class="p">{</span><span class="nx">docId</span><span class="p">:</span> <span class="nx">docId</span><span class="p">,</span> <span class="nx">data</span><span class="p">:</span> <span class="nx">data</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">engine</span> <span class="o">*</span><span class="nx">Engine</span><span class="p">)</span> <span class="nf">internalIndexDocument</span><span class="p">(</span><span class="nx">docId</span> <span class="kt">uint64</span><span class="p">,</span> <span class="nx">data</span> <span class="nx">types</span><span class="p">.</span><span class="nx">DocumentIndexData</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">!</span><span class="nx">engine</span><span class="p">.</span><span class="nx">initialized</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="s">&#34;必须先初始化引擎&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">atomic</span><span class="p">.</span><span class="nf">AddUint64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">engine</span><span class="p">.</span><span class="nx">numIndexingRequests</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">hash</span> <span class="o">:=</span> <span class="nx">murmur</span><span class="p">.</span><span class="nf">Murmur3</span><span class="p">([]</span><span class="nb">byte</span><span class="p">(</span><span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprint</span><span class="p">(</span><span class="s">&#34;%d%s&#34;</span><span class="p">,</span> <span class="nx">docId</span><span class="p">,</span> <span class="nx">data</span><span class="p">.</span><span class="nx">Content</span><span class="p">)))</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">engine</span><span class="p">.</span><span class="nx">segmenterChannel</span> <span class="o">&lt;-</span> <span class="nx">segmenterRequest</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">docId</span><span class="p">:</span> <span class="nx">docId</span><span class="p">,</span> <span class="nx">hash</span><span class="p">:</span> <span class="nx">hash</span><span class="p">,</span> <span class="nx">data</span><span class="p">:</span> <span class="nx">data</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>这里需要注意的是，docId参数需要调用者从外部传入，而不是在内部自己创建，这给搜索引擎的实现者更大的自由。
 将文档交给分词器处理，然后根据murmur3计算的hash值模<code>PersistentStorageShards</code>，选择合适的<code>shard</code>写入持久化存储中。</p>
 <h3 id="索引过程分析分词协程处理过程">索引过程分析：分词协程处理过程</h3>
 <p>分词器协程的逻辑代码在这里：<code>segmenter_worker.go:func (engine *Engine) segmenterWorker()</code></p>
@@ -232,57 +232,57 @@
 <li>将<code>rankerAddDocRequest</code>投递到<code>channel engine.rankerAddDocChannels[shard]</code>中</li>
 </ol>
 <p>补充一句：这里<code>shard</code>号的计算过程如下：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="c1">// 从文本hash得到要分配到的shard
-</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">engine</span> <span class="o">*</span><span class="nx">Engine</span><span class="p">)</span> <span class="nf">getShard</span><span class="p">(</span><span class="nx">hash</span> <span class="kt">uint32</span><span class="p">)</span> <span class="kt">int</span> <span class="p">{</span>
-	<span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="nx">hash</span> <span class="o">-</span> <span class="nx">hash</span><span class="o">/</span><span class="nb">uint32</span><span class="p">(</span><span class="nx">engine</span><span class="p">.</span><span class="nx">initOptions</span><span class="p">.</span><span class="nx">NumShards</span><span class="p">)</span><span class="o">*</span><span class="nb">uint32</span><span class="p">(</span><span class="nx">engine</span><span class="p">.</span><span class="nx">initOptions</span><span class="p">.</span><span class="nx">NumShards</span><span class="p">))</span>
-<span class="p">}</span>
-</code></pre></div><p>为什么不是直接取模呢？</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="c1">// 从文本hash得到要分配到的shard
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">engine</span> <span class="o">*</span><span class="nx">Engine</span><span class="p">)</span> <span class="nf">getShard</span><span class="p">(</span><span class="nx">hash</span> <span class="kt">uint32</span><span class="p">)</span> <span class="kt">int</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="nx">hash</span> <span class="o">-</span> <span class="nx">hash</span><span class="o">/</span><span class="nb">uint32</span><span class="p">(</span><span class="nx">engine</span><span class="p">.</span><span class="nx">initOptions</span><span class="p">.</span><span class="nx">NumShards</span><span class="p">)</span><span class="o">*</span><span class="nb">uint32</span><span class="p">(</span><span class="nx">engine</span><span class="p">.</span><span class="nx">initOptions</span><span class="p">.</span><span class="nx">NumShards</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>为什么不是直接取模呢？</p>
 <h3 id="索引过程分析索引器协程处理过程">索引过程分析：索引器协程处理过程</h3>
 <p>首先介绍一下倒排索引表，这是搜索引擎的核心数据结构。</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="c1">// 索引器
-</span><span class="c1"></span><span class="kd">type</span> <span class="nx">Indexer</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="c1">// 从搜索键到文档列表的反向索引
-</span><span class="c1"></span>	<span class="c1">// 加了读写锁以保证读写安全
-</span><span class="c1"></span>	<span class="nx">tableLock</span> <span class="kd">struct</span> <span class="p">{</span>
-		<span class="nx">sync</span><span class="p">.</span><span class="nx">RWMutex</span>
-		<span class="nx">table</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="o">*</span><span class="nx">KeywordIndices</span>
-		<span class="nx">docs</span>  <span class="kd">map</span><span class="p">[</span><span class="kt">uint64</span><span class="p">]</span><span class="kt">bool</span>
-	<span class="p">}</span>
-
-	<span class="nx">initOptions</span> <span class="nx">types</span><span class="p">.</span><span class="nx">IndexerInitOptions</span>
-	<span class="nx">initialized</span> <span class="kt">bool</span>
-
-	<span class="c1">// 这实际上是总文档数的一个近似
-</span><span class="c1"></span>	<span class="nx">numDocuments</span> <span class="kt">uint64</span>
-
-	<span class="c1">// 所有被索引文本的总关键词数
-</span><span class="c1"></span>	<span class="nx">totalTokenLength</span> <span class="kt">float32</span>
-
-	<span class="c1">// 每个文档的关键词长度
-</span><span class="c1"></span>	<span class="nx">docTokenLengths</span> <span class="kd">map</span><span class="p">[</span><span class="kt">uint64</span><span class="p">]</span><span class="kt">float32</span>
-<span class="p">}</span>
-
-<span class="c1">// 反向索引表的一行，收集了一个搜索键出现的所有文档，按照DocId从小到大排序。
-</span><span class="c1"></span><span class="kd">type</span> <span class="nx">KeywordIndices</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="c1">// 下面的切片是否为空，取决于初始化时IndexType的值
-</span><span class="c1"></span>	<span class="nx">docIds</span>      <span class="p">[]</span><span class="kt">uint64</span>  <span class="c1">// 全部类型都有
-</span><span class="c1"></span>	<span class="nx">frequencies</span> <span class="p">[]</span><span class="kt">float32</span> <span class="c1">// IndexType == FrequenciesIndex
-</span><span class="c1"></span>	<span class="nx">locations</span>   <span class="p">[][]</span><span class="kt">int</span>   <span class="c1">// IndexType == LocationsIndex
-</span><span class="c1"></span><span class="p">}</span>
-</code></pre></div><p><code>table map[string]*KeywordIndices</code>这个是核心：一个关键词，对应一个<code>KeywordIndices</code>结构。该结构的<code>docIds</code>字段记录了所有包含这个关键词的文档id。
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="c1">// 索引器
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">type</span> <span class="nx">Indexer</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// 从搜索键到文档列表的反向索引
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// 加了读写锁以保证读写安全
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">tableLock</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">sync</span><span class="p">.</span><span class="nx">RWMutex</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">table</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="o">*</span><span class="nx">KeywordIndices</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">docs</span>  <span class="kd">map</span><span class="p">[</span><span class="kt">uint64</span><span class="p">]</span><span class="kt">bool</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">initOptions</span> <span class="nx">types</span><span class="p">.</span><span class="nx">IndexerInitOptions</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">initialized</span> <span class="kt">bool</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// 这实际上是总文档数的一个近似
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">numDocuments</span> <span class="kt">uint64</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// 所有被索引文本的总关键词数
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">totalTokenLength</span> <span class="kt">float32</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// 每个文档的关键词长度
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">docTokenLengths</span> <span class="kd">map</span><span class="p">[</span><span class="kt">uint64</span><span class="p">]</span><span class="kt">float32</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 反向索引表的一行，收集了一个搜索键出现的所有文档，按照DocId从小到大排序。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">type</span> <span class="nx">KeywordIndices</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// 下面的切片是否为空，取决于初始化时IndexType的值
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">docIds</span>      <span class="p">[]</span><span class="kt">uint64</span>  <span class="c1">// 全部类型都有
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">frequencies</span> <span class="p">[]</span><span class="kt">float32</span> <span class="c1">// IndexType == FrequenciesIndex
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">locations</span>   <span class="p">[][]</span><span class="kt">int</span>   <span class="c1">// IndexType == LocationsIndex
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></div><p><code>table map[string]*KeywordIndices</code>这个是核心：一个关键词，对应一个<code>KeywordIndices</code>结构。该结构的<code>docIds</code>字段记录了所有包含这个关键词的文档id。
 如果 IndexType == FrequenciesIndex ，则同时记录这个关键词在该文档中出现次数。
 如果 IndexType == LocationsIndex ，则同时记录这个关键词在该文档中出现的所有位置的起始偏移。</p>
 <p>下面是索引的主函数代码：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">engine</span> <span class="o">*</span><span class="nx">Engine</span><span class="p">)</span> <span class="nf">indexerAddDocumentWorker</span><span class="p">(</span><span class="nx">shard</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
-	<span class="k">for</span> <span class="p">{</span>
-		<span class="nx">request</span> <span class="o">:=</span> <span class="o">&lt;-</span><span class="nx">engine</span><span class="p">.</span><span class="nx">indexerAddDocumentChannels</span><span class="p">[</span><span class="nx">shard</span><span class="p">]</span>
-		<span class="nx">engine</span><span class="p">.</span><span class="nx">indexers</span><span class="p">[</span><span class="nx">shard</span><span class="p">].</span><span class="nf">AddDocument</span><span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">document</span><span class="p">)</span>
-		<span class="nx">atomic</span><span class="p">.</span><span class="nf">AddUint64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">engine</span><span class="p">.</span><span class="nx">numTokenIndexAdded</span><span class="p">,</span>
-			<span class="nb">uint64</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">document</span><span class="p">.</span><span class="nx">Keywords</span><span class="p">)))</span>
-		<span class="nx">atomic</span><span class="p">.</span><span class="nf">AddUint64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">engine</span><span class="p">.</span><span class="nx">numDocumentsIndexed</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-	<span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div><p>其主要逻辑又封装在<code>func (indexer *Indexer) AddDocument(document *types.DocumentIndex)</code>函数中实现。其逻辑如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">engine</span> <span class="o">*</span><span class="nx">Engine</span><span class="p">)</span> <span class="nf">indexerAddDocumentWorker</span><span class="p">(</span><span class="nx">shard</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">request</span> <span class="o">:=</span> <span class="o">&lt;-</span><span class="nx">engine</span><span class="p">.</span><span class="nx">indexerAddDocumentChannels</span><span class="p">[</span><span class="nx">shard</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">engine</span><span class="p">.</span><span class="nx">indexers</span><span class="p">[</span><span class="nx">shard</span><span class="p">].</span><span class="nf">AddDocument</span><span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">document</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">atomic</span><span class="p">.</span><span class="nf">AddUint64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">engine</span><span class="p">.</span><span class="nx">numTokenIndexAdded</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">			<span class="nb">uint64</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">document</span><span class="p">.</span><span class="nx">Keywords</span><span class="p">)))</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">atomic</span><span class="p">.</span><span class="nf">AddUint64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">engine</span><span class="p">.</span><span class="nx">numDocumentsIndexed</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>其主要逻辑又封装在<code>func (indexer *Indexer) AddDocument(document *types.DocumentIndex)</code>函数中实现。其逻辑如下：</p>
 <ol>
 <li>将倒排索引表加锁</li>
 <li>更新文档关键词的长度加在一起的总和</li>
@@ -298,25 +298,25 @@
 </ol>
 <h3 id="索引过程分析排序器协程处理过程">索引过程分析：排序器协程处理过程</h3>
 <p>在新索引文档的过程，排序器的主逻辑如下：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">engine</span> <span class="o">*</span><span class="nx">Engine</span><span class="p">)</span> <span class="nf">rankerAddDocWorker</span><span class="p">(</span><span class="nx">shard</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
-	<span class="k">for</span> <span class="p">{</span>
-		<span class="nx">request</span> <span class="o">:=</span> <span class="o">&lt;-</span><span class="nx">engine</span><span class="p">.</span><span class="nx">rankerAddDocChannels</span><span class="p">[</span><span class="nx">shard</span><span class="p">]</span>
-		<span class="nx">engine</span><span class="p">.</span><span class="nx">rankers</span><span class="p">[</span><span class="nx">shard</span><span class="p">].</span><span class="nf">AddDoc</span><span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">docId</span><span class="p">,</span> <span class="nx">request</span><span class="p">.</span><span class="nx">fields</span><span class="p">)</span>
-	<span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div><p>进而调用下面的函数</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="c1">// 给某个文档添加评分字段
-</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">ranker</span> <span class="o">*</span><span class="nx">Ranker</span><span class="p">)</span> <span class="nf">AddDoc</span><span class="p">(</span><span class="nx">docId</span> <span class="kt">uint64</span><span class="p">,</span> <span class="nx">fields</span> <span class="kd">interface</span><span class="p">{})</span> <span class="p">{</span>
-	<span class="k">if</span> <span class="nx">ranker</span><span class="p">.</span><span class="nx">initialized</span> <span class="o">==</span> <span class="kc">false</span> <span class="p">{</span>
-		<span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="s">&#34;排序器尚未初始化&#34;</span><span class="p">)</span>
-	<span class="p">}</span>
-
-	<span class="nx">ranker</span><span class="p">.</span><span class="nx">lock</span><span class="p">.</span><span class="nf">Lock</span><span class="p">()</span>
-	<span class="nx">ranker</span><span class="p">.</span><span class="nx">lock</span><span class="p">.</span><span class="nx">fields</span><span class="p">[</span><span class="nx">docId</span><span class="p">]</span> <span class="p">=</span> <span class="nx">fields</span>
-	<span class="nx">ranker</span><span class="p">.</span><span class="nx">lock</span><span class="p">.</span><span class="nx">docs</span><span class="p">[</span><span class="nx">docId</span><span class="p">]</span> <span class="p">=</span> <span class="kc">true</span>
-	<span class="nx">ranker</span><span class="p">.</span><span class="nx">lock</span><span class="p">.</span><span class="nf">Unlock</span><span class="p">()</span>
-<span class="p">}</span>
-</code></pre></div><p>上述函数非常简单，只是将应用层自定义的数据加入到ranker中。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">engine</span> <span class="o">*</span><span class="nx">Engine</span><span class="p">)</span> <span class="nf">rankerAddDocWorker</span><span class="p">(</span><span class="nx">shard</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">request</span> <span class="o">:=</span> <span class="o">&lt;-</span><span class="nx">engine</span><span class="p">.</span><span class="nx">rankerAddDocChannels</span><span class="p">[</span><span class="nx">shard</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">engine</span><span class="p">.</span><span class="nx">rankers</span><span class="p">[</span><span class="nx">shard</span><span class="p">].</span><span class="nf">AddDoc</span><span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">docId</span><span class="p">,</span> <span class="nx">request</span><span class="p">.</span><span class="nx">fields</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>进而调用下面的函数</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="c1">// 给某个文档添加评分字段
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">ranker</span> <span class="o">*</span><span class="nx">Ranker</span><span class="p">)</span> <span class="nf">AddDoc</span><span class="p">(</span><span class="nx">docId</span> <span class="kt">uint64</span><span class="p">,</span> <span class="nx">fields</span> <span class="kd">interface</span><span class="p">{})</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">ranker</span><span class="p">.</span><span class="nx">initialized</span> <span class="o">==</span> <span class="kc">false</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="s">&#34;排序器尚未初始化&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">ranker</span><span class="p">.</span><span class="nx">lock</span><span class="p">.</span><span class="nf">Lock</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">ranker</span><span class="p">.</span><span class="nx">lock</span><span class="p">.</span><span class="nx">fields</span><span class="p">[</span><span class="nx">docId</span><span class="p">]</span> <span class="p">=</span> <span class="nx">fields</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">ranker</span><span class="p">.</span><span class="nx">lock</span><span class="p">.</span><span class="nx">docs</span><span class="p">[</span><span class="nx">docId</span><span class="p">]</span> <span class="p">=</span> <span class="kc">true</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">ranker</span><span class="p">.</span><span class="nx">lock</span><span class="p">.</span><span class="nf">Unlock</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>上述函数非常简单，只是将应用层自定义的数据加入到ranker中。</p>
 <p>至此索引过程就完成了。简单来讲就是下面两个过程：</p>
 <ol>
 <li>将文档分词，得到一堆关键词</li>
@@ -324,77 +324,76 @@
 </ol>
 <h2 id="搜索过程分析">搜索过程分析</h2>
 <p>下面我们来分析一下搜索的过程。首先构造一个<code>SearchRequest</code>对象。一般情况下只需提供<code>SearchRequest.Text</code>即可。</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">SearchRequest</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="c1">// 搜索的短语（必须是UTF-8格式），会被分词
-</span><span class="c1"></span>	<span class="c1">// 当值为空字符串时关键词会从下面的Tokens读入
-</span><span class="c1"></span>	<span class="nx">Text</span> <span class="kt">string</span>
-
-	<span class="c1">// 关键词（必须是UTF-8格式），当Text不为空时优先使用Text
-</span><span class="c1"></span>	<span class="c1">// 通常你不需要自己指定关键词，除非你运行自己的分词程序
-</span><span class="c1"></span>	<span class="nx">Tokens</span> <span class="p">[]</span><span class="kt">string</span>
-
-	<span class="c1">// 文档标签（必须是UTF-8格式），标签不存在文档文本中，但也属于搜索键的一种
-</span><span class="c1"></span>	<span class="nx">Labels</span> <span class="p">[]</span><span class="kt">string</span>
-
-	<span class="c1">// 当不为nil时，仅从这些DocIds包含的键中搜索（忽略值）
-</span><span class="c1"></span>	<span class="nx">DocIds</span> <span class="kd">map</span><span class="p">[</span><span class="kt">uint64</span><span class="p">]</span><span class="kt">bool</span>
-
-	<span class="c1">// 排序选项
-</span><span class="c1"></span>	<span class="nx">RankOptions</span> <span class="o">*</span><span class="nx">RankOptions</span>
-
-	<span class="c1">// 超时，单位毫秒（千分之一秒）。此值小于等于零时不设超时。
-</span><span class="c1"></span>	<span class="c1">// 搜索超时的情况下仍有可能返回部分排序结果。
-</span><span class="c1"></span>	<span class="nx">Timeout</span> <span class="kt">int</span>
-
-	<span class="c1">// 设为true时仅统计搜索到的文档个数，不返回具体的文档
-</span><span class="c1"></span>	<span class="nx">CountDocsOnly</span> <span class="kt">bool</span>
-
-	<span class="c1">// 不排序，对于可在引擎外部（比如客户端）排序情况适用
-</span><span class="c1"></span>	<span class="c1">// 对返回文档很多的情况打开此选项可以有效节省时间
-</span><span class="c1"></span>	<span class="nx">Orderless</span> <span class="kt">bool</span>
-<span class="p">}</span>
-</code></pre></div><p>从本文一开始那段示例代码的搜索语句读起：<code>searcher.Search(types.SearchRequest{Text:&quot;百度中国&quot;})</code>。进入到 Search 函数内部，其逻辑如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">SearchRequest</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// 搜索的短语（必须是UTF-8格式），会被分词
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// 当值为空字符串时关键词会从下面的Tokens读入
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">Text</span> <span class="kt">string</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// 关键词（必须是UTF-8格式），当Text不为空时优先使用Text
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// 通常你不需要自己指定关键词，除非你运行自己的分词程序
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">Tokens</span> <span class="p">[]</span><span class="kt">string</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// 文档标签（必须是UTF-8格式），标签不存在文档文本中，但也属于搜索键的一种
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">Labels</span> <span class="p">[]</span><span class="kt">string</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// 当不为nil时，仅从这些DocIds包含的键中搜索（忽略值）
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">DocIds</span> <span class="kd">map</span><span class="p">[</span><span class="kt">uint64</span><span class="p">]</span><span class="kt">bool</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// 排序选项
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">RankOptions</span> <span class="o">*</span><span class="nx">RankOptions</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// 超时，单位毫秒（千分之一秒）。此值小于等于零时不设超时。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// 搜索超时的情况下仍有可能返回部分排序结果。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">Timeout</span> <span class="kt">int</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// 设为true时仅统计搜索到的文档个数，不返回具体的文档
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">CountDocsOnly</span> <span class="kt">bool</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// 不排序，对于可在引擎外部（比如客户端）排序情况适用
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// 对返回文档很多的情况打开此选项可以有效节省时间
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">Orderless</span> <span class="kt">bool</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>从本文一开始那段示例代码的搜索语句读起：<code>searcher.Search(types.SearchRequest{Text:&quot;百度中国&quot;})</code>。进入到 Search 函数内部，其逻辑如下：</p>
 <h3 id="设置一些搜索选项">设置一些搜索选项</h3>
 <p>例如排序选项<code>RankOptions</code>, 分数计算条件<code>ScoringCriteria</code>等等</p>
 <h3 id="将搜索词进行分词">将搜索词进行分词</h3>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go">	<span class="c1">// 收集关键词
-</span><span class="c1"></span>	<span class="nx">tokens</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">string</span><span class="p">{}</span>
-	<span class="k">if</span> <span class="nx">request</span><span class="p">.</span><span class="nx">Text</span> <span class="o">!=</span> <span class="s">&#34;&#34;</span> <span class="p">{</span>
-		<span class="nx">querySegments</span> <span class="o">:=</span> <span class="nx">engine</span><span class="p">.</span><span class="nx">segmenter</span><span class="p">.</span><span class="nf">Segment</span><span class="p">([]</span><span class="nb">byte</span><span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">Text</span><span class="p">))</span>
-		<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">s</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">querySegments</span> <span class="p">{</span>
-			<span class="nx">token</span> <span class="o">:=</span> <span class="nx">s</span><span class="p">.</span><span class="nf">Token</span><span class="p">().</span><span class="nf">Text</span><span class="p">()</span>
-			<span class="k">if</span> <span class="p">!</span><span class="nx">engine</span><span class="p">.</span><span class="nx">stopTokens</span><span class="p">.</span><span class="nf">IsStopToken</span><span class="p">(</span><span class="nx">token</span><span class="p">)</span> <span class="p">{</span>
-				<span class="nx">tokens</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">tokens</span><span class="p">,</span> <span class="nx">s</span><span class="p">.</span><span class="nf">Token</span><span class="p">().</span><span class="nf">Text</span><span class="p">())</span>
-			<span class="p">}</span>
-		<span class="p">}</span>
-	<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-		<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">t</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">request</span><span class="p">.</span><span class="nx">Tokens</span> <span class="p">{</span>
-			<span class="nx">tokens</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">tokens</span><span class="p">,</span> <span class="nx">t</span><span class="p">)</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
-
-</code></pre></div><p>这里的&quot;百度中国&quot;会分词得到两个词：<code>百度</code> 和<code>中国</code></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl">	<span class="c1">// 收集关键词
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">tokens</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">string</span><span class="p">{}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">request</span><span class="p">.</span><span class="nx">Text</span> <span class="o">!=</span> <span class="s">&#34;&#34;</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">querySegments</span> <span class="o">:=</span> <span class="nx">engine</span><span class="p">.</span><span class="nx">segmenter</span><span class="p">.</span><span class="nf">Segment</span><span class="p">([]</span><span class="nb">byte</span><span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">Text</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">		<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">s</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">querySegments</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">token</span> <span class="o">:=</span> <span class="nx">s</span><span class="p">.</span><span class="nf">Token</span><span class="p">().</span><span class="nf">Text</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">			<span class="k">if</span> <span class="p">!</span><span class="nx">engine</span><span class="p">.</span><span class="nx">stopTokens</span><span class="p">.</span><span class="nf">IsStopToken</span><span class="p">(</span><span class="nx">token</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="nx">tokens</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">tokens</span><span class="p">,</span> <span class="nx">s</span><span class="p">.</span><span class="nf">Token</span><span class="p">().</span><span class="nf">Text</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">t</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">request</span><span class="p">.</span><span class="nx">Tokens</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">tokens</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">tokens</span><span class="p">,</span> <span class="nx">t</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span></code></pre></div><p>这里的&quot;百度中国&quot;会分词得到两个词：<code>百度</code> 和<code>中国</code></p>
 <h3 id="向索引器发送查找请求">向索引器发送查找请求</h3>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go">	<span class="c1">// 建立排序器返回的通信通道
-</span><span class="c1"></span>	<span class="nx">rankerReturnChannel</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span>
-		<span class="kd">chan</span> <span class="nx">rankerReturnRequest</span><span class="p">,</span> <span class="nx">engine</span><span class="p">.</span><span class="nx">initOptions</span><span class="p">.</span><span class="nx">NumShards</span><span class="p">)</span>
-
-	<span class="c1">// 生成查找请求
-</span><span class="c1"></span>	<span class="nx">lookupRequest</span> <span class="o">:=</span> <span class="nx">indexerLookupRequest</span><span class="p">{</span>
-		<span class="nx">countDocsOnly</span><span class="p">:</span>       <span class="nx">request</span><span class="p">.</span><span class="nx">CountDocsOnly</span><span class="p">,</span>
-		<span class="nx">tokens</span><span class="p">:</span>              <span class="nx">tokens</span><span class="p">,</span>
-		<span class="nx">labels</span><span class="p">:</span>              <span class="nx">request</span><span class="p">.</span><span class="nx">Labels</span><span class="p">,</span>
-		<span class="nx">docIds</span><span class="p">:</span>              <span class="nx">request</span><span class="p">.</span><span class="nx">DocIds</span><span class="p">,</span>
-		<span class="nx">options</span><span class="p">:</span>             <span class="nx">rankOptions</span><span class="p">,</span>
-		<span class="nx">rankerReturnChannel</span><span class="p">:</span> <span class="nx">rankerReturnChannel</span><span class="p">,</span>
-		<span class="nx">orderless</span><span class="p">:</span>           <span class="nx">request</span><span class="p">.</span><span class="nx">Orderless</span><span class="p">,</span>
-	<span class="p">}</span>
-
-	<span class="c1">// 向索引器发送查找请求
-</span><span class="c1"></span>	<span class="k">for</span> <span class="nx">shard</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">shard</span> <span class="p">&lt;</span> <span class="nx">engine</span><span class="p">.</span><span class="nx">initOptions</span><span class="p">.</span><span class="nx">NumShards</span><span class="p">;</span> <span class="nx">shard</span><span class="o">++</span> <span class="p">{</span>
-		<span class="nx">engine</span><span class="p">.</span><span class="nx">indexerLookupChannels</span><span class="p">[</span><span class="nx">shard</span><span class="p">]</span> <span class="o">&lt;-</span> <span class="nx">lookupRequest</span>
-	<span class="p">}</span>
-</code></pre></div><p>这里是否可以进行优化？ 1) 只向特定的shard分发请求，避免无谓的indexer查找过程。2) <code>rankerReturnChannel</code>是否不用每次都创建新的？</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl">	<span class="c1">// 建立排序器返回的通信通道
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">rankerReturnChannel</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">		<span class="kd">chan</span> <span class="nx">rankerReturnRequest</span><span class="p">,</span> <span class="nx">engine</span><span class="p">.</span><span class="nx">initOptions</span><span class="p">.</span><span class="nx">NumShards</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// 生成查找请求
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">lookupRequest</span> <span class="o">:=</span> <span class="nx">indexerLookupRequest</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">countDocsOnly</span><span class="p">:</span>       <span class="nx">request</span><span class="p">.</span><span class="nx">CountDocsOnly</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">tokens</span><span class="p">:</span>              <span class="nx">tokens</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">labels</span><span class="p">:</span>              <span class="nx">request</span><span class="p">.</span><span class="nx">Labels</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">docIds</span><span class="p">:</span>              <span class="nx">request</span><span class="p">.</span><span class="nx">DocIds</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">options</span><span class="p">:</span>             <span class="nx">rankOptions</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">rankerReturnChannel</span><span class="p">:</span> <span class="nx">rankerReturnChannel</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">orderless</span><span class="p">:</span>           <span class="nx">request</span><span class="p">.</span><span class="nx">Orderless</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// 向索引器发送查找请求
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">for</span> <span class="nx">shard</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">shard</span> <span class="p">&lt;</span> <span class="nx">engine</span><span class="p">.</span><span class="nx">initOptions</span><span class="p">.</span><span class="nx">NumShards</span><span class="p">;</span> <span class="nx">shard</span><span class="o">++</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">engine</span><span class="p">.</span><span class="nx">indexerLookupChannels</span><span class="p">[</span><span class="nx">shard</span><span class="p">]</span> <span class="o">&lt;-</span> <span class="nx">lookupRequest</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span></code></pre></div><p>这里是否可以进行优化？ 1) 只向特定的shard分发请求，避免无谓的indexer查找过程。2) <code>rankerReturnChannel</code>是否不用每次都创建新的？</p>
 <h3 id="读取索引器的返回结果然后排序">读取索引器的返回结果然后排序</h3>
 <p>上面已经建立了结果的返回通道<code>rankerReturnChannel</code>，直接从个<code>channel</code>中读取返回数据，并加入到数组<code>rankOutput</code>中。
 注意，如果设置了超时，就在超时之前能读取多少就读多少。
@@ -421,6 +420,9 @@
 
     
       
+  
+
+
     
   </body>
 </html>

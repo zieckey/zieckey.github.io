@@ -3,7 +3,7 @@
 <head>
   <link href="https://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <meta name="generator" content="Hugo 0.89.4" />
+  <meta name="generator" content="Hugo 0.127.0">
 
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -44,7 +44,7 @@
       </ul>
     </nav>
 
-    <p>&copy; 2021. All rights reserved. </p>
+    <p>&copy; 2024. All rights reserved. </p>
   </div>
 </aside>
 
@@ -61,51 +61,51 @@
 <h2 id="cg_pool_t内存池的源码位置">cg_pool_t内存池的源码位置</h2>
 <p><a href="https://github.com/zieckey/nginx-research/tree/master/libnginx/pool">https://github.com/zieckey/nginx-research/tree/master/libnginx/pool</a></p>
 <h2 id="源码分析">源码分析</h2>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c">
-<span class="k">typedef</span> <span class="k">struct</span> <span class="n">ngx_pool_large_s</span>  <span class="n">ngx_pool_large_t</span><span class="p">;</span>
-<span class="c1">//大内存结构
-</span><span class="c1"></span><span class="k">struct</span> <span class="n">ngx_pool_large_s</span> <span class="p">{</span>
-    <span class="n">ngx_pool_large_t</span>     <span class="o">*</span><span class="n">next</span><span class="p">;</span> <span class="c1">//下一个大块内存
-</span><span class="c1"></span>    <span class="kt">void</span>                 <span class="o">*</span><span class="n">alloc</span><span class="p">;</span><span class="c1">//nginx分配的大块内存空间
-</span><span class="c1"></span><span class="p">};</span>
-
-<span class="c1">//该结构用来维护内存池的数据块，供用户分配之用
-</span><span class="c1"></span><span class="k">typedef</span> <span class="k">struct</span> <span class="p">{</span>
-    <span class="n">u_char</span>               <span class="o">*</span><span class="n">last</span><span class="p">;</span>  <span class="c1">//当前内存分配结束位置，即下一段可分配内存的起始位置
-</span><span class="c1"></span>    <span class="n">u_char</span>               <span class="o">*</span><span class="n">end</span><span class="p">;</span>   <span class="c1">//内存池结束位置
-</span><span class="c1"></span>    <span class="n">ngx_pool_t</span>           <span class="o">*</span><span class="n">next</span><span class="p">;</span>  <span class="c1">//链接到下一个内存池
-</span><span class="c1"></span>    <span class="n">ngx_uint_t</span>            <span class="n">failed</span><span class="p">;</span><span class="c1">//统计该内存池不能满足分配请求的次数
-</span><span class="c1"></span><span class="p">}</span> <span class="n">ngx_pool_data_t</span><span class="p">;</span>
-
-<span class="c1">//该结构维护整个内存池的头部信息
-</span><span class="c1"></span><span class="k">struct</span> <span class="n">ngx_pool_s</span> <span class="p">{</span>
-    <span class="n">ngx_pool_data_t</span>       <span class="n">d</span><span class="p">;</span>       <span class="c1">//数据块
-</span><span class="c1"></span>    <span class="n">size_t</span>                <span class="n">max</span><span class="p">;</span>     <span class="c1">//数据块大小，即小块内存的最大值
-</span><span class="c1"></span>    <span class="n">ngx_pool_t</span>           <span class="o">*</span><span class="n">current</span><span class="p">;</span> <span class="c1">//保存当前内存值
-</span><span class="c1"></span>    <span class="n">ngx_chain_t</span>          <span class="o">*</span><span class="n">chain</span><span class="p">;</span>   <span class="c1">//可以挂一个chain结构
-</span><span class="c1"></span>    <span class="n">ngx_pool_large_t</span>     <span class="o">*</span><span class="n">large</span><span class="p">;</span>   <span class="c1">//分配大块内存用，即超过max的内存请求
-</span><span class="c1"></span>    <span class="n">ngx_pool_cleanup_t</span>   <span class="o">*</span><span class="n">cleanup</span><span class="p">;</span> <span class="c1">//挂载一些内存池释放的时候，同时释放的资源
-</span><span class="c1"></span>    <span class="n">ngx_log_t</span>            <span class="o">*</span><span class="n">log</span><span class="p">;</span>
-<span class="p">};</span>
-</code></pre></div><h2 id="内存结构图">内存结构图</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="k">struct</span> <span class="n">ngx_pool_large_s</span>  <span class="kt">ngx_pool_large_t</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="c1">//大内存结构
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">struct</span> <span class="n">ngx_pool_large_s</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">ngx_pool_large_t</span>     <span class="o">*</span><span class="n">next</span><span class="p">;</span> <span class="c1">//下一个大块内存
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">void</span>                 <span class="o">*</span><span class="n">alloc</span><span class="p">;</span><span class="c1">//nginx分配的大块内存空间
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">//该结构用来维护内存池的数据块，供用户分配之用
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">typedef</span> <span class="k">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">u_char</span>               <span class="o">*</span><span class="n">last</span><span class="p">;</span>  <span class="c1">//当前内存分配结束位置，即下一段可分配内存的起始位置
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">u_char</span>               <span class="o">*</span><span class="n">end</span><span class="p">;</span>   <span class="c1">//内存池结束位置
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">ngx_pool_t</span>           <span class="o">*</span><span class="n">next</span><span class="p">;</span>  <span class="c1">//链接到下一个内存池
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">ngx_uint_t</span>            <span class="n">failed</span><span class="p">;</span><span class="c1">//统计该内存池不能满足分配请求的次数
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span> <span class="kt">ngx_pool_data_t</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">//该结构维护整个内存池的头部信息
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">struct</span> <span class="n">ngx_pool_s</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">ngx_pool_data_t</span>       <span class="n">d</span><span class="p">;</span>       <span class="c1">//数据块
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">size_t</span>                <span class="n">max</span><span class="p">;</span>     <span class="c1">//数据块大小，即小块内存的最大值
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">ngx_pool_t</span>           <span class="o">*</span><span class="n">current</span><span class="p">;</span> <span class="c1">//保存当前内存值
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">ngx_chain_t</span>          <span class="o">*</span><span class="n">chain</span><span class="p">;</span>   <span class="c1">//可以挂一个chain结构
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">ngx_pool_large_t</span>     <span class="o">*</span><span class="n">large</span><span class="p">;</span>   <span class="c1">//分配大块内存用，即超过max的内存请求
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">ngx_pool_cleanup_t</span>   <span class="o">*</span><span class="n">cleanup</span><span class="p">;</span> <span class="c1">//挂载一些内存池释放的时候，同时释放的资源
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">ngx_log_t</span>            <span class="o">*</span><span class="n">log</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span></code></pre></div><h2 id="内存结构图">内存结构图</h2>
 <p><a href="http://blog.codeg.cn/images/githubpages/nginx/ngx_pool_t_xiekeli.png"><img src="http://blog.codeg.cn/images/githubpages/nginx/ngx_pool_t_xiekeli.png" alt=""></a>
 备注：从参考博客5摘录</p>
 <p><a href="http://blog.codeg.cn/images/githubpages/nginx/ngx_pool_t_rainx.png"><img src="http://blog.codeg.cn/images/githubpages/nginx/ngx_pool_t_rainx.png" alt=""></a>
 备注：从参考文档6摘录</p>
 <h2 id="测试代码">测试代码</h2>
 <p>该测试代码的完整工程的编译和运行方式请参考 <a href="https://github.com/zieckey/nginx-research">https://github.com/zieckey/nginx-research项目</a>。Linux&amp;Windows都测试通过。</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="n">TEST_UNIT</span><span class="p">(</span><span class="n">ngx_pool</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">ngx_pool_t</span><span class="o">*</span> <span class="n">pool</span> <span class="o">=</span> <span class="n">ngx_create_pool</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
-    <span class="kt">char</span><span class="o">*</span> <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="kt">char</span><span class="o">*</span><span class="p">)</span><span class="n">ngx_palloc</span><span class="p">(</span><span class="n">pool</span><span class="p">,</span> <span class="mi">32</span><span class="p">);</span>
-    <span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">s</span> <span class="o">=</span> <span class="s">&#34;hello world</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">;</span>
-    <span class="n">strcpy</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">s</span><span class="p">);</span>
-    <span class="n">H_TEST_ASSERT</span><span class="p">(</span><span class="n">strcmp</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">);</span>
-
-    <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="kt">char</span><span class="o">*</span><span class="p">)</span><span class="n">ngx_palloc</span><span class="p">(</span><span class="n">pool</span><span class="p">,</span> <span class="mi">4096</span><span class="p">);</span> <span class="c1">// alloc a large block
-</span><span class="c1"></span>
-    <span class="n">ngx_destroy_pool</span><span class="p">(</span><span class="n">pool</span><span class="p">);</span>
-<span class="p">}</span>
-</code></pre></div><h2 id="参考">参考：</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="nf">TEST_UNIT</span><span class="p">(</span><span class="n">ngx_pool</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">ngx_pool_t</span><span class="o">*</span> <span class="n">pool</span> <span class="o">=</span> <span class="nf">ngx_create_pool</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">char</span><span class="o">*</span> <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="kt">char</span><span class="o">*</span><span class="p">)</span><span class="nf">ngx_palloc</span><span class="p">(</span><span class="n">pool</span><span class="p">,</span> <span class="mi">32</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">s</span> <span class="o">=</span> <span class="s">&#34;hello world</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">strcpy</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">s</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">H_TEST_ASSERT</span><span class="p">(</span><span class="nf">strcmp</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="kt">char</span><span class="o">*</span><span class="p">)</span><span class="nf">ngx_palloc</span><span class="p">(</span><span class="n">pool</span><span class="p">,</span> <span class="mi">4096</span><span class="p">);</span> <span class="c1">// alloc a large block
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">    <span class="nf">ngx_destroy_pool</span><span class="p">(</span><span class="n">pool</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><h2 id="参考">参考：</h2>
 <ol>
 <li><a href="http://tengine.taobao.org/book/chapter_02.html#ngx-palloc-t-100">淘宝：Nginx开发从入门到精通 http://tengine.taobao.org/book/chapter_02.html#ngx-queue-t-100</a></li>
 <li><a href="https://github.com/zieckey/nginx-1.0.14_comment/blob/master/src/core/ngx_palloc.h">nginx源码注释 https://github.com/zieckey/nginx-1.0.14_comment/blob/master/src/core/ngx_palloc.h</a></li>
@@ -122,6 +122,9 @@
 
     
       
+  
+
+
     
   </body>
 </html>

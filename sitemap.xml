@@ -2,28 +2,70 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>http://blog.codeg.cn/categories/blog/</loc>
+    <lastmod>2021-12-12T20:43:00+00:00</lastmod>
+  </url><url>
     <loc>http://blog.codeg.cn/categories/</loc>
-    <lastmod>2021-11-24T00:00:00+00:00</lastmod>
+    <lastmod>2021-12-12T20:43:00+00:00</lastmod>
   </url><url>
     <loc>http://blog.codeg.cn/</loc>
-    <lastmod>2021-11-24T00:00:00+00:00</lastmod>
+    <lastmod>2021-12-12T20:43:00+00:00</lastmod>
   </url><url>
-    <loc>http://blog.codeg.cn/categories/opinion/</loc>
-    <lastmod>2021-11-24T00:00:00+00:00</lastmod>
+    <loc>http://blog.codeg.cn/about/</loc>
+    <lastmod>2021-12-12T20:43:00+00:00</lastmod>
+  </url><url>
+    <loc>http://blog.codeg.cn/categories/finance/</loc>
+    <lastmod>2021-12-06T01:00:00+00:00</lastmod>
   </url><url>
     <loc>http://blog.codeg.cn/post/</loc>
-    <lastmod>2021-11-24T00:00:00+00:00</lastmod>
+    <lastmod>2021-12-06T01:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://blog.codeg.cn/tags/</loc>
+    <lastmod>2021-12-06T01:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://blog.codeg.cn/tags/%E8%B5%84%E9%87%91%E6%B5%81/</loc>
+    <lastmod>2021-12-06T01:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://blog.codeg.cn/tags/%E8%B7%A8%E5%A2%83%E6%B1%87%E6%AC%BE/</loc>
+    <lastmod>2021-12-06T01:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://blog.codeg.cn/post/finance/2021-12-06-Cross-board-remittance/</loc>
+    <lastmod>2021-12-06T01:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://blog.codeg.cn/categories/study/</loc>
+    <lastmod>2021-12-06T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://blog.codeg.cn/post/finance/2021-12-06-Transfer-between-commercial-banks/</loc>
+    <lastmod>2021-12-06T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://blog.codeg.cn/post/study/2021-12-06-be-made-of/</loc>
+    <lastmod>2021-12-06T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://blog.codeg.cn/tags/%E8%8B%B1%E8%AF%AD%E5%AD%A6%E4%B9%A0/</loc>
+    <lastmod>2021-12-06T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://blog.codeg.cn/tags/%E8%B7%A8%E8%A1%8C%E6%B1%87%E6%AC%BE/</loc>
+    <lastmod>2021-12-06T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://blog.codeg.cn/categories/opinion/</loc>
+    <lastmod>2021-11-29T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://blog.codeg.cn/post/opinion/2021-11-29-A-litle-view-of-management-2-Leapfrog-communication-and-leapfrog-management/</loc>
+    <lastmod>2021-11-29T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://blog.codeg.cn/tags/%E7%AE%A1%E7%90%86%E6%9D%82%E8%B0%88/</loc>
+    <lastmod>2021-11-29T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://blog.codeg.cn/tags/%E5%9B%BD%E6%BD%AE/</loc>
+    <lastmod>2021-11-25T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://blog.codeg.cn/post/opinion/2021-11-25-national-tide/</loc>
+    <lastmod>2021-11-25T00:00:00+00:00</lastmod>
   </url><url>
     <loc>http://blog.codeg.cn/post/opinion/2021-11-24-A-litle-view-of-management/</loc>
     <lastmod>2021-11-24T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://blog.codeg.cn/categories/blog/</loc>
-    <lastmod>2017-05-28T18:11:01+00:00</lastmod>
-  </url><url>
     <loc>http://blog.codeg.cn/tags/evpp/</loc>
-    <lastmod>2017-05-28T18:11:01+00:00</lastmod>
-  </url><url>
-    <loc>http://blog.codeg.cn/tags/</loc>
     <lastmod>2017-05-28T18:11:01+00:00</lastmod>
   </url><url>
     <loc>http://blog.codeg.cn/tags/vcpkg/</loc>
@@ -271,9 +313,6 @@
   </url><url>
     <loc>http://blog.codeg.cn/2014/12/13/github-pages/</loc>
     <lastmod>2014-12-13T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>http://blog.codeg.cn/about/</loc>
-    <lastmod>2014-12-12T20:43:00+00:00</lastmod>
   </url><url>
     <loc>http://blog.codeg.cn/2013/04/12/nothing/</loc>
     <lastmod>2013-04-12T00:00:00+00:00</lastmod>

@@ -3,7 +3,7 @@
 <head>
   <link href="https://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <meta name="generator" content="Hugo 0.89.4" />
+  <meta name="generator" content="Hugo 0.127.0">
 
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -44,7 +44,7 @@
       </ul>
     </nav>
 
-    <p>&copy; 2021. All rights reserved. </p>
+    <p>&copy; 2024. All rights reserved. </p>
   </div>
 </aside>
 
@@ -63,15 +63,15 @@
 </ol>
 <h2 id="1-srccmddistbufc">1. src/cmd/dist/buf.c</h2>
 <h3 id="buf定义">Buf定义</h3>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="c1">// A Buf is a byte buffer, like Go&#39;s []byte.
-</span><span class="c1"></span><span class="k">typedef</span> <span class="k">struct</span> <span class="n">Buf</span> <span class="n">Buf</span><span class="p">;</span>
-<span class="k">struct</span> <span class="n">Buf</span>
-<span class="p">{</span>
-	<span class="kt">char</span> <span class="o">*</span><span class="n">p</span><span class="p">;</span>
-	<span class="kt">int</span> <span class="n">len</span><span class="p">;</span>
-	<span class="kt">int</span> <span class="n">cap</span><span class="p">;</span>
-<span class="p">};</span>
-</code></pre></div><h4 id="对buf结构相关的一些操作">对Buf结构相关的一些操作</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">// A Buf is a byte buffer, like Go&#39;s []byte.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">typedef</span> <span class="k">struct</span> <span class="n">Buf</span> <span class="n">Buf</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">Buf</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">char</span> <span class="o">*</span><span class="n">p</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">int</span> <span class="n">len</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">int</span> <span class="n">cap</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span></code></pre></div><h4 id="对buf结构相关的一些操作">对Buf结构相关的一些操作</h4>
 <ul>
 <li><code>void binit(Buf *b)</code> 初始化一个Buf</li>
 <li><code>void breset(Buf *b)</code> 重置Buf，使之长度为0。类似于C++中的<code>std::string::clear()</code>，其数据内存不释放，但数据长度字段设为0</li>
@@ -86,15 +86,15 @@
 <li><code>void bsubst(Buf *b, char *x, char *y)</code> 使用子串<code>y</code>替换掉Buf中所有的<code>x</code></li>
 </ul>
 <h3 id="vec定义">Vec定义</h3>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="c1">// A Vec is a string vector, like Go&#39;s []string.
-</span><span class="c1"></span><span class="k">typedef</span> <span class="k">struct</span> <span class="n">Vec</span> <span class="n">Vec</span><span class="p">;</span>
-<span class="k">struct</span> <span class="n">Vec</span>
-<span class="p">{</span>
-	<span class="kt">char</span> <span class="o">**</span><span class="n">p</span><span class="p">;</span>
-	<span class="kt">int</span> <span class="n">len</span><span class="p">;</span>
-	<span class="kt">int</span> <span class="n">cap</span><span class="p">;</span>
-<span class="p">};</span>
-</code></pre></div><h4 id="对vec结构相关的一些操作">对Vec结构相关的一些操作</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">// A Vec is a string vector, like Go&#39;s []string.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">typedef</span> <span class="k">struct</span> <span class="n">Vec</span> <span class="n">Vec</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">Vec</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">char</span> <span class="o">**</span><span class="n">p</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">int</span> <span class="n">len</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">int</span> <span class="n">cap</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span></code></pre></div><h4 id="对vec结构相关的一些操作">对Vec结构相关的一些操作</h4>
 <ul>
 <li><code>void vinit(Vec *b)</code> 初始化一个Vec</li>
 <li><code>void vreset(Vec *b)</code> 重置Vec，使之长度为0。其数据内存全部释放</li>
@@ -122,25 +122,25 @@
 </ul>
 <h2 id="5-srciopipego-进程内的单工管道">5. src/io/pipe.go 进程内的单工管道</h2>
 <p>该管道是单工的，一端只能写，另一端只能读。这里提供了两个接口<code>PipeReader</code>和<code>PipeWriter</code>，其底层使用的<code>pipe</code>结构体定义如下：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="c1">// A pipe is the shared pipe structure underlying PipeReader and PipeWriter.
-</span><span class="c1"></span><span class="kd">type</span> <span class="nx">pipe</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="nx">rl</span>    <span class="nx">sync</span><span class="p">.</span><span class="nx">Mutex</span> <span class="c1">// 读锁，每次只允许一个消费者(reader)
-</span><span class="c1"></span>	<span class="nx">wl</span>    <span class="nx">sync</span><span class="p">.</span><span class="nx">Mutex</span> <span class="c1">// 写锁，每次只允许一个生产者(writer)
-</span><span class="c1"></span>	<span class="nx">l</span>     <span class="nx">sync</span><span class="p">.</span><span class="nx">Mutex</span> <span class="c1">// 整体锁，保护下面所有的成员变量
-</span><span class="c1"></span>	<span class="nx">data</span>  <span class="p">[]</span><span class="kt">byte</span>     <span class="c1">// data remaining in pending write
-</span><span class="c1"></span>	<span class="nx">rwait</span> <span class="nx">sync</span><span class="p">.</span><span class="nx">Cond</span>  <span class="c1">// waiting reader
-</span><span class="c1"></span>	<span class="nx">wwait</span> <span class="nx">sync</span><span class="p">.</span><span class="nx">Cond</span>  <span class="c1">// waiting writer
-</span><span class="c1"></span>	<span class="nx">rerr</span>  <span class="kt">error</span>      <span class="c1">// if reader closed, error to give writes
-</span><span class="c1"></span>	<span class="nx">werr</span>  <span class="kt">error</span>      <span class="c1">// if writer closed, error to give reads
-</span><span class="c1"></span><span class="p">}</span>
-</code></pre></div><p>实现时，使用一个公共的<strong>字节缓冲区</strong>，通过读锁、写锁和整体锁这三把锁对这个缓冲区做好保护，实现在进程内的不同goroutine直接传递数据。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="c1">// A pipe is the shared pipe structure underlying PipeReader and PipeWriter.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">type</span> <span class="nx">pipe</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">rl</span>    <span class="nx">sync</span><span class="p">.</span><span class="nx">Mutex</span> <span class="c1">// 读锁，每次只允许一个消费者(reader)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">wl</span>    <span class="nx">sync</span><span class="p">.</span><span class="nx">Mutex</span> <span class="c1">// 写锁，每次只允许一个生产者(writer)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">l</span>     <span class="nx">sync</span><span class="p">.</span><span class="nx">Mutex</span> <span class="c1">// 整体锁，保护下面所有的成员变量
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">data</span>  <span class="p">[]</span><span class="kt">byte</span>     <span class="c1">// data remaining in pending write
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">rwait</span> <span class="nx">sync</span><span class="p">.</span><span class="nx">Cond</span>  <span class="c1">// waiting reader
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">wwait</span> <span class="nx">sync</span><span class="p">.</span><span class="nx">Cond</span>  <span class="c1">// waiting writer
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">rerr</span>  <span class="kt">error</span>      <span class="c1">// if reader closed, error to give writes
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">werr</span>  <span class="kt">error</span>      <span class="c1">// if writer closed, error to give reads
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></div><p>实现时，使用一个公共的<strong>字节缓冲区</strong>，通过读锁、写锁和整体锁这三把锁对这个缓冲区做好保护，实现在进程内的不同goroutine直接传递数据。</p>
 <h2 id="6-srcnetpipego-进程内的双工管道">6. src/net/pipe.go 进程内的双工管道</h2>
 <p>使用 <code>io.PipeReader</code>和<code>io.PipeWriter</code>组合实现的双工管道，并且实现了<code>net.Conn</code>接口，其底层使用的<code>pipe</code>结构体定义如下：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">pipe</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="o">*</span><span class="nx">io</span><span class="p">.</span><span class="nx">PipeReader</span>
-	<span class="o">*</span><span class="nx">io</span><span class="p">.</span><span class="nx">PipeWriter</span>
-<span class="p">}</span>
-</code></pre></div>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">pipe</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="o">*</span><span class="nx">io</span><span class="p">.</span><span class="nx">PipeReader</span>
+</span></span><span class="line"><span class="cl">	<span class="o">*</span><span class="nx">io</span><span class="p">.</span><span class="nx">PipeWriter</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div>
 </div>
 
 
@@ -148,6 +148,9 @@
 
     
       
+  
+
+
     
   </body>
 </html>

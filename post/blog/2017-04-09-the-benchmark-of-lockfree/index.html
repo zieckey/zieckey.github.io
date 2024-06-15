@@ -3,7 +3,7 @@
 <head>
   <link href="https://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <meta name="generator" content="Hugo 0.89.4" />
+  <meta name="generator" content="Hugo 0.127.0">
 
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -44,7 +44,7 @@
       </ul>
     </nav>
 
-    <p>&copy; 2021. All rights reserved. </p>
+    <p>&copy; 2024. All rights reserved. </p>
   </div>
 </aside>
 
@@ -77,64 +77,64 @@
 <p>测试代码请参考<a href="https://github.com/Qihoo360/evpp/blob/master/benchmark/post_task/post_task6.cc">https://github.com/Qihoo360/evpp/blob/master/benchmark/post_task/post_task6.cc</a>. 在一个消费者线程中运行一个<code>EventLoop</code>对象<code>loop_</code>，多个生产者线程不停的调用<code>loop_-&gt;QueueInLoop(...)</code>方法将仿函数执行体放入到消费者的队列中让其消费（执行）。每个生产者线程放入一定总数（由运行参数指定）的仿函数执行体之后就停下来，等消费者线程完全消费完所有的仿函数执行体之后，程序退出，并记录开始和结束时间。</p>
 <p>为了便于大家阅读，现将相关代码的核心部分摘录如下。</p>
 <p>event_loop.h中定义了队列：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++">    <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">PipeEventWatcher</span><span class="o">&gt;</span> <span class="n">watcher_</span><span class="p">;</span>
-<span class="cp">#ifdef H_HAVE_BOOST
-</span><span class="cp"></span>    <span class="n">boost</span><span class="o">::</span><span class="n">lockfree</span><span class="o">::</span><span class="n">queue</span><span class="o">&lt;</span><span class="n">Functor</span><span class="o">*&gt;*</span> <span class="n">pending_functors_</span><span class="p">;</span>
-<span class="cp">#elif defined(H_HAVE_CAMERON314_CONCURRENTQUEUE)
-</span><span class="cp"></span>    <span class="n">moodycamel</span><span class="o">::</span><span class="n">ConcurrentQueue</span><span class="o">&lt;</span><span class="n">Functor</span><span class="o">&gt;*</span> <span class="n">pending_functors_</span><span class="p">;</span>
-<span class="cp">#else
-</span><span class="cp"></span>    <span class="n">std</span><span class="o">::</span><span class="n">mutex</span> <span class="n">mutex_</span><span class="p">;</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Functor</span><span class="o">&gt;*</span> <span class="n">pending_functors_</span><span class="p">;</span> <span class="c1">// @Guarded By mutex_
-</span><span class="c1"></span><span class="cp">#endif
-</span></code></pre></div><p>event_loop.cc中定义了<code>QueueInLoop(...)</code>的具体实现：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="kt">void</span> <span class="nf">Init</span><span class="p">()</span> <span class="p">{</span>
-    <span class="n">watcher_</span><span class="o">-&gt;</span><span class="n">Watch</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">bind</span><span class="p">(</span><span class="o">&amp;</span><span class="n">EventLoop</span><span class="o">::</span><span class="n">DoPendingFunctors</span><span class="p">,</span> <span class="k">this</span><span class="p">));</span>
-<span class="p">}</span>
-
-<span class="kt">void</span> <span class="n">EventLoop</span><span class="o">::</span><span class="n">QueueInLoop</span><span class="p">(</span><span class="k">const</span> <span class="n">Functor</span><span class="o">&amp;</span> <span class="n">cb</span><span class="p">)</span> <span class="p">{</span>
-    <span class="p">{</span>
-<span class="cp">#ifdef H_HAVE_BOOST
-</span><span class="cp"></span>        <span class="k">auto</span> <span class="n">f</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Functor</span><span class="p">(</span><span class="n">cb</span><span class="p">);</span>
-        <span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="n">pending_functors_</span><span class="o">-&gt;</span><span class="n">push</span><span class="p">(</span><span class="n">f</span><span class="p">))</span> <span class="p">{</span>
-        <span class="p">}</span>
-<span class="cp">#elif defined(H_HAVE_CAMERON314_CONCURRENTQUEUE)
-</span><span class="cp"></span>        <span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="n">pending_functors_</span><span class="o">-&gt;</span><span class="n">enqueue</span><span class="p">(</span><span class="n">cb</span><span class="p">))</span> <span class="p">{</span>
-        <span class="p">}</span>
-<span class="cp">#else
-</span><span class="cp"></span>        <span class="n">std</span><span class="o">::</span><span class="n">lock_guard</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span> <span class="n">lock</span><span class="p">(</span><span class="n">mutex_</span><span class="p">);</span>
-        <span class="n">pending_functors_</span><span class="o">-&gt;</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">cb</span><span class="p">);</span>
-<span class="cp">#endif
-</span><span class="cp"></span>    <span class="p">}</span>
-
-    <span class="n">watcher_</span><span class="o">-&gt;</span><span class="n">Notify</span><span class="p">();</span>
-<span class="p">}</span>
-
-<span class="kt">void</span> <span class="n">EventLoop</span><span class="o">::</span><span class="n">DoPendingFunctors</span><span class="p">()</span> <span class="p">{</span>
-<span class="cp">#ifdef H_HAVE_BOOST
-</span><span class="cp"></span>    <span class="n">Functor</span><span class="o">*</span> <span class="n">f</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">;</span>
-    <span class="k">while</span> <span class="p">(</span><span class="n">pending_functors_</span><span class="o">-&gt;</span><span class="n">pop</span><span class="p">(</span><span class="n">f</span><span class="p">))</span> <span class="p">{</span>
-        <span class="p">(</span><span class="o">*</span><span class="n">f</span><span class="p">)();</span>
-        <span class="k">delete</span> <span class="n">f</span><span class="p">;</span>
-    <span class="p">}</span>
-<span class="cp">#elif defined(H_HAVE_CAMERON314_CONCURRENTQUEUE)
-</span><span class="cp"></span>    <span class="n">Functor</span> <span class="n">f</span><span class="p">;</span>
-    <span class="k">while</span> <span class="p">(</span><span class="n">pending_functors_</span><span class="o">-&gt;</span><span class="n">try_dequeue</span><span class="p">(</span><span class="n">f</span><span class="p">))</span> <span class="p">{</span>
-        <span class="n">f</span><span class="p">();</span>
-        <span class="o">--</span><span class="n">pending_functor_count_</span><span class="p">;</span>
-    <span class="p">}</span>
-<span class="cp">#else
-</span><span class="cp"></span>    <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Functor</span><span class="o">&gt;</span> <span class="n">functors</span><span class="p">;</span>
-    <span class="p">{</span>
-        <span class="n">std</span><span class="o">::</span><span class="n">lock_guard</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span> <span class="n">lock</span><span class="p">(</span><span class="n">mutex_</span><span class="p">);</span>
-        <span class="n">notified_</span><span class="p">.</span><span class="n">store</span><span class="p">(</span><span class="nb">false</span><span class="p">);</span>
-        <span class="n">pending_functors_</span><span class="o">-&gt;</span><span class="n">swap</span><span class="p">(</span><span class="n">functors</span><span class="p">);</span>
-    <span class="p">}</span>
-    <span class="k">for</span> <span class="p">(</span><span class="n">size_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">functors</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">functors</span><span class="p">[</span><span class="n">i</span><span class="p">]();</span>
-    <span class="p">}</span>
-<span class="cp">#endif
-</span><span class="cp"></span><span class="p">}</span>
-</code></pre></div><p>我们进行了两种测试：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">PipeEventWatcher</span><span class="o">&gt;</span> <span class="n">watcher_</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#ifdef H_HAVE_BOOST
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>    <span class="n">boost</span><span class="o">::</span><span class="n">lockfree</span><span class="o">::</span><span class="n">queue</span><span class="o">&lt;</span><span class="n">Functor</span><span class="o">*&gt;*</span> <span class="n">pending_functors_</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#elif defined(H_HAVE_CAMERON314_CONCURRENTQUEUE)
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>    <span class="n">moodycamel</span><span class="o">::</span><span class="n">ConcurrentQueue</span><span class="o">&lt;</span><span class="n">Functor</span><span class="o">&gt;*</span> <span class="n">pending_functors_</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#else
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>    <span class="n">std</span><span class="o">::</span><span class="n">mutex</span> <span class="n">mutex_</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Functor</span><span class="o">&gt;*</span> <span class="n">pending_functors_</span><span class="p">;</span> <span class="c1">// @Guarded By mutex_
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="cp">#endif
+</span></span></span></code></pre></div><p>event_loop.cc中定义了<code>QueueInLoop(...)</code>的具体实现：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">Init</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">watcher_</span><span class="o">-&gt;</span><span class="n">Watch</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">bind</span><span class="p">(</span><span class="o">&amp;</span><span class="n">EventLoop</span><span class="o">::</span><span class="n">DoPendingFunctors</span><span class="p">,</span> <span class="k">this</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="n">EventLoop</span><span class="o">::</span><span class="n">QueueInLoop</span><span class="p">(</span><span class="k">const</span> <span class="n">Functor</span><span class="o">&amp;</span> <span class="n">cb</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#ifdef H_HAVE_BOOST
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>        <span class="k">auto</span> <span class="n">f</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Functor</span><span class="p">(</span><span class="n">cb</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="n">pending_functors_</span><span class="o">-&gt;</span><span class="n">push</span><span class="p">(</span><span class="n">f</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#elif defined(H_HAVE_CAMERON314_CONCURRENTQUEUE)
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>        <span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="n">pending_functors_</span><span class="o">-&gt;</span><span class="n">enqueue</span><span class="p">(</span><span class="n">cb</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#else
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>        <span class="n">std</span><span class="o">::</span><span class="n">lock_guard</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span> <span class="n">lock</span><span class="p">(</span><span class="n">mutex_</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">pending_functors_</span><span class="o">-&gt;</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">cb</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#endif
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">watcher_</span><span class="o">-&gt;</span><span class="n">Notify</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="n">EventLoop</span><span class="o">::</span><span class="n">DoPendingFunctors</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#ifdef H_HAVE_BOOST
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>    <span class="n">Functor</span><span class="o">*</span> <span class="n">f</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">while</span> <span class="p">(</span><span class="n">pending_functors_</span><span class="o">-&gt;</span><span class="n">pop</span><span class="p">(</span><span class="n">f</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="p">(</span><span class="o">*</span><span class="n">f</span><span class="p">)();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">delete</span> <span class="n">f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#elif defined(H_HAVE_CAMERON314_CONCURRENTQUEUE)
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>    <span class="n">Functor</span> <span class="n">f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">while</span> <span class="p">(</span><span class="n">pending_functors_</span><span class="o">-&gt;</span><span class="n">try_dequeue</span><span class="p">(</span><span class="n">f</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">f</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">        <span class="o">--</span><span class="n">pending_functor_count_</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#else
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>    <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Functor</span><span class="o">&gt;</span> <span class="n">functors</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">std</span><span class="o">::</span><span class="n">lock_guard</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span> <span class="n">lock</span><span class="p">(</span><span class="n">mutex_</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">notified_</span><span class="p">.</span><span class="n">store</span><span class="p">(</span><span class="nb">false</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">pending_functors_</span><span class="o">-&gt;</span><span class="n">swap</span><span class="p">(</span><span class="n">functors</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">size_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">functors</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">functors</span><span class="p">[</span><span class="n">i</span><span class="p">]();</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#endif
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="p">}</span>
+</span></span></code></pre></div><p>我们进行了两种测试：</p>
 <ol>
 <li>一个生产者线程投递1000000个仿函数执行体到消费者线程中执行，统计总耗时。然后同样的方法我们反复测试10次</li>
 <li>生产者线程分别是2/4/6/8/12/16/20，每个线程投递1000000个仿函数执行体到消费者线程中执行，并统计总共耗时</li>
@@ -170,6 +170,9 @@
 
     
       
+  
+
+
     
   </body>
 </html>

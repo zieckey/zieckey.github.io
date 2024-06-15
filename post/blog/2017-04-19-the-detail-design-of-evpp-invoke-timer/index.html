@@ -3,7 +3,7 @@
 <head>
   <link href="https://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <meta name="generator" content="Hugo 0.89.4" />
+  <meta name="generator" content="Hugo 0.127.0">
 
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -44,7 +44,7 @@
       </ul>
     </nav>
 
-    <p>&copy; 2021. All rights reserved. </p>
+    <p>&copy; 2024. All rights reserved. </p>
   </div>
 </aside>
 
@@ -57,655 +57,647 @@
 <p>现在我们复盘一下这个功能的实现细节和演化过程。</p>
 <h1 id="1-基础代码">1. 基础代码</h1>
 <p>定时器原型声明可能是下面的样子：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="k">class</span> <span class="nc">InvokeTimer</span> <span class="p">{</span>
-<span class="k">public</span><span class="o">:</span>
-    <span class="n">InvokeTimer</span><span class="p">(</span><span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">evloop</span><span class="p">,</span> <span class="kt">double</span> <span class="n">timeout_ms</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">()</span><span class="o">&gt;&amp;</span> <span class="n">f</span><span class="p">);</span>
-    <span class="o">~</span><span class="n">InvokeTimer</span><span class="p">();</span>
-    <span class="kt">void</span> <span class="nf">Start</span><span class="p">();</span>
-<span class="p">};</span>
-</code></pre></div><p>这个是最基本的接口，可以设置一个仿函数，并设置一个过期时间，然后绑定到一个<code>event_base</code>对象上，然后就可以期待过了一个预期的时间后，我们设置的仿函数被调用了。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">InvokeTimer</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">InvokeTimer</span><span class="p">(</span><span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">evloop</span><span class="p">,</span> <span class="kt">double</span> <span class="n">timeout_ms</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">()</span><span class="o">&gt;&amp;</span> <span class="n">f</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">~</span><span class="n">InvokeTimer</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="nf">Start</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span></code></pre></div><p>这个是最基本的接口，可以设置一个仿函数，并设置一个过期时间，然后绑定到一个<code>event_base</code>对象上，然后就可以期待过了一个预期的时间后，我们设置的仿函数被调用了。</p>
 <p>为了便于说明后续的多个版本的实现，我们先将基础的不变的代码说明一下。</p>
 <p>基础代码，我们采用<a href="https://github.com/Qihoo360/evpp">evpp</a>项目中的<code>TimerEventWatcher</code>，详细实现在这里<a href="https://github.com/Qihoo360/evpp/blob/master/evpp/event_watcher.h">event_watcher.h</a>和<a href="https://github.com/Qihoo360/evpp/blob/master/evpp/event_watcher.cc">event_watcher.cc</a>。它是一个时间定时器观察者对象，可以观察一个时间事件。</p>
 <p>头文件<code>event_watcher.h</code>定义如下：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="cp">#pragma once
-</span><span class="cp"></span>
-<span class="cp">#include</span> <span class="cpf">&lt;functional&gt;</span><span class="cp">
-</span><span class="cp"></span>
-<span class="k">struct</span> <span class="nc">event</span><span class="p">;</span>
-<span class="k">struct</span> <span class="nc">event_base</span><span class="p">;</span>
-
-<span class="k">namespace</span> <span class="n">recipes</span> <span class="p">{</span>
-
-<span class="k">class</span> <span class="nc">EventWatcher</span> <span class="p">{</span>
-<span class="k">public</span><span class="o">:</span>
-    <span class="k">typedef</span> <span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">()</span><span class="o">&gt;</span> <span class="n">Handler</span><span class="p">;</span>
-    <span class="k">virtual</span> <span class="o">~</span><span class="n">EventWatcher</span><span class="p">();</span>
-    <span class="kt">bool</span> <span class="nf">Init</span><span class="p">();</span>
-    <span class="kt">void</span> <span class="nf">Cancel</span><span class="p">();</span>
-
-    <span class="kt">void</span> <span class="nf">SetCancelCallback</span><span class="p">(</span><span class="k">const</span> <span class="n">Handler</span><span class="o">&amp;</span> <span class="n">cb</span><span class="p">);</span>
-    <span class="kt">void</span> <span class="nf">ClearHandler</span><span class="p">()</span> <span class="p">{</span> <span class="n">handler_</span> <span class="o">=</span> <span class="n">Handler</span><span class="p">();</span> <span class="p">}</span>
-<span class="k">protected</span><span class="o">:</span>
-    <span class="n">EventWatcher</span><span class="p">(</span><span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">evbase</span><span class="p">,</span> <span class="k">const</span> <span class="n">Handler</span><span class="o">&amp;</span> <span class="n">handler</span><span class="p">);</span>
-    <span class="kt">bool</span> <span class="nf">Watch</span><span class="p">(</span><span class="kt">double</span> <span class="n">timeout_ms</span><span class="p">);</span>
-    <span class="kt">void</span> <span class="nf">Close</span><span class="p">();</span>
-    <span class="kt">void</span> <span class="nf">FreeEvent</span><span class="p">();</span>
-
-    <span class="k">virtual</span> <span class="kt">bool</span> <span class="nf">DoInit</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="k">virtual</span> <span class="kt">void</span> <span class="nf">DoClose</span><span class="p">()</span> <span class="p">{}</span>
-
-<span class="k">protected</span><span class="o">:</span>
-    <span class="k">struct</span> <span class="nc">event</span><span class="o">*</span> <span class="n">event_</span><span class="p">;</span>
-    <span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">evbase_</span><span class="p">;</span>
-    <span class="kt">bool</span> <span class="n">attached_</span><span class="p">;</span>
-    <span class="n">Handler</span> <span class="n">handler_</span><span class="p">;</span>
-    <span class="n">Handler</span> <span class="n">cancel_callback_</span><span class="p">;</span>
-<span class="p">};</span>
-
-<span class="k">class</span> <span class="nc">TimerEventWatcher</span> <span class="o">:</span> <span class="k">public</span> <span class="n">EventWatcher</span> <span class="p">{</span>
-<span class="k">public</span><span class="o">:</span>
-    <span class="n">TimerEventWatcher</span><span class="p">(</span><span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">evbase</span><span class="p">,</span> <span class="k">const</span> <span class="n">Handler</span><span class="o">&amp;</span> <span class="n">handler</span><span class="p">,</span> <span class="kt">double</span> <span class="n">timeout_ms</span><span class="p">);</span>
-
-    <span class="kt">bool</span> <span class="nf">AsyncWait</span><span class="p">();</span>
-
-<span class="k">private</span><span class="o">:</span>
-    <span class="k">virtual</span> <span class="kt">bool</span> <span class="n">DoInit</span><span class="p">();</span>
-    <span class="k">static</span> <span class="kt">void</span> <span class="nf">HandlerFn</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="kt">short</span> <span class="n">which</span><span class="p">,</span> <span class="kt">void</span><span class="o">*</span> <span class="n">v</span><span class="p">);</span>
-<span class="k">private</span><span class="o">:</span>
-    <span class="kt">double</span> <span class="n">timeout_ms_</span><span class="p">;</span>
-<span class="p">};</span>
-
-<span class="p">}</span>
-
-</code></pre></div><p>实现文件<code>event_watcher.cc</code>如下：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="cp">#include</span> <span class="cpf">&lt;string.h&gt;</span><span class="cp">
-</span><span class="cp">#include</span> <span class="cpf">&lt;assert.h&gt;</span><span class="cp">
-</span><span class="cp"></span>
-<span class="cp">#include</span> <span class="cpf">&lt;event2/event.h&gt;</span><span class="cp">
-</span><span class="cp">#include</span> <span class="cpf">&lt;event2/event_struct.h&gt;</span><span class="cp">
-</span><span class="cp">#include</span> <span class="cpf">&lt;event2/event_compat.h&gt;</span><span class="cp">
-</span><span class="cp"></span>
-<span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
-</span><span class="cp"></span>
-<span class="cp">#include</span> <span class="cpf">&#34;event_watcher.h&#34;</span><span class="cp">
-</span><span class="cp"></span>
-<span class="k">namespace</span> <span class="n">recipes</span> <span class="p">{</span>
-
-<span class="n">EventWatcher</span><span class="o">::</span><span class="n">EventWatcher</span><span class="p">(</span><span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">evbase</span><span class="p">,</span> <span class="k">const</span> <span class="n">Handler</span><span class="o">&amp;</span> <span class="n">handler</span><span class="p">)</span>
-    <span class="o">:</span> <span class="n">evbase_</span><span class="p">(</span><span class="n">evbase</span><span class="p">),</span> <span class="n">attached_</span><span class="p">(</span><span class="nb">false</span><span class="p">),</span> <span class="n">handler_</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">event_</span> <span class="o">=</span> <span class="k">new</span> <span class="n">event</span><span class="p">;</span>
-    <span class="n">memset</span><span class="p">(</span><span class="n">event_</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="nc">event</span><span class="p">));</span>
-<span class="p">}</span>
-
-<span class="n">EventWatcher</span><span class="o">::~</span><span class="n">EventWatcher</span><span class="p">()</span> <span class="p">{</span>
-    <span class="n">FreeEvent</span><span class="p">();</span>
-    <span class="n">Close</span><span class="p">();</span>
-<span class="p">}</span>
-
-<span class="kt">bool</span> <span class="n">EventWatcher</span><span class="o">::</span><span class="n">Init</span><span class="p">()</span> <span class="p">{</span>
-    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">DoInit</span><span class="p">())</span> <span class="p">{</span>
-        <span class="k">goto</span> <span class="n">failed</span><span class="p">;</span>
-    <span class="p">}</span>
-
-    <span class="o">::</span><span class="n">event_base_set</span><span class="p">(</span><span class="n">evbase_</span><span class="p">,</span> <span class="n">event_</span><span class="p">);</span>
-    <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
-
-<span class="nl">failed</span><span class="p">:</span>
-    <span class="n">Close</span><span class="p">();</span>
-    <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
-<span class="p">}</span>
-
-
-<span class="kt">void</span> <span class="n">EventWatcher</span><span class="o">::</span><span class="n">Close</span><span class="p">()</span> <span class="p">{</span>
-    <span class="n">DoClose</span><span class="p">();</span>
-<span class="p">}</span>
-
-<span class="kt">bool</span> <span class="n">EventWatcher</span><span class="o">::</span><span class="n">Watch</span><span class="p">(</span><span class="kt">double</span> <span class="n">timeout_ms</span><span class="p">)</span> <span class="p">{</span>
-    <span class="k">struct</span> <span class="nc">timeval</span> <span class="n">tv</span><span class="p">;</span>
-    <span class="k">struct</span> <span class="nc">timeval</span><span class="o">*</span> <span class="n">timeoutval</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">;</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">timeout_ms</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">tv</span><span class="p">.</span><span class="n">tv_sec</span> <span class="o">=</span> <span class="kt">long</span><span class="p">(</span><span class="n">timeout_ms</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">);</span>
-        <span class="n">tv</span><span class="p">.</span><span class="n">tv_usec</span> <span class="o">=</span> <span class="kt">long</span><span class="p">(</span><span class="n">timeout_ms</span> <span class="o">*</span> <span class="mf">1000.0</span><span class="p">)</span> <span class="o">%</span> <span class="mi">1000</span><span class="p">;</span>
-        <span class="n">timeoutval</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">tv</span><span class="p">;</span>
-    <span class="p">}</span>
-
-    <span class="k">if</span> <span class="p">(</span><span class="n">attached_</span><span class="p">)</span> <span class="p">{</span>
-        <span class="c1">// When InvokerTimer::periodic_ == true, EventWatcher::Watch will be called many times
-</span><span class="c1"></span>        <span class="c1">// so we need to remove it from event_base before we add it into event_base
-</span><span class="c1"></span>        <span class="k">if</span> <span class="p">(</span><span class="n">event_del</span><span class="p">(</span><span class="n">event_</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
-            <span class="n">std</span><span class="o">::</span><span class="n">cerr</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;event_del failed. fd=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">event_</span><span class="o">-&gt;</span><span class="n">ev_fd</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; event_=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">event_</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-            <span class="c1">// TODO how to deal with it when failed?
-</span><span class="c1"></span>        <span class="p">}</span>
-        <span class="n">attached_</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
-    <span class="p">}</span>
-
-    <span class="n">assert</span><span class="p">(</span><span class="o">!</span><span class="n">attached_</span><span class="p">);</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">event_add</span><span class="p">(</span><span class="n">event_</span><span class="p">,</span> <span class="n">timeoutval</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">std</span><span class="o">::</span><span class="n">cerr</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;event_add failed. fd=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">event_</span><span class="o">-&gt;</span><span class="n">ev_fd</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; event_=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">event_</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-        <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
-    <span class="p">}</span>
-    <span class="n">attached_</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
-    <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="kt">void</span> <span class="n">EventWatcher</span><span class="o">::</span><span class="n">FreeEvent</span><span class="p">()</span> <span class="p">{</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">event_</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">attached_</span><span class="p">)</span> <span class="p">{</span>
-            <span class="n">event_del</span><span class="p">(</span><span class="n">event_</span><span class="p">);</span>
-            <span class="n">attached_</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
-        <span class="p">}</span>
-
-        <span class="k">delete</span> <span class="p">(</span><span class="n">event_</span><span class="p">);</span>
-        <span class="n">event_</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-
-<span class="kt">void</span> <span class="n">EventWatcher</span><span class="o">::</span><span class="n">Cancel</span><span class="p">()</span> <span class="p">{</span>
-    <span class="n">assert</span><span class="p">(</span><span class="n">event_</span><span class="p">);</span>
-    <span class="n">FreeEvent</span><span class="p">();</span>
-
-    <span class="k">if</span> <span class="p">(</span><span class="n">cancel_callback_</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">cancel_callback_</span><span class="p">();</span>
-        <span class="n">cancel_callback_</span> <span class="o">=</span> <span class="n">Handler</span><span class="p">();</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-
-<span class="kt">void</span> <span class="n">EventWatcher</span><span class="o">::</span><span class="n">SetCancelCallback</span><span class="p">(</span><span class="k">const</span> <span class="n">Handler</span><span class="o">&amp;</span> <span class="n">cb</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">cancel_callback_</span> <span class="o">=</span> <span class="n">cb</span><span class="p">;</span>
-<span class="p">}</span>
-
-
-<span class="n">TimerEventWatcher</span><span class="o">::</span><span class="n">TimerEventWatcher</span><span class="p">(</span><span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">evbase</span><span class="p">,</span>
-                                     <span class="k">const</span> <span class="n">Handler</span><span class="o">&amp;</span> <span class="n">handler</span><span class="p">,</span>
-                                     <span class="kt">double</span> <span class="n">timeout_ms</span><span class="p">)</span>
-    <span class="o">:</span> <span class="n">EventWatcher</span><span class="p">(</span><span class="n">evbase</span><span class="p">,</span> <span class="n">handler</span><span class="p">)</span>
-    <span class="p">,</span> <span class="n">timeout_ms_</span><span class="p">(</span><span class="n">timeout_ms</span><span class="p">)</span> <span class="p">{}</span>
-
-<span class="kt">bool</span> <span class="n">TimerEventWatcher</span><span class="o">::</span><span class="n">DoInit</span><span class="p">()</span> <span class="p">{</span>
-    <span class="o">::</span><span class="n">event_set</span><span class="p">(</span><span class="n">event_</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">TimerEventWatcher</span><span class="o">::</span><span class="n">HandlerFn</span><span class="p">,</span> <span class="k">this</span><span class="p">);</span>
-    <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="kt">void</span> <span class="n">TimerEventWatcher</span><span class="o">::</span><span class="n">HandlerFn</span><span class="p">(</span><span class="kt">int</span> <span class="cm">/*fd*/</span><span class="p">,</span> <span class="kt">short</span> <span class="cm">/*which*/</span><span class="p">,</span> <span class="kt">void</span><span class="o">*</span> <span class="n">v</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">TimerEventWatcher</span><span class="o">*</span> <span class="n">h</span> <span class="o">=</span> <span class="p">(</span><span class="n">TimerEventWatcher</span><span class="o">*</span><span class="p">)</span><span class="n">v</span><span class="p">;</span>
-    <span class="n">h</span><span class="o">-&gt;</span><span class="n">handler_</span><span class="p">();</span>
-<span class="p">}</span>
-
-<span class="kt">bool</span> <span class="n">TimerEventWatcher</span><span class="o">::</span><span class="n">AsyncWait</span><span class="p">()</span> <span class="p">{</span>
-    <span class="k">return</span> <span class="nf">Watch</span><span class="p">(</span><span class="n">timeout_ms_</span><span class="p">);</span>
-<span class="p">}</span>
-
-<span class="p">}</span>
-
-</code></pre></div><h1 id="2-一个最基本的实现basic-01">2. 一个最基本的实现：basic-01</h1>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="line"><span class="cl"><span class="cp">#pragma once
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;functional&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="nc">event</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="nc">event_base</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">namespace</span> <span class="n">recipes</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">EventWatcher</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="k">typedef</span> <span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">()</span><span class="o">&gt;</span> <span class="n">Handler</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">virtual</span> <span class="o">~</span><span class="n">EventWatcher</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">bool</span> <span class="nf">Init</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="nf">Cancel</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="nf">SetCancelCallback</span><span class="p">(</span><span class="k">const</span> <span class="n">Handler</span><span class="o">&amp;</span> <span class="n">cb</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="nf">ClearHandler</span><span class="p">()</span> <span class="p">{</span> <span class="n">handler_</span> <span class="o">=</span> <span class="n">Handler</span><span class="p">();</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="k">protected</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">EventWatcher</span><span class="p">(</span><span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">evbase</span><span class="p">,</span> <span class="k">const</span> <span class="n">Handler</span><span class="o">&amp;</span> <span class="n">handler</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">bool</span> <span class="nf">Watch</span><span class="p">(</span><span class="kt">double</span> <span class="n">timeout_ms</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="nf">Close</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="nf">FreeEvent</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">virtual</span> <span class="kt">bool</span> <span class="nf">DoInit</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">virtual</span> <span class="kt">void</span> <span class="nf">DoClose</span><span class="p">()</span> <span class="p">{}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">protected</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="k">struct</span> <span class="nc">event</span><span class="o">*</span> <span class="n">event_</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">evbase_</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">bool</span> <span class="n">attached_</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Handler</span> <span class="n">handler_</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Handler</span> <span class="n">cancel_callback_</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">TimerEventWatcher</span> <span class="o">:</span> <span class="k">public</span> <span class="n">EventWatcher</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">TimerEventWatcher</span><span class="p">(</span><span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">evbase</span><span class="p">,</span> <span class="k">const</span> <span class="n">Handler</span><span class="o">&amp;</span> <span class="n">handler</span><span class="p">,</span> <span class="kt">double</span> <span class="n">timeout_ms</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kt">bool</span> <span class="nf">AsyncWait</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">private</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="k">virtual</span> <span class="kt">bool</span> <span class="n">DoInit</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="k">static</span> <span class="kt">void</span> <span class="nf">HandlerFn</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="kt">short</span> <span class="n">which</span><span class="p">,</span> <span class="kt">void</span><span class="o">*</span> <span class="n">v</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="k">private</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">double</span> <span class="n">timeout_ms_</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>实现文件<code>event_watcher.cc</code>如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;string.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;assert.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;event2/event.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;event2/event_struct.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;event2/event_compat.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;event_watcher.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="k">namespace</span> <span class="n">recipes</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">EventWatcher</span><span class="o">::</span><span class="n">EventWatcher</span><span class="p">(</span><span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">evbase</span><span class="p">,</span> <span class="k">const</span> <span class="n">Handler</span><span class="o">&amp;</span> <span class="n">handler</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="o">:</span> <span class="n">evbase_</span><span class="p">(</span><span class="n">evbase</span><span class="p">),</span> <span class="n">attached_</span><span class="p">(</span><span class="nb">false</span><span class="p">),</span> <span class="n">handler_</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">event_</span> <span class="o">=</span> <span class="k">new</span> <span class="n">event</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">memset</span><span class="p">(</span><span class="n">event_</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="nc">event</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">EventWatcher</span><span class="o">::~</span><span class="n">EventWatcher</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">FreeEvent</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Close</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">bool</span> <span class="n">EventWatcher</span><span class="o">::</span><span class="n">Init</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">DoInit</span><span class="p">())</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">goto</span> <span class="n">failed</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="o">::</span><span class="n">event_base_set</span><span class="p">(</span><span class="n">evbase_</span><span class="p">,</span> <span class="n">event_</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nl">failed</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Close</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="n">EventWatcher</span><span class="o">::</span><span class="n">Close</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">DoClose</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">bool</span> <span class="n">EventWatcher</span><span class="o">::</span><span class="n">Watch</span><span class="p">(</span><span class="kt">double</span> <span class="n">timeout_ms</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">struct</span> <span class="nc">timeval</span> <span class="n">tv</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">struct</span> <span class="nc">timeval</span><span class="o">*</span> <span class="n">timeoutval</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">timeout_ms</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">tv</span><span class="p">.</span><span class="n">tv_sec</span> <span class="o">=</span> <span class="kt">long</span><span class="p">(</span><span class="n">timeout_ms</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">tv</span><span class="p">.</span><span class="n">tv_usec</span> <span class="o">=</span> <span class="kt">long</span><span class="p">(</span><span class="n">timeout_ms</span> <span class="o">*</span> <span class="mf">1000.0</span><span class="p">)</span> <span class="o">%</span> <span class="mi">1000</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">timeoutval</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">tv</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">attached_</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// When InvokerTimer::periodic_ == true, EventWatcher::Watch will be called many times
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// so we need to remove it from event_base before we add it into event_base
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">if</span> <span class="p">(</span><span class="n">event_del</span><span class="p">(</span><span class="n">event_</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">std</span><span class="o">::</span><span class="n">cerr</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;event_del failed. fd=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">event_</span><span class="o">-&gt;</span><span class="n">ev_fd</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; event_=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">event_</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// TODO how to deal with it when failed?
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="n">attached_</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">assert</span><span class="p">(</span><span class="o">!</span><span class="n">attached_</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">event_add</span><span class="p">(</span><span class="n">event_</span><span class="p">,</span> <span class="n">timeoutval</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">std</span><span class="o">::</span><span class="n">cerr</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;event_add failed. fd=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">event_</span><span class="o">-&gt;</span><span class="n">ev_fd</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; event_=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">event_</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="n">attached_</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="n">EventWatcher</span><span class="o">::</span><span class="n">FreeEvent</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">event_</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">attached_</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">event_del</span><span class="p">(</span><span class="n">event_</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="n">attached_</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">delete</span> <span class="p">(</span><span class="n">event_</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">event_</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="n">EventWatcher</span><span class="o">::</span><span class="n">Cancel</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">assert</span><span class="p">(</span><span class="n">event_</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">FreeEvent</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">cancel_callback_</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cancel_callback_</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cancel_callback_</span> <span class="o">=</span> <span class="n">Handler</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="n">EventWatcher</span><span class="o">::</span><span class="n">SetCancelCallback</span><span class="p">(</span><span class="k">const</span> <span class="n">Handler</span><span class="o">&amp;</span> <span class="n">cb</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cancel_callback_</span> <span class="o">=</span> <span class="n">cb</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">TimerEventWatcher</span><span class="o">::</span><span class="n">TimerEventWatcher</span><span class="p">(</span><span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">evbase</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                                     <span class="k">const</span> <span class="n">Handler</span><span class="o">&amp;</span> <span class="n">handler</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                                     <span class="kt">double</span> <span class="n">timeout_ms</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="o">:</span> <span class="n">EventWatcher</span><span class="p">(</span><span class="n">evbase</span><span class="p">,</span> <span class="n">handler</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">,</span> <span class="n">timeout_ms_</span><span class="p">(</span><span class="n">timeout_ms</span><span class="p">)</span> <span class="p">{}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">bool</span> <span class="n">TimerEventWatcher</span><span class="o">::</span><span class="n">DoInit</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="o">::</span><span class="n">event_set</span><span class="p">(</span><span class="n">event_</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">TimerEventWatcher</span><span class="o">::</span><span class="n">HandlerFn</span><span class="p">,</span> <span class="k">this</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="n">TimerEventWatcher</span><span class="o">::</span><span class="n">HandlerFn</span><span class="p">(</span><span class="kt">int</span> <span class="cm">/*fd*/</span><span class="p">,</span> <span class="kt">short</span> <span class="cm">/*which*/</span><span class="p">,</span> <span class="kt">void</span><span class="o">*</span> <span class="n">v</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">TimerEventWatcher</span><span class="o">*</span> <span class="n">h</span> <span class="o">=</span> <span class="p">(</span><span class="n">TimerEventWatcher</span><span class="o">*</span><span class="p">)</span><span class="n">v</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">h</span><span class="o">-&gt;</span><span class="n">handler_</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">bool</span> <span class="n">TimerEventWatcher</span><span class="o">::</span><span class="n">AsyncWait</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nf">Watch</span><span class="p">(</span><span class="n">timeout_ms_</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><h1 id="2-一个最基本的实现basic-01">2. 一个最基本的实现：basic-01</h1>
 <p>我们先尝试实现一个能满足最基本需求的定时器。</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++">
-<span class="c1">// 头文件
-</span><span class="c1"></span><span class="cp">#include</span> <span class="cpf">&lt;memory&gt;</span><span class="cp">
-</span><span class="cp">#include</span> <span class="cpf">&lt;functional&gt;</span><span class="cp">
-</span><span class="cp"></span>
-<span class="k">struct</span> <span class="nc">event_base</span><span class="p">;</span>
-
-<span class="k">namespace</span> <span class="n">recipes</span> <span class="p">{</span>
-
-<span class="k">class</span> <span class="nc">TimerEventWatcher</span><span class="p">;</span>
-<span class="k">class</span> <span class="nc">InvokeTimer</span><span class="p">;</span>
-
-<span class="k">class</span> <span class="nc">InvokeTimer</span> <span class="p">{</span>
-<span class="k">public</span><span class="o">:</span>
-    <span class="k">typedef</span> <span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">()</span><span class="o">&gt;</span> <span class="n">Functor</span><span class="p">;</span>
-
-    <span class="n">InvokeTimer</span><span class="p">(</span><span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">evloop</span><span class="p">,</span> <span class="kt">double</span> <span class="n">timeout_ms</span><span class="p">,</span> <span class="k">const</span> <span class="n">Functor</span><span class="o">&amp;</span> <span class="n">f</span><span class="p">);</span>
-    <span class="o">~</span><span class="n">InvokeTimer</span><span class="p">();</span>
-
-    <span class="kt">void</span> <span class="nf">Start</span><span class="p">();</span>
-
-<span class="k">private</span><span class="o">:</span>
-    <span class="kt">void</span> <span class="n">OnTimerTriggered</span><span class="p">();</span>
-
-<span class="k">private</span><span class="o">:</span>
-    <span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">loop_</span><span class="p">;</span>
-    <span class="kt">double</span> <span class="n">timeout_ms_</span><span class="p">;</span>
-    <span class="n">Functor</span> <span class="n">functor_</span><span class="p">;</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">TimerEventWatcher</span><span class="o">&gt;</span> <span class="n">timer_</span><span class="p">;</span>
-<span class="p">};</span>
-
-<span class="p">}</span>
-
-
-
-<span class="c1">// 实现文件
-</span><span class="c1"></span><span class="cp">#include</span> <span class="cpf">&#34;invoke_timer.h&#34;</span><span class="cp">
-</span><span class="cp">#include</span> <span class="cpf">&#34;event_watcher.h&#34;</span><span class="cp">
-</span><span class="cp"></span>
-<span class="cp">#include</span> <span class="cpf">&lt;thread&gt;</span><span class="cp">
-</span><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
-</span><span class="cp"></span>
-<span class="k">namespace</span> <span class="n">recipes</span> <span class="p">{</span>
-
-<span class="n">InvokeTimer</span><span class="o">::</span><span class="n">InvokeTimer</span><span class="p">(</span><span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">evloop</span><span class="p">,</span> <span class="kt">double</span> <span class="n">timeout_ms</span><span class="p">,</span> <span class="k">const</span> <span class="n">Functor</span><span class="o">&amp;</span> <span class="n">f</span><span class="p">)</span>
-    <span class="o">:</span> <span class="n">loop_</span><span class="p">(</span><span class="n">evloop</span><span class="p">),</span> <span class="n">timeout_ms_</span><span class="p">(</span><span class="n">timeout_ms</span><span class="p">),</span> <span class="n">functor_</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;InvokeTimer::InvokeTimer tid=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">get_id</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; this=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="n">InvokeTimer</span><span class="o">::~</span><span class="n">InvokeTimer</span><span class="p">()</span> <span class="p">{</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;InvokeTimer::~InvokeTimer tid=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">get_id</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; this=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="kt">void</span> <span class="n">InvokeTimer</span><span class="o">::</span><span class="n">Start</span><span class="p">()</span> <span class="p">{</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;InvokeTimer::Start tid=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">get_id</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; this=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-    <span class="n">timer_</span><span class="p">.</span><span class="n">reset</span><span class="p">(</span><span class="k">new</span> <span class="n">TimerEventWatcher</span><span class="p">(</span><span class="n">loop_</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">bind</span><span class="p">(</span><span class="o">&amp;</span><span class="n">InvokeTimer</span><span class="o">::</span><span class="n">OnTimerTriggered</span><span class="p">,</span> <span class="k">this</span><span class="p">),</span> <span class="n">timeout_ms_</span><span class="p">));</span>
-    <span class="n">timer_</span><span class="o">-&gt;</span><span class="n">Init</span><span class="p">();</span>
-    <span class="n">timer_</span><span class="o">-&gt;</span><span class="n">AsyncWait</span><span class="p">();</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;InvokeTimer::Start(AsyncWait) tid=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">get_id</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; timer=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">timer_</span><span class="p">.</span><span class="n">get</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; this=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; timeout(ms)=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">timeout_ms_</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="kt">void</span> <span class="n">InvokeTimer</span><span class="o">::</span><span class="n">OnTimerTriggered</span><span class="p">()</span> <span class="p">{</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;InvokeTimer::OnTimerTriggered tid=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">get_id</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; this=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-    <span class="n">functor_</span><span class="p">();</span>
-    <span class="n">functor_</span> <span class="o">=</span> <span class="n">Functor</span><span class="p">();</span>
-<span class="p">}</span>
-
-<span class="p">}</span>
-
-
-</code></pre></div><p>测试main.cc</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="cp">#include</span> <span class="cpf">&#34;invoke_timer.h&#34;</span><span class="cp">
-</span><span class="cp">#include</span> <span class="cpf">&#34;event_watcher.h&#34;</span><span class="cp">
-</span><span class="cp">#include</span> <span class="cpf">&#34;winmain-inl.h&#34;</span><span class="cp">
-</span><span class="cp"></span>
-<span class="cp">#include</span> <span class="cpf">&lt;event2/event.h&gt;</span><span class="cp">
-</span><span class="cp"></span>
-<span class="kt">void</span> <span class="nf">Print</span><span class="p">()</span> <span class="p">{</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">__FUNCTION__</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; hello world.&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-    <span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">base</span> <span class="o">=</span> <span class="n">event_base_new</span><span class="p">();</span>
-    <span class="k">auto</span> <span class="n">timer</span> <span class="o">=</span> <span class="k">new</span> <span class="n">recipes</span><span class="o">::</span><span class="n">InvokeTimer</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="mf">1000.0</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">Print</span><span class="p">);</span>
-    <span class="n">timer</span><span class="o">-&gt;</span><span class="n">Start</span><span class="p">();</span>
-    <span class="n">event_base_dispatch</span><span class="p">(</span><span class="n">base</span><span class="p">);</span>
-    <span class="n">event_base_free</span><span class="p">(</span><span class="n">base</span><span class="p">);</span>
-    <span class="k">delete</span> <span class="n">timer</span><span class="p">;</span>
-    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-<span class="p">}</span>
-</code></pre></div><p>我们先创建一个<code>event_base</code>对象，随后创建一个<code>InvokeTimer</code>对象，随后让timer启动起来，即将timer注册到<code>event_base</code>对象中，最后运行<code>event_base_dispatch(base)</code>。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 头文件
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="cp">#include</span> <span class="cpf">&lt;memory&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;functional&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="nc">event_base</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">namespace</span> <span class="n">recipes</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">TimerEventWatcher</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">InvokeTimer</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">InvokeTimer</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="k">typedef</span> <span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">()</span><span class="o">&gt;</span> <span class="n">Functor</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">InvokeTimer</span><span class="p">(</span><span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">evloop</span><span class="p">,</span> <span class="kt">double</span> <span class="n">timeout_ms</span><span class="p">,</span> <span class="k">const</span> <span class="n">Functor</span><span class="o">&amp;</span> <span class="n">f</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">~</span><span class="n">InvokeTimer</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="nf">Start</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">private</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="n">OnTimerTriggered</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">private</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">loop_</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">double</span> <span class="n">timeout_ms_</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Functor</span> <span class="n">functor_</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">TimerEventWatcher</span><span class="o">&gt;</span> <span class="n">timer_</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 实现文件
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="cp">#include</span> <span class="cpf">&#34;invoke_timer.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;event_watcher.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;thread&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="k">namespace</span> <span class="n">recipes</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">InvokeTimer</span><span class="o">::</span><span class="n">InvokeTimer</span><span class="p">(</span><span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">evloop</span><span class="p">,</span> <span class="kt">double</span> <span class="n">timeout_ms</span><span class="p">,</span> <span class="k">const</span> <span class="n">Functor</span><span class="o">&amp;</span> <span class="n">f</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="o">:</span> <span class="n">loop_</span><span class="p">(</span><span class="n">evloop</span><span class="p">),</span> <span class="n">timeout_ms_</span><span class="p">(</span><span class="n">timeout_ms</span><span class="p">),</span> <span class="n">functor_</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;InvokeTimer::InvokeTimer tid=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">get_id</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; this=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">InvokeTimer</span><span class="o">::~</span><span class="n">InvokeTimer</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;InvokeTimer::~InvokeTimer tid=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">get_id</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; this=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="n">InvokeTimer</span><span class="o">::</span><span class="n">Start</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;InvokeTimer::Start tid=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">get_id</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; this=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">timer_</span><span class="p">.</span><span class="n">reset</span><span class="p">(</span><span class="k">new</span> <span class="n">TimerEventWatcher</span><span class="p">(</span><span class="n">loop_</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">bind</span><span class="p">(</span><span class="o">&amp;</span><span class="n">InvokeTimer</span><span class="o">::</span><span class="n">OnTimerTriggered</span><span class="p">,</span> <span class="k">this</span><span class="p">),</span> <span class="n">timeout_ms_</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">timer_</span><span class="o">-&gt;</span><span class="n">Init</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">timer_</span><span class="o">-&gt;</span><span class="n">AsyncWait</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;InvokeTimer::Start(AsyncWait) tid=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">get_id</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; timer=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">timer_</span><span class="p">.</span><span class="n">get</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; this=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; timeout(ms)=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">timeout_ms_</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="n">InvokeTimer</span><span class="o">::</span><span class="n">OnTimerTriggered</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;InvokeTimer::OnTimerTriggered tid=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">get_id</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; this=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">functor_</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">functor_</span> <span class="o">=</span> <span class="n">Functor</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>测试main.cc</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;invoke_timer.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;event_watcher.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;winmain-inl.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;event2/event.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">Print</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">__FUNCTION__</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; hello world.&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">base</span> <span class="o">=</span> <span class="n">event_base_new</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="k">auto</span> <span class="n">timer</span> <span class="o">=</span> <span class="k">new</span> <span class="n">recipes</span><span class="o">::</span><span class="n">InvokeTimer</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="mf">1000.0</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">Print</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">timer</span><span class="o">-&gt;</span><span class="n">Start</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">event_base_dispatch</span><span class="p">(</span><span class="n">base</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">event_base_free</span><span class="p">(</span><span class="n">base</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">delete</span> <span class="n">timer</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>我们先创建一个<code>event_base</code>对象，随后创建一个<code>InvokeTimer</code>对象，随后让timer启动起来，即将timer注册到<code>event_base</code>对象中，最后运行<code>event_base_dispatch(base)</code>。</p>
 <p>下面编译运行，结果是符合预期的：当timer的时间到期后，能顺利触发回调。</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell">$ ls -l
-total <span class="m">80</span>
--rw-rw-r-- <span class="m">1</span> weizili weizili  <span class="m">2729</span> Apr <span class="m">15</span> 20:39 event_watcher.cc
--rw-rw-r-- <span class="m">1</span> weizili weizili   <span class="m">996</span> Apr <span class="m">15</span> 20:39 event_watcher.h
--rw-rw-r-- <span class="m">1</span> weizili weizili  <span class="m">1204</span> Apr <span class="m">14</span> 10:55 invoke_timer.cc
--rw-rw-r-- <span class="m">1</span> weizili weizili   <span class="m">805</span> Apr <span class="m">14</span> 10:55 invoke_timer.h
--rw-rw-r-- <span class="m">1</span> weizili weizili   <span class="m">374</span> Apr <span class="m">14</span> 10:55 main.cc
-$ g++ -std<span class="o">=</span>c++11 event_watcher.cc invoke_timer.cc main.cc -levent
-$ ./a.out
-InvokeTimer::InvokeTimer <span class="nv">tid</span><span class="o">=</span><span class="m">139965845526336</span> <span class="nv">this</span><span class="o">=</span>0x7ffd2790f780
-InvokeTimer::Start <span class="nv">tid</span><span class="o">=</span><span class="m">139965845526336</span> <span class="nv">this</span><span class="o">=</span>0x7ffd2790f780
-InvokeTimer::Start<span class="o">(</span>AsyncWait<span class="o">)</span> <span class="nv">tid</span><span class="o">=</span><span class="m">139965845526336</span> <span class="nv">timer</span><span class="o">=</span>0x14504c0 <span class="nv">this</span><span class="o">=</span>0x7ffd2790f780 timeout<span class="o">(</span>ms<span class="o">)=</span><span class="m">1000</span>
-InvokeTimer::OnTimerTriggered <span class="nv">tid</span><span class="o">=</span><span class="m">139965845526336</span> <span class="nv">this</span><span class="o">=</span>0x7ffd2790f780
-Print hello world.
-InvokeTimer::~InvokeTimer <span class="nv">tid</span><span class="o">=</span><span class="m">139965845526336</span> <span class="nv">this</span><span class="o">=</span>0x7ffd2790f780
-</code></pre></div><p>这个实现方式，<code>InvokeTimer</code>对象生命周期的管理是一个问题，它需要调用者自己管理。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ ls -l
+</span></span><span class="line"><span class="cl">total <span class="m">80</span>
+</span></span><span class="line"><span class="cl">-rw-rw-r-- <span class="m">1</span> weizili weizili  <span class="m">2729</span> Apr <span class="m">15</span> 20:39 event_watcher.cc
+</span></span><span class="line"><span class="cl">-rw-rw-r-- <span class="m">1</span> weizili weizili   <span class="m">996</span> Apr <span class="m">15</span> 20:39 event_watcher.h
+</span></span><span class="line"><span class="cl">-rw-rw-r-- <span class="m">1</span> weizili weizili  <span class="m">1204</span> Apr <span class="m">14</span> 10:55 invoke_timer.cc
+</span></span><span class="line"><span class="cl">-rw-rw-r-- <span class="m">1</span> weizili weizili   <span class="m">805</span> Apr <span class="m">14</span> 10:55 invoke_timer.h
+</span></span><span class="line"><span class="cl">-rw-rw-r-- <span class="m">1</span> weizili weizili   <span class="m">374</span> Apr <span class="m">14</span> 10:55 main.cc
+</span></span><span class="line"><span class="cl">$ g++ -std<span class="o">=</span>c++11 event_watcher.cc invoke_timer.cc main.cc -levent
+</span></span><span class="line"><span class="cl">$ ./a.out
+</span></span><span class="line"><span class="cl">InvokeTimer::InvokeTimer <span class="nv">tid</span><span class="o">=</span><span class="m">139965845526336</span> <span class="nv">this</span><span class="o">=</span>0x7ffd2790f780
+</span></span><span class="line"><span class="cl">InvokeTimer::Start <span class="nv">tid</span><span class="o">=</span><span class="m">139965845526336</span> <span class="nv">this</span><span class="o">=</span>0x7ffd2790f780
+</span></span><span class="line"><span class="cl">InvokeTimer::Start<span class="o">(</span>AsyncWait<span class="o">)</span> <span class="nv">tid</span><span class="o">=</span><span class="m">139965845526336</span> <span class="nv">timer</span><span class="o">=</span>0x14504c0 <span class="nv">this</span><span class="o">=</span>0x7ffd2790f780 timeout<span class="o">(</span>ms<span class="o">)=</span><span class="m">1000</span>
+</span></span><span class="line"><span class="cl">InvokeTimer::OnTimerTriggered <span class="nv">tid</span><span class="o">=</span><span class="m">139965845526336</span> <span class="nv">this</span><span class="o">=</span>0x7ffd2790f780
+</span></span><span class="line"><span class="cl">Print hello world.
+</span></span><span class="line"><span class="cl">InvokeTimer::~InvokeTimer <span class="nv">tid</span><span class="o">=</span><span class="m">139965845526336</span> <span class="nv">this</span><span class="o">=</span>0x7ffd2790f780
+</span></span></code></pre></div><p>这个实现方式，<code>InvokeTimer</code>对象生命周期的管理是一个问题，它需要调用者自己管理。</p>
 <h1 id="3-能够实现最基本自我管理basic-02">3. 能够实现最基本自我管理：basic-02</h1>
 <p>为了实现<code>InvokeTimer</code>对象生命周期的自我管理，其实就是调用者不需要关心<code>InvokeTimer</code>对象的生命周期问题。可以设想一下，假如<code>InvokeTimer</code>对象创建后，当定时时间一到，我们就调用其绑定的毁掉回函，然后<code>InvokeTimer</code>对象自我销毁，是不是就可以实现自我管理了呢？嗯，这个可行。请看下面代码。</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++">
-<span class="c1">// 头文件
-</span><span class="c1"></span>
-<span class="cp">#include</span> <span class="cpf">&lt;memory&gt;</span><span class="cp">
-</span><span class="cp">#include</span> <span class="cpf">&lt;functional&gt;</span><span class="cp">
-</span><span class="cp"></span>
-<span class="k">struct</span> <span class="nc">event_base</span><span class="p">;</span>
-
-<span class="k">namespace</span> <span class="n">recipes</span> <span class="p">{</span>
-
-<span class="k">class</span> <span class="nc">TimerEventWatcher</span><span class="p">;</span>
-<span class="k">class</span> <span class="nc">InvokeTimer</span><span class="p">;</span>
-
-<span class="k">class</span> <span class="nc">InvokeTimer</span> <span class="p">{</span>
-<span class="k">public</span><span class="o">:</span>
-    <span class="k">typedef</span> <span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">()</span><span class="o">&gt;</span> <span class="n">Functor</span><span class="p">;</span>
-
-    <span class="k">static</span> <span class="n">InvokeTimer</span><span class="o">*</span> <span class="nf">Create</span><span class="p">(</span><span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">evloop</span><span class="p">,</span>
-                                 <span class="kt">double</span> <span class="n">timeout_ms</span><span class="p">,</span>
-                                 <span class="k">const</span> <span class="n">Functor</span><span class="o">&amp;</span> <span class="n">f</span><span class="p">);</span>
-
-    <span class="o">~</span><span class="n">InvokeTimer</span><span class="p">();</span>
-
-    <span class="kt">void</span> <span class="nf">Start</span><span class="p">();</span>
-
-<span class="k">private</span><span class="o">:</span>
-    <span class="n">InvokeTimer</span><span class="p">(</span><span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">evloop</span><span class="p">,</span> <span class="kt">double</span> <span class="n">timeout_ms</span><span class="p">,</span> <span class="k">const</span> <span class="n">Functor</span><span class="o">&amp;</span> <span class="n">f</span><span class="p">);</span>
-    <span class="kt">void</span> <span class="nf">OnTimerTriggered</span><span class="p">();</span>
-
-<span class="k">private</span><span class="o">:</span>
-    <span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">loop_</span><span class="p">;</span>
-    <span class="kt">double</span> <span class="n">timeout_ms_</span><span class="p">;</span>
-    <span class="n">Functor</span> <span class="n">functor_</span><span class="p">;</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">TimerEventWatcher</span><span class="o">&gt;</span> <span class="n">timer_</span><span class="p">;</span>
-<span class="p">};</span>
-
-<span class="p">}</span>
-
-
-<span class="c1">// 实现文件
-</span><span class="c1"></span>
-<span class="cp">#include</span> <span class="cpf">&#34;invoke_timer.h&#34;</span><span class="cp">
-</span><span class="cp">#include</span> <span class="cpf">&#34;event_watcher.h&#34;</span><span class="cp">
-</span><span class="cp"></span>
-<span class="cp">#include</span> <span class="cpf">&lt;thread&gt;</span><span class="cp">
-</span><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
-</span><span class="cp"></span>
-<span class="k">namespace</span> <span class="n">recipes</span> <span class="p">{</span>
-
-<span class="n">InvokeTimer</span><span class="o">::</span><span class="n">InvokeTimer</span><span class="p">(</span><span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">evloop</span><span class="p">,</span> <span class="kt">double</span> <span class="n">timeout_ms</span><span class="p">,</span> <span class="k">const</span> <span class="n">Functor</span><span class="o">&amp;</span> <span class="n">f</span><span class="p">)</span>
-    <span class="o">:</span> <span class="n">loop_</span><span class="p">(</span><span class="n">evloop</span><span class="p">),</span> <span class="n">timeout_ms_</span><span class="p">(</span><span class="n">timeout_ms</span><span class="p">),</span> <span class="n">functor_</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;InvokeTimer::InvokeTimer tid=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">get_id</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; this=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="n">InvokeTimer</span><span class="o">*</span> <span class="n">InvokeTimer</span><span class="o">::</span><span class="n">Create</span><span class="p">(</span><span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">evloop</span><span class="p">,</span> <span class="kt">double</span> <span class="n">timeout_ms</span><span class="p">,</span> <span class="k">const</span> <span class="n">Functor</span><span class="o">&amp;</span> <span class="n">f</span><span class="p">)</span> <span class="p">{</span>
-    <span class="k">return</span> <span class="k">new</span> <span class="nf">InvokeTimer</span><span class="p">(</span><span class="n">evloop</span><span class="p">,</span> <span class="n">timeout_ms</span><span class="p">,</span> <span class="n">f</span><span class="p">);</span>
-<span class="p">}</span>
-
-<span class="n">InvokeTimer</span><span class="o">::~</span><span class="n">InvokeTimer</span><span class="p">()</span> <span class="p">{</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;InvokeTimer::~InvokeTimer tid=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">get_id</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; this=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="kt">void</span> <span class="n">InvokeTimer</span><span class="o">::</span><span class="n">Start</span><span class="p">()</span> <span class="p">{</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;InvokeTimer::Start tid=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">get_id</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; this=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-    <span class="n">timer_</span><span class="p">.</span><span class="n">reset</span><span class="p">(</span><span class="k">new</span> <span class="n">TimerEventWatcher</span><span class="p">(</span><span class="n">loop_</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">bind</span><span class="p">(</span><span class="o">&amp;</span><span class="n">InvokeTimer</span><span class="o">::</span><span class="n">OnTimerTriggered</span><span class="p">,</span> <span class="k">this</span><span class="p">),</span> <span class="n">timeout_ms_</span><span class="p">));</span>
-    <span class="n">timer_</span><span class="o">-&gt;</span><span class="n">Init</span><span class="p">();</span>
-    <span class="n">timer_</span><span class="o">-&gt;</span><span class="n">AsyncWait</span><span class="p">();</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;InvokeTimer::Start(AsyncWait) tid=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">get_id</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; timer=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">timer_</span><span class="p">.</span><span class="n">get</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; this=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; timeout(ms)=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">timeout_ms_</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="kt">void</span> <span class="n">InvokeTimer</span><span class="o">::</span><span class="n">OnTimerTriggered</span><span class="p">()</span> <span class="p">{</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;InvokeTimer::OnTimerTriggered tid=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">get_id</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; this=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-    <span class="n">functor_</span><span class="p">();</span>
-    <span class="n">functor_</span> <span class="o">=</span> <span class="n">Functor</span><span class="p">();</span>
-    <span class="k">delete</span> <span class="k">this</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="p">}</span>
-
-</code></pre></div><p>请注意，上述实现中，为了实现自我销毁，我们必须调用 <strong>delete</strong> ，这就注定了<code>InvokeTimer</code>对象必须在堆上创建，因此我们隐藏了它的构造函数，然后用一个静态的 <strong>Create</strong> 成员来创建<code>InvokeTimer</code>对象的实例。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 头文件
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;memory&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;functional&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="nc">event_base</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">namespace</span> <span class="n">recipes</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">TimerEventWatcher</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">InvokeTimer</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">InvokeTimer</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="k">typedef</span> <span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">()</span><span class="o">&gt;</span> <span class="n">Functor</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">static</span> <span class="n">InvokeTimer</span><span class="o">*</span> <span class="nf">Create</span><span class="p">(</span><span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">evloop</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                                 <span class="kt">double</span> <span class="n">timeout_ms</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                                 <span class="k">const</span> <span class="n">Functor</span><span class="o">&amp;</span> <span class="n">f</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="o">~</span><span class="n">InvokeTimer</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="nf">Start</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">private</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">InvokeTimer</span><span class="p">(</span><span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">evloop</span><span class="p">,</span> <span class="kt">double</span> <span class="n">timeout_ms</span><span class="p">,</span> <span class="k">const</span> <span class="n">Functor</span><span class="o">&amp;</span> <span class="n">f</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="nf">OnTimerTriggered</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">private</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">loop_</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">double</span> <span class="n">timeout_ms_</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Functor</span> <span class="n">functor_</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">TimerEventWatcher</span><span class="o">&gt;</span> <span class="n">timer_</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 实现文件
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;invoke_timer.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;event_watcher.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;thread&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="k">namespace</span> <span class="n">recipes</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">InvokeTimer</span><span class="o">::</span><span class="n">InvokeTimer</span><span class="p">(</span><span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">evloop</span><span class="p">,</span> <span class="kt">double</span> <span class="n">timeout_ms</span><span class="p">,</span> <span class="k">const</span> <span class="n">Functor</span><span class="o">&amp;</span> <span class="n">f</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="o">:</span> <span class="n">loop_</span><span class="p">(</span><span class="n">evloop</span><span class="p">),</span> <span class="n">timeout_ms_</span><span class="p">(</span><span class="n">timeout_ms</span><span class="p">),</span> <span class="n">functor_</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;InvokeTimer::InvokeTimer tid=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">get_id</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; this=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">InvokeTimer</span><span class="o">*</span> <span class="n">InvokeTimer</span><span class="o">::</span><span class="n">Create</span><span class="p">(</span><span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">evloop</span><span class="p">,</span> <span class="kt">double</span> <span class="n">timeout_ms</span><span class="p">,</span> <span class="k">const</span> <span class="n">Functor</span><span class="o">&amp;</span> <span class="n">f</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="k">new</span> <span class="nf">InvokeTimer</span><span class="p">(</span><span class="n">evloop</span><span class="p">,</span> <span class="n">timeout_ms</span><span class="p">,</span> <span class="n">f</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">InvokeTimer</span><span class="o">::~</span><span class="n">InvokeTimer</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;InvokeTimer::~InvokeTimer tid=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">get_id</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; this=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="n">InvokeTimer</span><span class="o">::</span><span class="n">Start</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;InvokeTimer::Start tid=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">get_id</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; this=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">timer_</span><span class="p">.</span><span class="n">reset</span><span class="p">(</span><span class="k">new</span> <span class="n">TimerEventWatcher</span><span class="p">(</span><span class="n">loop_</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">bind</span><span class="p">(</span><span class="o">&amp;</span><span class="n">InvokeTimer</span><span class="o">::</span><span class="n">OnTimerTriggered</span><span class="p">,</span> <span class="k">this</span><span class="p">),</span> <span class="n">timeout_ms_</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">timer_</span><span class="o">-&gt;</span><span class="n">Init</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">timer_</span><span class="o">-&gt;</span><span class="n">AsyncWait</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;InvokeTimer::Start(AsyncWait) tid=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">get_id</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; timer=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">timer_</span><span class="p">.</span><span class="n">get</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; this=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; timeout(ms)=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">timeout_ms_</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="n">InvokeTimer</span><span class="o">::</span><span class="n">OnTimerTriggered</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;InvokeTimer::OnTimerTriggered tid=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">get_id</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; this=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">functor_</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">functor_</span> <span class="o">=</span> <span class="n">Functor</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="k">delete</span> <span class="k">this</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>请注意，上述实现中，为了实现自我销毁，我们必须调用 <strong>delete</strong> ，这就注定了<code>InvokeTimer</code>对象必须在堆上创建，因此我们隐藏了它的构造函数，然后用一个静态的 <strong>Create</strong> 成员来创建<code>InvokeTimer</code>对象的实例。</p>
 <p>相应的，<code>main.cc</code>也做了一点点修改代码如下：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="cp">#include</span> <span class="cpf">&#34;invoke_timer.h&#34;</span><span class="cp">
-</span><span class="cp">#include</span> <span class="cpf">&#34;event_watcher.h&#34;</span><span class="cp">
-</span><span class="cp">#include</span> <span class="cpf">&#34;winmain-inl.h&#34;</span><span class="cp">
-</span><span class="cp"></span>
-<span class="cp">#include</span> <span class="cpf">&lt;event2/event.h&gt;</span><span class="cp">
-</span><span class="cp"></span>
-<span class="kt">void</span> <span class="nf">Print</span><span class="p">()</span> <span class="p">{</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">__FUNCTION__</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; hello world.&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-    <span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">base</span> <span class="o">=</span> <span class="n">event_base_new</span><span class="p">();</span>
-    <span class="k">auto</span> <span class="n">timer</span> <span class="o">=</span> <span class="n">recipes</span><span class="o">::</span><span class="n">InvokeTimer</span><span class="o">::</span><span class="n">Create</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="mf">1000.0</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">Print</span><span class="p">);</span>
-    <span class="n">timer</span><span class="o">-&gt;</span><span class="n">Start</span><span class="p">();</span> <span class="c1">// 启动完成后，就不用关注该对象了
-</span><span class="c1"></span>    <span class="n">event_base_dispatch</span><span class="p">(</span><span class="n">base</span><span class="p">);</span>
-    <span class="n">event_base_free</span><span class="p">(</span><span class="n">base</span><span class="p">);</span>
-    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-<span class="p">}</span>
-</code></pre></div><p>这个实现，就不需要上层调用者手工<code>delete</code>这个<code>InvokeTimer</code>对象的实例，从而达到<code>InvokeTimer</code>对象自我管理的目的。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;invoke_timer.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;event_watcher.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;winmain-inl.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;event2/event.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">Print</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">__FUNCTION__</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; hello world.&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">base</span> <span class="o">=</span> <span class="n">event_base_new</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="k">auto</span> <span class="n">timer</span> <span class="o">=</span> <span class="n">recipes</span><span class="o">::</span><span class="n">InvokeTimer</span><span class="o">::</span><span class="n">Create</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="mf">1000.0</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">Print</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">timer</span><span class="o">-&gt;</span><span class="n">Start</span><span class="p">();</span> <span class="c1">// 启动完成后，就不用关注该对象了
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">event_base_dispatch</span><span class="p">(</span><span class="n">base</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">event_base_free</span><span class="p">(</span><span class="n">base</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>这个实现，就不需要上层调用者手工<code>delete</code>这个<code>InvokeTimer</code>对象的实例，从而达到<code>InvokeTimer</code>对象自我管理的目的。</p>
 <p>下面编译运行，结果是符合预期的：当timer时间到期后，能顺利触发回调，并且<code>InvokeTimer</code>对象也自动析构了。</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell">$ ls -l
-total <span class="m">80</span>
--rw-rw-r-- <span class="m">1</span> weizili weizili  <span class="m">2729</span> Apr <span class="m">15</span> 20:39 event_watcher.cc
--rw-rw-r-- <span class="m">1</span> weizili weizili   <span class="m">996</span> Apr <span class="m">15</span> 20:39 event_watcher.h
--rw-rw-r-- <span class="m">1</span> weizili weizili  <span class="m">1204</span> Apr <span class="m">14</span> 10:55 invoke_timer.cc
--rw-rw-r-- <span class="m">1</span> weizili weizili   <span class="m">805</span> Apr <span class="m">14</span> 10:55 invoke_timer.h
--rw-rw-r-- <span class="m">1</span> weizili weizili   <span class="m">374</span> Apr <span class="m">14</span> 10:55 main.cc
-$ g++ -std<span class="o">=</span>c++11 event_watcher.cc invoke_timer.cc main.cc -levent
-$ ./a.out
-InvokeTimer::InvokeTimer <span class="nv">tid</span><span class="o">=</span><span class="m">139965845526336</span> <span class="nv">this</span><span class="o">=</span>0x7ffd2790f780
-InvokeTimer::Start <span class="nv">tid</span><span class="o">=</span><span class="m">139965845526336</span> <span class="nv">this</span><span class="o">=</span>0x7ffd2790f780
-InvokeTimer::Start<span class="o">(</span>AsyncWait<span class="o">)</span> <span class="nv">tid</span><span class="o">=</span><span class="m">139965845526336</span> <span class="nv">timer</span><span class="o">=</span>0x14504c0 <span class="nv">this</span><span class="o">=</span>0x7ffd2790f780 timeout<span class="o">(</span>ms<span class="o">)=</span><span class="m">1000</span>
-InvokeTimer::OnTimerTriggered <span class="nv">tid</span><span class="o">=</span><span class="m">139965845526336</span> <span class="nv">this</span><span class="o">=</span>0x7ffd2790f780
-Print hello world.
-InvokeTimer::~InvokeTimer <span class="nv">tid</span><span class="o">=</span><span class="m">139965845526336</span> <span class="nv">this</span><span class="o">=</span>0x7ffd2790f780
-</code></pre></div><h1 id="4-如果要取消一个定时器怎么办cancel-03">4. 如果要取消一个定时器怎么办：cancel-03</h1>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ ls -l
+</span></span><span class="line"><span class="cl">total <span class="m">80</span>
+</span></span><span class="line"><span class="cl">-rw-rw-r-- <span class="m">1</span> weizili weizili  <span class="m">2729</span> Apr <span class="m">15</span> 20:39 event_watcher.cc
+</span></span><span class="line"><span class="cl">-rw-rw-r-- <span class="m">1</span> weizili weizili   <span class="m">996</span> Apr <span class="m">15</span> 20:39 event_watcher.h
+</span></span><span class="line"><span class="cl">-rw-rw-r-- <span class="m">1</span> weizili weizili  <span class="m">1204</span> Apr <span class="m">14</span> 10:55 invoke_timer.cc
+</span></span><span class="line"><span class="cl">-rw-rw-r-- <span class="m">1</span> weizili weizili   <span class="m">805</span> Apr <span class="m">14</span> 10:55 invoke_timer.h
+</span></span><span class="line"><span class="cl">-rw-rw-r-- <span class="m">1</span> weizili weizili   <span class="m">374</span> Apr <span class="m">14</span> 10:55 main.cc
+</span></span><span class="line"><span class="cl">$ g++ -std<span class="o">=</span>c++11 event_watcher.cc invoke_timer.cc main.cc -levent
+</span></span><span class="line"><span class="cl">$ ./a.out
+</span></span><span class="line"><span class="cl">InvokeTimer::InvokeTimer <span class="nv">tid</span><span class="o">=</span><span class="m">139965845526336</span> <span class="nv">this</span><span class="o">=</span>0x7ffd2790f780
+</span></span><span class="line"><span class="cl">InvokeTimer::Start <span class="nv">tid</span><span class="o">=</span><span class="m">139965845526336</span> <span class="nv">this</span><span class="o">=</span>0x7ffd2790f780
+</span></span><span class="line"><span class="cl">InvokeTimer::Start<span class="o">(</span>AsyncWait<span class="o">)</span> <span class="nv">tid</span><span class="o">=</span><span class="m">139965845526336</span> <span class="nv">timer</span><span class="o">=</span>0x14504c0 <span class="nv">this</span><span class="o">=</span>0x7ffd2790f780 timeout<span class="o">(</span>ms<span class="o">)=</span><span class="m">1000</span>
+</span></span><span class="line"><span class="cl">InvokeTimer::OnTimerTriggered <span class="nv">tid</span><span class="o">=</span><span class="m">139965845526336</span> <span class="nv">this</span><span class="o">=</span>0x7ffd2790f780
+</span></span><span class="line"><span class="cl">Print hello world.
+</span></span><span class="line"><span class="cl">InvokeTimer::~InvokeTimer <span class="nv">tid</span><span class="o">=</span><span class="m">139965845526336</span> <span class="nv">this</span><span class="o">=</span>0x7ffd2790f780
+</span></span></code></pre></div><h1 id="4-如果要取消一个定时器怎么办cancel-03">4. 如果要取消一个定时器怎么办：cancel-03</h1>
 <p>上面第2种实现方式，实现了定时器的自我管理，调用者不需要关心定时器的生命周期的管理问题。接下来，新的需求又来了，上层调用者说，在对外发起一个请求时，可以设置一个定时器来处理超时问题，但如果请求及时的回来了，我们得及时取消该定时器啊，这又如何处理呢？</p>
 <p>这就相当于要把上层调用者还得一直保留<code>InvokeTimer</code>对象的实例，以便在需要的时候，提前取消掉该定时器。上层调用者保留这个指针，就会带来一定的风险，例如误用，当<code>InvokeTimer</code>对象已经自动析构了，该该指针还继续存在于上层调用者那里。</p>
 <p>于是乎，智能指针<code>shared_ptr</code>出场了，我们希望上层调用者看到的对象是以<code>shared_ptr&lt;InvokeTimer&gt;</code>形式存在的，无论上层调用者是否保留这个<code>shared_ptr&lt;InvokeTimer&gt;</code>对象，<code>InvokeTimer</code>对象都能自我管理，也就是说，当上层调用者不保留<code>shared_ptr&lt;InvokeTimer&gt;</code>对象时，<code>InvokeTimer</code>对象要能自我管理。</p>
 <p>这里就必须让<code>InvokeTimer</code>对象本身也要保存一份<code>shared_ptr&lt;InvokeTimer&gt;</code>对象。为了实现这一技术，我们需要引入<code>enable_shared_from_this</code>。关于<code>enable_shared_from_this</code>的介绍，网络上已经有很多资料了，这里不多累述。我们直接上最终的实现代码：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++">
-<span class="c1">// 头文件
-</span><span class="c1"></span>
-<span class="cp">#include</span> <span class="cpf">&lt;memory&gt;</span><span class="cp">
-</span><span class="cp">#include</span> <span class="cpf">&lt;functional&gt;</span><span class="cp">
-</span><span class="cp"></span>
-<span class="k">struct</span> <span class="nc">event_base</span><span class="p">;</span>
-
-<span class="k">namespace</span> <span class="n">recipes</span> <span class="p">{</span>
-
-<span class="k">class</span> <span class="nc">TimerEventWatcher</span><span class="p">;</span>
-<span class="k">class</span> <span class="nc">InvokeTimer</span><span class="p">;</span>
-
-<span class="k">typedef</span> <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">InvokeTimer</span><span class="o">&gt;</span> <span class="n">InvokeTimerPtr</span><span class="p">;</span>
-
-<span class="k">class</span> <span class="nc">InvokeTimer</span> <span class="o">:</span> <span class="k">public</span> <span class="n">std</span><span class="o">::</span><span class="n">enable_shared_from_this</span><span class="o">&lt;</span><span class="n">InvokeTimer</span><span class="o">&gt;</span> <span class="p">{</span>
-<span class="k">public</span><span class="o">:</span>
-    <span class="k">typedef</span> <span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">()</span><span class="o">&gt;</span> <span class="n">Functor</span><span class="p">;</span>
-
-    <span class="k">static</span> <span class="n">InvokeTimerPtr</span> <span class="nf">Create</span><span class="p">(</span><span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">evloop</span><span class="p">,</span>
-                                 <span class="kt">double</span> <span class="n">timeout_ms</span><span class="p">,</span>
-                                 <span class="k">const</span> <span class="n">Functor</span><span class="o">&amp;</span> <span class="n">f</span><span class="p">);</span>
-
-    <span class="o">~</span><span class="n">InvokeTimer</span><span class="p">();</span>
-
-    <span class="kt">void</span> <span class="nf">Start</span><span class="p">();</span>
-
-    <span class="kt">void</span> <span class="nf">Cancel</span><span class="p">();</span>
-
-    <span class="kt">void</span> <span class="nf">set_cancel_callback</span><span class="p">(</span><span class="k">const</span> <span class="n">Functor</span><span class="o">&amp;</span> <span class="n">fn</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">cancel_callback_</span> <span class="o">=</span> <span class="n">fn</span><span class="p">;</span>
-    <span class="p">}</span>
-<span class="k">private</span><span class="o">:</span>
-    <span class="n">InvokeTimer</span><span class="p">(</span><span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">evloop</span><span class="p">,</span> <span class="kt">double</span> <span class="n">timeout_ms</span><span class="p">,</span> <span class="k">const</span> <span class="n">Functor</span><span class="o">&amp;</span> <span class="n">f</span><span class="p">);</span>
-    <span class="kt">void</span> <span class="nf">OnTimerTriggered</span><span class="p">();</span>
-    <span class="kt">void</span> <span class="nf">OnCanceled</span><span class="p">();</span>
-
-<span class="k">private</span><span class="o">:</span>
-    <span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">loop_</span><span class="p">;</span>
-    <span class="kt">double</span> <span class="n">timeout_ms_</span><span class="p">;</span>
-    <span class="n">Functor</span> <span class="n">functor_</span><span class="p">;</span>
-    <span class="n">Functor</span> <span class="n">cancel_callback_</span><span class="p">;</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">TimerEventWatcher</span><span class="o">&gt;</span> <span class="n">timer_</span><span class="p">;</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">InvokeTimer</span><span class="o">&gt;</span> <span class="n">self_</span><span class="p">;</span> <span class="c1">// Hold myself
-</span><span class="c1"></span><span class="p">};</span>
-
-<span class="p">}</span>
-
-
-<span class="c1">// 实现文件
-</span><span class="c1"></span>
-<span class="cp">#include</span> <span class="cpf">&#34;invoke_timer.h&#34;</span><span class="cp">
-</span><span class="cp">#include</span> <span class="cpf">&#34;event_watcher.h&#34;</span><span class="cp">
-</span><span class="cp"></span>
-<span class="cp">#include</span> <span class="cpf">&lt;thread&gt;</span><span class="cp">
-</span><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
-</span><span class="cp"></span>
-<span class="k">namespace</span> <span class="n">recipes</span> <span class="p">{</span>
-
-<span class="n">InvokeTimer</span><span class="o">::</span><span class="n">InvokeTimer</span><span class="p">(</span><span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">evloop</span><span class="p">,</span> <span class="kt">double</span> <span class="n">timeout_ms</span><span class="p">,</span> <span class="k">const</span> <span class="n">Functor</span><span class="o">&amp;</span> <span class="n">f</span><span class="p">)</span>
-    <span class="o">:</span> <span class="n">loop_</span><span class="p">(</span><span class="n">evloop</span><span class="p">),</span> <span class="n">timeout_ms_</span><span class="p">(</span><span class="n">timeout_ms</span><span class="p">),</span> <span class="n">functor_</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;InvokeTimer::InvokeTimer tid=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">get_id</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; this=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="n">InvokeTimerPtr</span> <span class="n">InvokeTimer</span><span class="o">::</span><span class="n">Create</span><span class="p">(</span><span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">evloop</span><span class="p">,</span> <span class="kt">double</span> <span class="n">timeout_ms</span><span class="p">,</span> <span class="k">const</span> <span class="n">Functor</span><span class="o">&amp;</span> <span class="n">f</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">InvokeTimerPtr</span> <span class="nf">it</span><span class="p">(</span><span class="k">new</span> <span class="n">InvokeTimer</span><span class="p">(</span><span class="n">evloop</span><span class="p">,</span> <span class="n">timeout_ms</span><span class="p">,</span> <span class="n">f</span><span class="p">));</span>
-    <span class="n">it</span><span class="o">-&gt;</span><span class="n">self_</span> <span class="o">=</span> <span class="n">it</span><span class="p">;</span>
-    <span class="k">return</span> <span class="n">it</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="n">InvokeTimer</span><span class="o">::~</span><span class="n">InvokeTimer</span><span class="p">()</span> <span class="p">{</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;InvokeTimer::~InvokeTimer tid=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">get_id</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; this=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="kt">void</span> <span class="n">InvokeTimer</span><span class="o">::</span><span class="n">Start</span><span class="p">()</span> <span class="p">{</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;InvokeTimer::Start tid=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">get_id</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; this=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; refcount=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">self_</span><span class="p">.</span><span class="n">use_count</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-    <span class="n">timer_</span><span class="p">.</span><span class="n">reset</span><span class="p">(</span><span class="k">new</span> <span class="n">TimerEventWatcher</span><span class="p">(</span><span class="n">loop_</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">bind</span><span class="p">(</span><span class="o">&amp;</span><span class="n">InvokeTimer</span><span class="o">::</span><span class="n">OnTimerTriggered</span><span class="p">,</span> <span class="n">shared_from_this</span><span class="p">()),</span> <span class="n">timeout_ms_</span><span class="p">));</span>
-    <span class="n">timer_</span><span class="o">-&gt;</span><span class="n">SetCancelCallback</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">bind</span><span class="p">(</span><span class="o">&amp;</span><span class="n">InvokeTimer</span><span class="o">::</span><span class="n">OnCanceled</span><span class="p">,</span> <span class="n">shared_from_this</span><span class="p">()));</span>
-    <span class="n">timer_</span><span class="o">-&gt;</span><span class="n">Init</span><span class="p">();</span>
-    <span class="n">timer_</span><span class="o">-&gt;</span><span class="n">AsyncWait</span><span class="p">();</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;InvokeTimer::Start(AsyncWait) tid=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">get_id</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; timer=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">timer_</span><span class="p">.</span><span class="n">get</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; this=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; refcount=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">self_</span><span class="p">.</span><span class="n">use_count</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; periodic=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">periodic_</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; timeout(ms)=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">timeout_ms_</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="kt">void</span> <span class="n">InvokeTimer</span><span class="o">::</span><span class="n">Cancel</span><span class="p">()</span> <span class="p">{</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">timer_</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">timer_</span><span class="o">-&gt;</span><span class="n">Cancel</span><span class="p">();</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-
-<span class="kt">void</span> <span class="n">InvokeTimer</span><span class="o">::</span><span class="n">OnTimerTriggered</span><span class="p">()</span> <span class="p">{</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;InvokeTimer::OnTimerTriggered tid=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">get_id</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; this=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; use_count=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">self_</span><span class="p">.</span><span class="n">use_count</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-    <span class="n">functor_</span><span class="p">();</span>
-    <span class="n">functor_</span> <span class="o">=</span> <span class="n">Functor</span><span class="p">();</span>
-    <span class="n">cancel_callback_</span> <span class="o">=</span> <span class="n">Functor</span><span class="p">();</span>
-    <span class="n">timer_</span><span class="p">.</span><span class="n">reset</span><span class="p">();</span>
-    <span class="n">self_</span><span class="p">.</span><span class="n">reset</span><span class="p">();</span>
-<span class="p">}</span>
-
-<span class="kt">void</span> <span class="n">InvokeTimer</span><span class="o">::</span><span class="n">OnCanceled</span><span class="p">()</span> <span class="p">{</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;InvokeTimer::OnCanceled tid=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">get_id</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; this=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; use_count=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">self_</span><span class="p">.</span><span class="n">use_count</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">cancel_callback_</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">cancel_callback_</span><span class="p">();</span>
-        <span class="n">cancel_callback_</span> <span class="o">=</span> <span class="n">Functor</span><span class="p">();</span>
-    <span class="p">}</span>
-    <span class="n">functor_</span> <span class="o">=</span> <span class="n">Functor</span><span class="p">();</span>
-    <span class="n">timer_</span><span class="p">.</span><span class="n">reset</span><span class="p">();</span>
-    <span class="n">self_</span><span class="p">.</span><span class="n">reset</span><span class="p">();</span>
-<span class="p">}</span>
-
-<span class="p">}</span>
-
-
-</code></pre></div><p>相应的，<code>main.cc</code>也做了一点点修改代码如下：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="cp">#include</span> <span class="cpf">&#34;invoke_timer.h&#34;</span><span class="cp">
-</span><span class="cp">#include</span> <span class="cpf">&#34;event_watcher.h&#34;</span><span class="cp">
-</span><span class="cp">#include</span> <span class="cpf">&#34;winmain-inl.h&#34;</span><span class="cp">
-</span><span class="cp"></span>
-<span class="cp">#include</span> <span class="cpf">&lt;event2/event.h&gt;</span><span class="cp">
-</span><span class="cp"></span>
-<span class="kt">void</span> <span class="nf">Print</span><span class="p">()</span> <span class="p">{</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">__FUNCTION__</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; hello world.&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-    <span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">base</span> <span class="o">=</span> <span class="n">event_base_new</span><span class="p">();</span>
-    <span class="k">auto</span> <span class="n">timer</span> <span class="o">=</span> <span class="n">recipes</span><span class="o">::</span><span class="n">InvokeTimer</span><span class="o">::</span><span class="n">Create</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="mf">1000.0</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">Print</span><span class="p">);</span>
-    <span class="n">timer</span><span class="o">-&gt;</span><span class="n">Start</span><span class="p">();</span> <span class="c1">// 启动完成后，就不用关注该对象了
-</span><span class="c1"></span>    <span class="n">event_base_dispatch</span><span class="p">(</span><span class="n">base</span><span class="p">);</span>
-    <span class="n">event_base_free</span><span class="p">(</span><span class="n">base</span><span class="p">);</span>
-    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-<span class="p">}</span>
-</code></pre></div><p>这个实现，就不需要上层调用者手工<code>delete</code>这个<code>InvokeTimer</code>对象的实例，从而达到<code>InvokeTimer</code>对象自我管理的目的。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 头文件
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;memory&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;functional&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="nc">event_base</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">namespace</span> <span class="n">recipes</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">TimerEventWatcher</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">InvokeTimer</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">typedef</span> <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">InvokeTimer</span><span class="o">&gt;</span> <span class="n">InvokeTimerPtr</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">InvokeTimer</span> <span class="o">:</span> <span class="k">public</span> <span class="n">std</span><span class="o">::</span><span class="n">enable_shared_from_this</span><span class="o">&lt;</span><span class="n">InvokeTimer</span><span class="o">&gt;</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="k">typedef</span> <span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">()</span><span class="o">&gt;</span> <span class="n">Functor</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">static</span> <span class="n">InvokeTimerPtr</span> <span class="nf">Create</span><span class="p">(</span><span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">evloop</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                                 <span class="kt">double</span> <span class="n">timeout_ms</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                                 <span class="k">const</span> <span class="n">Functor</span><span class="o">&amp;</span> <span class="n">f</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="o">~</span><span class="n">InvokeTimer</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="nf">Start</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="nf">Cancel</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="nf">set_cancel_callback</span><span class="p">(</span><span class="k">const</span> <span class="n">Functor</span><span class="o">&amp;</span> <span class="n">fn</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cancel_callback_</span> <span class="o">=</span> <span class="n">fn</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="k">private</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">InvokeTimer</span><span class="p">(</span><span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">evloop</span><span class="p">,</span> <span class="kt">double</span> <span class="n">timeout_ms</span><span class="p">,</span> <span class="k">const</span> <span class="n">Functor</span><span class="o">&amp;</span> <span class="n">f</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="nf">OnTimerTriggered</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="nf">OnCanceled</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">private</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">loop_</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">double</span> <span class="n">timeout_ms_</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Functor</span> <span class="n">functor_</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Functor</span> <span class="n">cancel_callback_</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">TimerEventWatcher</span><span class="o">&gt;</span> <span class="n">timer_</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">InvokeTimer</span><span class="o">&gt;</span> <span class="n">self_</span><span class="p">;</span> <span class="c1">// Hold myself
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 实现文件
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;invoke_timer.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;event_watcher.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;thread&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="k">namespace</span> <span class="n">recipes</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">InvokeTimer</span><span class="o">::</span><span class="n">InvokeTimer</span><span class="p">(</span><span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">evloop</span><span class="p">,</span> <span class="kt">double</span> <span class="n">timeout_ms</span><span class="p">,</span> <span class="k">const</span> <span class="n">Functor</span><span class="o">&amp;</span> <span class="n">f</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="o">:</span> <span class="n">loop_</span><span class="p">(</span><span class="n">evloop</span><span class="p">),</span> <span class="n">timeout_ms_</span><span class="p">(</span><span class="n">timeout_ms</span><span class="p">),</span> <span class="n">functor_</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;InvokeTimer::InvokeTimer tid=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">get_id</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; this=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">InvokeTimerPtr</span> <span class="n">InvokeTimer</span><span class="o">::</span><span class="n">Create</span><span class="p">(</span><span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">evloop</span><span class="p">,</span> <span class="kt">double</span> <span class="n">timeout_ms</span><span class="p">,</span> <span class="k">const</span> <span class="n">Functor</span><span class="o">&amp;</span> <span class="n">f</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">InvokeTimerPtr</span> <span class="nf">it</span><span class="p">(</span><span class="k">new</span> <span class="n">InvokeTimer</span><span class="p">(</span><span class="n">evloop</span><span class="p">,</span> <span class="n">timeout_ms</span><span class="p">,</span> <span class="n">f</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">it</span><span class="o">-&gt;</span><span class="n">self_</span> <span class="o">=</span> <span class="n">it</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">it</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">InvokeTimer</span><span class="o">::~</span><span class="n">InvokeTimer</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;InvokeTimer::~InvokeTimer tid=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">get_id</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; this=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="n">InvokeTimer</span><span class="o">::</span><span class="n">Start</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;InvokeTimer::Start tid=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">get_id</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; this=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; refcount=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">self_</span><span class="p">.</span><span class="n">use_count</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">timer_</span><span class="p">.</span><span class="n">reset</span><span class="p">(</span><span class="k">new</span> <span class="n">TimerEventWatcher</span><span class="p">(</span><span class="n">loop_</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">bind</span><span class="p">(</span><span class="o">&amp;</span><span class="n">InvokeTimer</span><span class="o">::</span><span class="n">OnTimerTriggered</span><span class="p">,</span> <span class="n">shared_from_this</span><span class="p">()),</span> <span class="n">timeout_ms_</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">timer_</span><span class="o">-&gt;</span><span class="n">SetCancelCallback</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">bind</span><span class="p">(</span><span class="o">&amp;</span><span class="n">InvokeTimer</span><span class="o">::</span><span class="n">OnCanceled</span><span class="p">,</span> <span class="n">shared_from_this</span><span class="p">()));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">timer_</span><span class="o">-&gt;</span><span class="n">Init</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">timer_</span><span class="o">-&gt;</span><span class="n">AsyncWait</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;InvokeTimer::Start(AsyncWait) tid=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">get_id</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; timer=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">timer_</span><span class="p">.</span><span class="n">get</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; this=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; refcount=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">self_</span><span class="p">.</span><span class="n">use_count</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; periodic=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">periodic_</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; timeout(ms)=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">timeout_ms_</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="n">InvokeTimer</span><span class="o">::</span><span class="n">Cancel</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">timer_</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">timer_</span><span class="o">-&gt;</span><span class="n">Cancel</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="n">InvokeTimer</span><span class="o">::</span><span class="n">OnTimerTriggered</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;InvokeTimer::OnTimerTriggered tid=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">get_id</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; this=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; use_count=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">self_</span><span class="p">.</span><span class="n">use_count</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">functor_</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">functor_</span> <span class="o">=</span> <span class="n">Functor</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cancel_callback_</span> <span class="o">=</span> <span class="n">Functor</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">timer_</span><span class="p">.</span><span class="n">reset</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">self_</span><span class="p">.</span><span class="n">reset</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="n">InvokeTimer</span><span class="o">::</span><span class="n">OnCanceled</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;InvokeTimer::OnCanceled tid=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">get_id</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; this=&#34;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; use_count=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">self_</span><span class="p">.</span><span class="n">use_count</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">cancel_callback_</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cancel_callback_</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cancel_callback_</span> <span class="o">=</span> <span class="n">Functor</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="n">functor_</span> <span class="o">=</span> <span class="n">Functor</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">timer_</span><span class="p">.</span><span class="n">reset</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">self_</span><span class="p">.</span><span class="n">reset</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>相应的，<code>main.cc</code>也做了一点点修改代码如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;invoke_timer.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;event_watcher.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;winmain-inl.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;event2/event.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">Print</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">__FUNCTION__</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; hello world.&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">base</span> <span class="o">=</span> <span class="n">event_base_new</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="k">auto</span> <span class="n">timer</span> <span class="o">=</span> <span class="n">recipes</span><span class="o">::</span><span class="n">InvokeTimer</span><span class="o">::</span><span class="n">Create</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="mf">1000.0</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">Print</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">timer</span><span class="o">-&gt;</span><span class="n">Start</span><span class="p">();</span> <span class="c1">// 启动完成后，就不用关注该对象了
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">event_base_dispatch</span><span class="p">(</span><span class="n">base</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">event_base_free</span><span class="p">(</span><span class="n">base</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>这个实现，就不需要上层调用者手工<code>delete</code>这个<code>InvokeTimer</code>对象的实例，从而达到<code>InvokeTimer</code>对象自我管理的目的。</p>
 <p>下面编译运行，结果是符合预期的：当timer时间到期后，能顺利触发回调，并且<code>InvokeTimer</code>对象也自动析构了。</p>
 <h1 id="5-实现一个周期性的定时器periodic-04">5. 实现一个周期性的定时器：periodic-04</h1>
 <p>上述几个实现中，都是一次性的定时器任务。但是如果我们想实现一个周期性的定时器该如何实现呢？例如，我们有一个任务，需要每分钟做一次。</p>
 <p>其实，基于上述第三个版本的实现，可以很容易的实现周期性的定时器功能。只需要在回调函数中，继续调用<code>timer-&gt;AsyncWait()</code>即可。详细的修改情况如下。</p>
 <p>头文件 invoke_timer.h 改变：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-diff" data-lang="diff">
-<span class="gu">@@ -18,7 +18,8 @@ public:
-</span><span class="gu"></span>
-     static InvokeTimerPtr Create(struct event_base* evloop,
-                                  double timeout_ms,
-<span class="gd">-                                 const Functor&amp; f);
-</span><span class="gd"></span><span class="gi">+                                 const Functor&amp; f,
-</span><span class="gi">+                                 bool periodic);
-</span><span class="gi"></span>
-     ~InvokeTimer();
-
-<span class="gu">@@ -30,7 +31,7 @@ public:
-</span><span class="gu"></span>         cancel_callback_ = fn;
-     }
- private:
-<span class="gd">-    InvokeTimer(struct event_base* evloop, double timeout_ms, const Functor&amp; f);
-</span><span class="gd"></span><span class="gi">+    InvokeTimer(struct event_base* evloop, double timeout_ms, const Functor&amp; f, bool periodic);
-</span><span class="gi"></span>     void OnTimerTriggered();
-     void OnCanceled();
-
-<span class="gu">@@ -40,6 +41,7 @@ private:
-</span><span class="gu"></span>     Functor functor_;
-     Functor cancel_callback_;
-     std::shared_ptr&lt;TimerEventWatcher&gt; timer_;
-<span class="gi">+    bool periodic_;
-</span><span class="gi"></span>     std::shared_ptr&lt;InvokeTimer&gt; self_; // Hold myself
- };
-</code></pre></div><p>实现文件 invoke_timer.cc 改变：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-diff" data-lang="diff">
- namespace recipes {
-
-<span class="gd">-InvokeTimer::InvokeTimer(struct event_base* evloop, double timeout_ms, const Functor&amp; f)
-</span><span class="gd">-    : loop_(evloop), timeout_ms_(timeout_ms), functor_(f) {
-</span><span class="gd"></span><span class="gi">+InvokeTimer::InvokeTimer(struct event_base* evloop, double timeout_ms, const Functor&amp; f, bool periodic)
-</span><span class="gi">+    : loop_(evloop), timeout_ms_(timeout_ms), functor_(f), periodic_(periodic) {
-</span><span class="gi"></span>     std::cout &lt;&lt; &#34;InvokeTimer::InvokeTimer tid=&#34; &lt;&lt; std::this_thread::get_id() &lt;&lt; &#34; this=&#34; &lt;&lt; this &lt;&lt; std::endl;
- }
-
-<span class="gd">-InvokeTimerPtr InvokeTimer::Create(struct event_base* evloop, double timeout_ms, const Functor&amp; f) {
-</span><span class="gd">-    InvokeTimerPtr it(new InvokeTimer(evloop, timeout_ms, f));
-</span><span class="gd"></span><span class="gi">+InvokeTimerPtr InvokeTimer::Create(struct event_base* evloop, double timeout_ms, const Functor&amp; f, bool periodic) {
-</span><span class="gi">+    InvokeTimerPtr it(new InvokeTimer(evloop, timeout_ms, f, periodic));
-</span><span class="gi"></span>     it-&gt;self_ = it;
-     return it;
- }
-<span class="gu">@@ -27,7 +27,7 @@ void InvokeTimer::Start() {
-</span><span class="gu"></span>     timer_-&gt;SetCancelCallback(std::bind(&amp;InvokeTimer::OnCanceled, shared_from_this()));
-     timer_-&gt;Init();
-     timer_-&gt;AsyncWait();
- }
-
- void InvokeTimer::Cancel() {
-<span class="gu">@@ -39,14 +39,20 @@ void InvokeTimer::Cancel() {
-</span><span class="gu"></span> void InvokeTimer::OnTimerTriggered() {
-     std::cout &lt;&lt; &#34;InvokeTimer::OnTimerTriggered tid=&#34; &lt;&lt; std::this_thread::get_id() &lt;&lt; &#34; this=&#34; &lt;&lt; this &lt;&lt; &#34; use_count=&#34; &lt;&lt; self_.use_count() &lt;&lt; std::endl;
-     functor_();
-<span class="gd">-    functor_ = Functor();
-</span><span class="gd">-    cancel_callback_ = Functor();
-</span><span class="gd">-    timer_.reset();
-</span><span class="gd">-    self_.reset();
-</span><span class="gd"></span><span class="gi">+
-</span><span class="gi">+    if (periodic_) {
-</span><span class="gi">+        timer_-&gt;AsyncWait();
-</span><span class="gi">+    } else {
-</span><span class="gi">+        functor_ = Functor();
-</span><span class="gi">+        cancel_callback_ = Functor();
-</span><span class="gi">+        timer_.reset();
-</span><span class="gi">+        self_.reset();
-</span><span class="gi">+    }
-</span><span class="gi"></span> }
-
- void InvokeTimer::OnCanceled() {
-     std::cout &lt;&lt; &#34;InvokeTimer::OnCanceled tid=&#34; &lt;&lt; std::this_thread::get_id() &lt;&lt; &#34; this=&#34; &lt;&lt; this &lt;&lt; &#34; use_count=&#34; &lt;&lt; self_.use_count() &lt;&lt; std::endl;
-<span class="gi">+    periodic_ = false;
-</span><span class="gi"></span>     if (cancel_callback_) {
-         cancel_callback_();
-         cancel_callback_ = Functor();
-
-</code></pre></div><p>main.cc测试示例代码也有所修改，具体如下：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="cp">#include</span> <span class="cpf">&#34;invoke_timer.h&#34;</span><span class="cp">
-</span><span class="cp">#include</span> <span class="cpf">&#34;event_watcher.h&#34;</span><span class="cp">
-</span><span class="cp">#include</span> <span class="cpf">&#34;winmain-inl.h&#34;</span><span class="cp">
-</span><span class="cp"></span>
-<span class="cp">#include</span> <span class="cpf">&lt;event2/event.h&gt;</span><span class="cp">
-</span><span class="cp"></span>
-<span class="kt">void</span> <span class="nf">Print</span><span class="p">()</span> <span class="p">{</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">__FUNCTION__</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; hello world.&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-    <span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">base</span> <span class="o">=</span> <span class="n">event_base_new</span><span class="p">();</span>
-    <span class="k">auto</span> <span class="n">timer</span> <span class="o">=</span> <span class="n">recipes</span><span class="o">::</span><span class="n">InvokeTimer</span><span class="o">::</span><span class="n">Create</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="mf">1000.0</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">Print</span><span class="p">,</span> <span class="nb">true</span><span class="p">);</span>
-    <span class="n">timer</span><span class="o">-&gt;</span><span class="n">Start</span><span class="p">();</span>
-    <span class="n">timer</span><span class="p">.</span><span class="n">reset</span><span class="p">();</span>
-    <span class="n">event_base_dispatch</span><span class="p">(</span><span class="n">base</span><span class="p">);</span>
-    <span class="n">event_base_free</span><span class="p">(</span><span class="n">base</span><span class="p">);</span>
-    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-<span class="p">}</span>
-</code></pre></div><p>该版本是最终的实现版本。相关代码都在<a href="https://github.com/Qihoo360/evpp/tree/master/examples/recipes/self_control_timer">https://github.com/Qihoo360/evpp/tree/master/examples/recipes/self_control_timer</a>这里，为了便于演示，其不依赖<a href="https://github.com/Qihoo360/evpp">evpp</a>。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-diff" data-lang="diff"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">@@ -18,7 +18,8 @@ public:
+</span></span></span><span class="line"><span class="cl"><span class="gu"></span>
+</span></span><span class="line"><span class="cl">     static InvokeTimerPtr Create(struct event_base* evloop,
+</span></span><span class="line"><span class="cl">                                  double timeout_ms,
+</span></span><span class="line"><span class="cl"><span class="gd">-                                 const Functor&amp; f);
+</span></span></span><span class="line"><span class="cl"><span class="gd"></span><span class="gi">+                                 const Functor&amp; f,
+</span></span></span><span class="line"><span class="cl"><span class="gi">+                                 bool periodic);
+</span></span></span><span class="line"><span class="cl"><span class="gi"></span>
+</span></span><span class="line"><span class="cl">     ~InvokeTimer();
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">@@ -30,7 +31,7 @@ public:
+</span></span></span><span class="line"><span class="cl"><span class="gu"></span>         cancel_callback_ = fn;
+</span></span><span class="line"><span class="cl">     }
+</span></span><span class="line"><span class="cl"> private:
+</span></span><span class="line"><span class="cl"><span class="gd">-    InvokeTimer(struct event_base* evloop, double timeout_ms, const Functor&amp; f);
+</span></span></span><span class="line"><span class="cl"><span class="gd"></span><span class="gi">+    InvokeTimer(struct event_base* evloop, double timeout_ms, const Functor&amp; f, bool periodic);
+</span></span></span><span class="line"><span class="cl"><span class="gi"></span>     void OnTimerTriggered();
+</span></span><span class="line"><span class="cl">     void OnCanceled();
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">@@ -40,6 +41,7 @@ private:
+</span></span></span><span class="line"><span class="cl"><span class="gu"></span>     Functor functor_;
+</span></span><span class="line"><span class="cl">     Functor cancel_callback_;
+</span></span><span class="line"><span class="cl">     std::shared_ptr&lt;TimerEventWatcher&gt; timer_;
+</span></span><span class="line"><span class="cl"><span class="gi">+    bool periodic_;
+</span></span></span><span class="line"><span class="cl"><span class="gi"></span>     std::shared_ptr&lt;InvokeTimer&gt; self_; // Hold myself
+</span></span><span class="line"><span class="cl"> };
+</span></span></code></pre></div><p>实现文件 invoke_timer.cc 改变：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-diff" data-lang="diff"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> namespace recipes {
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gd">-InvokeTimer::InvokeTimer(struct event_base* evloop, double timeout_ms, const Functor&amp; f)
+</span></span></span><span class="line"><span class="cl"><span class="gd">-    : loop_(evloop), timeout_ms_(timeout_ms), functor_(f) {
+</span></span></span><span class="line"><span class="cl"><span class="gd"></span><span class="gi">+InvokeTimer::InvokeTimer(struct event_base* evloop, double timeout_ms, const Functor&amp; f, bool periodic)
+</span></span></span><span class="line"><span class="cl"><span class="gi">+    : loop_(evloop), timeout_ms_(timeout_ms), functor_(f), periodic_(periodic) {
+</span></span></span><span class="line"><span class="cl"><span class="gi"></span>     std::cout &lt;&lt; &#34;InvokeTimer::InvokeTimer tid=&#34; &lt;&lt; std::this_thread::get_id() &lt;&lt; &#34; this=&#34; &lt;&lt; this &lt;&lt; std::endl;
+</span></span><span class="line"><span class="cl"> }
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gd">-InvokeTimerPtr InvokeTimer::Create(struct event_base* evloop, double timeout_ms, const Functor&amp; f) {
+</span></span></span><span class="line"><span class="cl"><span class="gd">-    InvokeTimerPtr it(new InvokeTimer(evloop, timeout_ms, f));
+</span></span></span><span class="line"><span class="cl"><span class="gd"></span><span class="gi">+InvokeTimerPtr InvokeTimer::Create(struct event_base* evloop, double timeout_ms, const Functor&amp; f, bool periodic) {
+</span></span></span><span class="line"><span class="cl"><span class="gi">+    InvokeTimerPtr it(new InvokeTimer(evloop, timeout_ms, f, periodic));
+</span></span></span><span class="line"><span class="cl"><span class="gi"></span>     it-&gt;self_ = it;
+</span></span><span class="line"><span class="cl">     return it;
+</span></span><span class="line"><span class="cl"> }
+</span></span><span class="line"><span class="cl"><span class="gu">@@ -27,7 +27,7 @@ void InvokeTimer::Start() {
+</span></span></span><span class="line"><span class="cl"><span class="gu"></span>     timer_-&gt;SetCancelCallback(std::bind(&amp;InvokeTimer::OnCanceled, shared_from_this()));
+</span></span><span class="line"><span class="cl">     timer_-&gt;Init();
+</span></span><span class="line"><span class="cl">     timer_-&gt;AsyncWait();
+</span></span><span class="line"><span class="cl"> }
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> void InvokeTimer::Cancel() {
+</span></span><span class="line"><span class="cl"><span class="gu">@@ -39,14 +39,20 @@ void InvokeTimer::Cancel() {
+</span></span></span><span class="line"><span class="cl"><span class="gu"></span> void InvokeTimer::OnTimerTriggered() {
+</span></span><span class="line"><span class="cl">     std::cout &lt;&lt; &#34;InvokeTimer::OnTimerTriggered tid=&#34; &lt;&lt; std::this_thread::get_id() &lt;&lt; &#34; this=&#34; &lt;&lt; this &lt;&lt; &#34; use_count=&#34; &lt;&lt; self_.use_count() &lt;&lt; std::endl;
+</span></span><span class="line"><span class="cl">     functor_();
+</span></span><span class="line"><span class="cl"><span class="gd">-    functor_ = Functor();
+</span></span></span><span class="line"><span class="cl"><span class="gd">-    cancel_callback_ = Functor();
+</span></span></span><span class="line"><span class="cl"><span class="gd">-    timer_.reset();
+</span></span></span><span class="line"><span class="cl"><span class="gd">-    self_.reset();
+</span></span></span><span class="line"><span class="cl"><span class="gd"></span><span class="gi">+
+</span></span></span><span class="line"><span class="cl"><span class="gi">+    if (periodic_) {
+</span></span></span><span class="line"><span class="cl"><span class="gi">+        timer_-&gt;AsyncWait();
+</span></span></span><span class="line"><span class="cl"><span class="gi">+    } else {
+</span></span></span><span class="line"><span class="cl"><span class="gi">+        functor_ = Functor();
+</span></span></span><span class="line"><span class="cl"><span class="gi">+        cancel_callback_ = Functor();
+</span></span></span><span class="line"><span class="cl"><span class="gi">+        timer_.reset();
+</span></span></span><span class="line"><span class="cl"><span class="gi">+        self_.reset();
+</span></span></span><span class="line"><span class="cl"><span class="gi">+    }
+</span></span></span><span class="line"><span class="cl"><span class="gi"></span> }
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> void InvokeTimer::OnCanceled() {
+</span></span><span class="line"><span class="cl">     std::cout &lt;&lt; &#34;InvokeTimer::OnCanceled tid=&#34; &lt;&lt; std::this_thread::get_id() &lt;&lt; &#34; this=&#34; &lt;&lt; this &lt;&lt; &#34; use_count=&#34; &lt;&lt; self_.use_count() &lt;&lt; std::endl;
+</span></span><span class="line"><span class="cl"><span class="gi">+    periodic_ = false;
+</span></span></span><span class="line"><span class="cl"><span class="gi"></span>     if (cancel_callback_) {
+</span></span><span class="line"><span class="cl">         cancel_callback_();
+</span></span><span class="line"><span class="cl">         cancel_callback_ = Functor();
+</span></span></code></pre></div><p>main.cc测试示例代码也有所修改，具体如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;invoke_timer.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;event_watcher.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;winmain-inl.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;event2/event.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">Print</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">__FUNCTION__</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; hello world.&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">struct</span> <span class="nc">event_base</span><span class="o">*</span> <span class="n">base</span> <span class="o">=</span> <span class="n">event_base_new</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="k">auto</span> <span class="n">timer</span> <span class="o">=</span> <span class="n">recipes</span><span class="o">::</span><span class="n">InvokeTimer</span><span class="o">::</span><span class="n">Create</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="mf">1000.0</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">Print</span><span class="p">,</span> <span class="nb">true</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">timer</span><span class="o">-&gt;</span><span class="n">Start</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">timer</span><span class="p">.</span><span class="n">reset</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">event_base_dispatch</span><span class="p">(</span><span class="n">base</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">event_base_free</span><span class="p">(</span><span class="n">base</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>该版本是最终的实现版本。相关代码都在<a href="https://github.com/Qihoo360/evpp/tree/master/examples/recipes/self_control_timer">https://github.com/Qihoo360/evpp/tree/master/examples/recipes/self_control_timer</a>这里，为了便于演示，其不依赖<a href="https://github.com/Qihoo360/evpp">evpp</a>。</p>
 <h1 id="6-最后">6. 最后</h1>
 <p><a href="https://github.com/Qihoo360/evpp">evpp</a>项目官网地址为：<a href="https://github.com/Qihoo360/evpp">https://github.com/Qihoo360/evpp</a>
 本文中的详细代码实现请参考 <a href="https://github.com/Qihoo360/evpp/tree/master/examples/recipes/self_control_timer">https://github.com/Qihoo360/evpp/tree/master/examples/recipes/self_control_timer</a></p>
@@ -722,6 +714,9 @@ InvokeTimer::~InvokeTimer <span class="nv">tid</span><span class="o">=</span><sp
 
     
       
+  
+
+
     
   </body>
 </html>
