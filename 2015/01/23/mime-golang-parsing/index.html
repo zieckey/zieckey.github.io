@@ -3,7 +3,7 @@
 <head>
   <link href="https://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <meta name="generator" content="Hugo 0.127.0">
+  <meta name="generator" content="Hugo 0.89.4" />
 
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -44,7 +44,7 @@
       </ul>
     </nav>
 
-    <p>&copy; 2024. All rights reserved. </p>
+    <p>&copy; 2021. All rights reserved. </p>
   </div>
 </aside>
 
@@ -60,55 +60,55 @@
 <p>完整解析代码请参考：<a href="https://github.com/zieckey/gohello/tree/master/mime">https://github.com/zieckey/gohello/tree/master/mime</a></p>
 <h3 id="解析boundary">解析boundary</h3>
 <p>使用<code>net/textproto.Reader</code>来解析。示例代码如下：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="c1">// 从textproto.Reader读取数据
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><span class="nx">MHtml</span><span class="p">)</span> <span class="nf">GetBoundary</span><span class="p">(</span><span class="nx">r</span> <span class="o">*</span><span class="nx">textproto</span><span class="p">.</span><span class="nx">Reader</span><span class="p">)</span> <span class="kt">string</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="c1">// 先调用ReadMIMEHeader来解析MIME的头信息
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">mimeHeader</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">ReadMIMEHeader</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="s">&#34;&#34;</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="c1">// 然后得到 &#34;Content-Type&#34;
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%v %v\n&#34;</span><span class="p">,</span> <span class="nx">mimeHeader</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">contentType</span> <span class="o">:=</span> <span class="nx">mimeHeader</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;Content-Type&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Content-Type = %v %v\n&#34;</span><span class="p">,</span> <span class="nx">contentType</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="c1">// 再然后，调用 mime.ParseMediaType 来解析 &#34;Content-Type&#34;
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">mediatype</span><span class="p">,</span> <span class="nx">params</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">mime</span><span class="p">.</span><span class="nf">ParseMediaType</span><span class="p">(</span><span class="nx">contentType</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;mediatype=%v,  params=%v %v, err=%v\n&#34;</span><span class="p">,</span> <span class="nx">mediatype</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">params</span><span class="p">),</span> <span class="nx">params</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="c1">// 最最后，得到 boundary
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">boundary</span> <span class="o">:=</span> <span class="nx">params</span><span class="p">[</span><span class="s">&#34;boundary&#34;</span><span class="p">]</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;boundary=%v\n&#34;</span><span class="p">,</span> <span class="nx">boundary</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nx">boundary</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></div><h3 id="解析正文">解析正文</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="c1">// 从textproto.Reader读取数据
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><span class="nx">MHtml</span><span class="p">)</span> <span class="nf">GetBoundary</span><span class="p">(</span><span class="nx">r</span> <span class="o">*</span><span class="nx">textproto</span><span class="p">.</span><span class="nx">Reader</span><span class="p">)</span> <span class="kt">string</span> <span class="p">{</span>
+	<span class="c1">// 先调用ReadMIMEHeader来解析MIME的头信息
+</span><span class="c1"></span>	<span class="nx">mimeHeader</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">ReadMIMEHeader</span><span class="p">()</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="s">&#34;&#34;</span>
+	<span class="p">}</span>
+
+	<span class="c1">// 然后得到 &#34;Content-Type&#34;
+</span><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%v %v\n&#34;</span><span class="p">,</span> <span class="nx">mimeHeader</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+	<span class="nx">contentType</span> <span class="o">:=</span> <span class="nx">mimeHeader</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;Content-Type&#34;</span><span class="p">)</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Content-Type = %v %v\n&#34;</span><span class="p">,</span> <span class="nx">contentType</span><span class="p">)</span>
+
+	<span class="c1">// 再然后，调用 mime.ParseMediaType 来解析 &#34;Content-Type&#34;
+</span><span class="c1"></span>	<span class="nx">mediatype</span><span class="p">,</span> <span class="nx">params</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">mime</span><span class="p">.</span><span class="nf">ParseMediaType</span><span class="p">(</span><span class="nx">contentType</span><span class="p">)</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;mediatype=%v,  params=%v %v, err=%v\n&#34;</span><span class="p">,</span> <span class="nx">mediatype</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">params</span><span class="p">),</span> <span class="nx">params</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+
+	<span class="c1">// 最最后，得到 boundary
+</span><span class="c1"></span>	<span class="nx">boundary</span> <span class="o">:=</span> <span class="nx">params</span><span class="p">[</span><span class="s">&#34;boundary&#34;</span><span class="p">]</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;boundary=%v\n&#34;</span><span class="p">,</span> <span class="nx">boundary</span><span class="p">)</span>
+	<span class="k">return</span> <span class="nx">boundary</span>
+<span class="p">}</span>
+</code></pre></div><h3 id="解析正文">解析正文</h3>
 <p>使用<code>mime/multipart.Reader</code>来解析multipart格式的正文</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl">	<span class="nx">mr</span> <span class="o">:=</span> <span class="nx">multipart</span><span class="p">.</span><span class="nf">NewReader</span><span class="p">(</span><span class="nx">br</span><span class="p">,</span> <span class="nx">boundary</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">part</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">mr</span><span class="p">.</span><span class="nf">NextPart</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">			<span class="k">break</span>
-</span></span><span class="line"><span class="cl">		<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">		<span class="nx">d</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="kt">byte</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">mht</span><span class="p">))</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">n</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">part</span><span class="p">.</span><span class="nf">Read</span><span class="p">(</span><span class="nx">d</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="o">&amp;&amp;</span> <span class="nx">err</span> <span class="o">!=</span> <span class="nx">io</span><span class="p">.</span><span class="nx">EOF</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">			<span class="k">return</span> <span class="nx">err</span>
-</span></span><span class="line"><span class="cl">		<span class="p">}</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">d</span> <span class="p">=</span> <span class="nx">d</span><span class="p">[:</span><span class="nx">n</span><span class="p">]</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;filename=%v formname=%v n=%v err=%v content=\n&#34;</span><span class="p">,</span> <span class="nx">part</span><span class="p">.</span><span class="nf">FileName</span><span class="p">(),</span> <span class="nx">part</span><span class="p">.</span><span class="nf">FormName</span><span class="p">(),</span> <span class="nx">n</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">contentType</span> <span class="o">:=</span> <span class="nx">part</span><span class="p">.</span><span class="nx">Header</span><span class="p">[</span><span class="s">&#34;Content-Type&#34;</span><span class="p">]</span>
-</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">contentType</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">			<span class="k">continue</span>
-</span></span><span class="line"><span class="cl">		<span class="p">}</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Content-Type=%v\n&#34;</span><span class="p">,</span> <span class="nx">contentType</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">contentType</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#34;text/html&#34;</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">			<span class="nx">m</span><span class="p">.</span><span class="nx">Html</span> <span class="p">=</span> <span class="nb">string</span><span class="p">(</span><span class="nx">d</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">			<span class="k">break</span>
-</span></span><span class="line"><span class="cl">		<span class="p">}</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span></code></pre></div><h3 id="参考">参考</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go">	<span class="nx">mr</span> <span class="o">:=</span> <span class="nx">multipart</span><span class="p">.</span><span class="nf">NewReader</span><span class="p">(</span><span class="nx">br</span><span class="p">,</span> <span class="nx">boundary</span><span class="p">)</span>
+	<span class="k">for</span> <span class="p">{</span>
+		<span class="nx">part</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">mr</span><span class="p">.</span><span class="nf">NextPart</span><span class="p">()</span>
+		<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+			<span class="k">break</span>
+		<span class="p">}</span>
+
+		<span class="nx">d</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="kt">byte</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">mht</span><span class="p">))</span>
+		<span class="nx">n</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">part</span><span class="p">.</span><span class="nf">Read</span><span class="p">(</span><span class="nx">d</span><span class="p">)</span>
+		<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="o">&amp;&amp;</span> <span class="nx">err</span> <span class="o">!=</span> <span class="nx">io</span><span class="p">.</span><span class="nx">EOF</span> <span class="p">{</span>
+			<span class="k">return</span> <span class="nx">err</span>
+		<span class="p">}</span>
+		<span class="nx">d</span> <span class="p">=</span> <span class="nx">d</span><span class="p">[:</span><span class="nx">n</span><span class="p">]</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;filename=%v formname=%v n=%v err=%v content=\n&#34;</span><span class="p">,</span> <span class="nx">part</span><span class="p">.</span><span class="nf">FileName</span><span class="p">(),</span> <span class="nx">part</span><span class="p">.</span><span class="nf">FormName</span><span class="p">(),</span> <span class="nx">n</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+		<span class="nx">contentType</span> <span class="o">:=</span> <span class="nx">part</span><span class="p">.</span><span class="nx">Header</span><span class="p">[</span><span class="s">&#34;Content-Type&#34;</span><span class="p">]</span>
+		<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">contentType</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+			<span class="k">continue</span>
+		<span class="p">}</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Content-Type=%v\n&#34;</span><span class="p">,</span> <span class="nx">contentType</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+		<span class="k">if</span> <span class="nx">contentType</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#34;text/html&#34;</span> <span class="p">{</span>
+			<span class="nx">m</span><span class="p">.</span><span class="nx">Html</span> <span class="p">=</span> <span class="nb">string</span><span class="p">(</span><span class="nx">d</span><span class="p">)</span>
+			<span class="k">break</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+</code></pre></div><h3 id="参考">参考</h3>
 <p><a href="http://godoc.org/mime">http://godoc.org/mime</a>
 <a href="http://godoc.org/net/textproto">http://godoc.org/net/textproto</a></p>
 
@@ -119,9 +119,6 @@
 
     
       
-  
-
-
     
   </body>
 </html>

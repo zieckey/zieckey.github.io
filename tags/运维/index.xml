@@ -4,17 +4,18 @@
     <title>运维 on CodeG Blog</title>
     <link>http://blog.codeg.cn/tags/%E8%BF%90%E7%BB%B4/</link>
     <description>Recent content in 运维 on CodeG Blog</description>
-    <generator>Hugo</generator>
+    <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
     <copyright>Copyright (c) 2015. All rights reserved.</copyright>
-    <lastBuildDate>Thu, 08 Oct 2015 00:00:00 +0000</lastBuildDate>
-    <atom:link href="http://blog.codeg.cn/tags/%E8%BF%90%E7%BB%B4/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 08 Oct 2015 00:00:00 +0000</lastBuildDate><atom:link href="http://blog.codeg.cn/tags/%E8%BF%90%E7%BB%B4/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>ansible简介</title>
       <link>http://blog.codeg.cn/2015/10/08/ansible/</link>
       <pubDate>Thu, 08 Oct 2015 00:00:00 +0000</pubDate>
+      
       <guid>http://blog.codeg.cn/2015/10/08/ansible/</guid>
       <description>简介 ansible是新出现的自动化运维工具，基于Python开发，集合了众多运维工具（puppet、cfengine、chef、func、f</description>
     </item>
+    
   </channel>
 </rss>

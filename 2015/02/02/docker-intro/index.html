@@ -3,7 +3,7 @@
 <head>
   <link href="https://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <meta name="generator" content="Hugo 0.127.0">
+  <meta name="generator" content="Hugo 0.89.4" />
 
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -44,7 +44,7 @@
       </ul>
     </nav>
 
-    <p>&copy; 2024. All rights reserved. </p>
+    <p>&copy; 2021. All rights reserved. </p>
   </div>
 </aside>
 
@@ -77,18 +77,18 @@ sudo HTTP_PROXY=http://proxy_server:port docker -d &amp;
 输入<code>exit</code>即可退出docker运行环境。</p>
 <h3 id="构建自己的nginx镜像">构建自己的nginx镜像</h3>
 <p>我们可以通过Dockerfile来构建镜像。下面是一个示例：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">~$ mkdir -p docker/nginx
-</span></span><span class="line"><span class="cl">~$ <span class="nb">cd</span> docker/nginx/
-</span></span><span class="line"><span class="cl">~/docker/nginx$ vim Dockerfile
-</span></span></code></pre></div><p>在文件中输入下列信息：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell">~$ mkdir -p docker/nginx
+~$ <span class="nb">cd</span> docker/nginx/
+~/docker/nginx$ vim Dockerfile
+</code></pre></div><p>在文件中输入下列信息：</p>
 <pre tabindex="0"><code>FROM ubuntu
 MAINTAINER zieckey@codeg.cn
 RUN apt-get update
 RUN apt-get install -y nginx
-RUN echo &#39;Hello, this is responsed from a docker container web server&#39; &gt; /usr/share/nginx/html/index.html
+RUN echo 'Hello, this is responsed from a docker container web server' &gt; /usr/share/nginx/html/index.html
 EXPOSE 80
 </code></pre><p>执行docker build指令来构建镜像 <code>sudo docker build -t=&quot;zieckey/nginx&quot; .</code> 运行过程如下：</p>
-<pre tabindex="0"><code>~/docker/nginx$ sudo docker build -t=&#34;zieckey/nginx&#34; .
+<pre tabindex="0"><code>~/docker/nginx$ sudo docker build -t=&quot;zieckey/nginx&quot; .
 Sending build context to Docker daemon 2.048 kB
 Sending build context to Docker daemon 
 Step 0 : FROM ubuntu
@@ -106,7 +106,7 @@ Step 3 : RUN apt-get install -y nginx
  ---&gt; Running in 0a251800f71c
  ---&gt; dc297e9ab15a
 Removing intermediate container 0a251800f71c
-Step 4 : RUN echo &#39;Hello, this is responsed from a docker container web server&#39; &gt; /usr/share/nginx/html/index.html
+Step 4 : RUN echo 'Hello, this is responsed from a docker container web server' &gt; /usr/share/nginx/html/index.html
  ---&gt; Running in b158d0bceba4
  ---&gt; b98652380a9a
 Removing intermediate container b158d0bceba4
@@ -151,18 +151,18 @@ lo        Link encap:Local Loopback
 <h3 id="从c源码构建自己的镜像">从C源码构建自己的镜像</h3>
 <p>上面是直接通过apt-get从网络下载一个已经编译好的nginx二进制包来构建我们的镜像，下面我们看看如何通过源代码方式构建我们的自定义的镜像。</p>
 <p>源代码文件main.c:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
-</span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;hello world!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></div><p>Dockerfile内容如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span><span class="cp"></span><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;hello world!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div><p>Dockerfile内容如下：</p>
 <pre tabindex="0"><code>FROM ubuntu
 MAINTAINER zieckey@codeg.cn
 ADD ./helloworld /usr/bin/helloworld
 </code></pre><p>使用下列命令编译c源文件、build Docker镜像、执行：</p>
 <pre tabindex="0"><code>~/workspace/condiment/docker/helloworld$ gcc -g -Wall main.c -o helloworld
-~/workspace/condiment/docker/helloworld$ sudo docker build -t=&#34;zieckey/helloworld&#34; .
+~/workspace/condiment/docker/helloworld$ sudo docker build -t=&quot;zieckey/helloworld&quot; .
 Sending build context to Docker daemon 15.36 kB
 Sending build context to Docker daemon 
 Step 0 : FROM ubuntu
@@ -191,9 +191,6 @@ hello world!
 
     
       
-  
-
-
     
   </body>
 </html>

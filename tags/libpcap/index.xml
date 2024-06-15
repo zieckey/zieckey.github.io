@@ -1,20 +1,21 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Libpcap on CodeG Blog</title>
+    <title>libpcap on CodeG Blog</title>
     <link>http://blog.codeg.cn/tags/libpcap/</link>
-    <description>Recent content in Libpcap on CodeG Blog</description>
-    <generator>Hugo</generator>
+    <description>Recent content in libpcap on CodeG Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
     <copyright>Copyright (c) 2015. All rights reserved.</copyright>
-    <lastBuildDate>Wed, 25 May 2016 20:12:01 +0000</lastBuildDate>
-    <atom:link href="http://blog.codeg.cn/tags/libpcap/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 25 May 2016 20:12:01 +0000</lastBuildDate><atom:link href="http://blog.codeg.cn/tags/libpcap/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>如何在win7 64位系统下安装gopcap包及使用</title>
       <link>http://blog.codeg.cn/post/blog/2016-05-26-howto-build-gopcap-on-windows-x64/</link>
       <pubDate>Wed, 25 May 2016 20:12:01 +0000</pubDate>
+      
       <guid>http://blog.codeg.cn/post/blog/2016-05-26-howto-build-gopcap-on-windows-x64/</guid>
       <description>gopcap是libpcap库的Golang封装，其项目地址在这里 https://github.com/akrennmair/gopcap 。 本文简要介绍一下如何在win7 64位系统平台上使用 gopcap 库。 安装步骤如下：</description>
     </item>
+    
   </channel>
 </rss>

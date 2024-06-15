@@ -3,7 +3,7 @@
 <head>
   <link href="https://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <meta name="generator" content="Hugo 0.127.0">
+  <meta name="generator" content="Hugo 0.89.4" />
 
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -44,7 +44,7 @@
       </ul>
     </nav>
 
-    <p>&copy; 2024. All rights reserved. </p>
+    <p>&copy; 2021. All rights reserved. </p>
   </div>
 </aside>
 
@@ -83,26 +83,26 @@ to manage its configuration automatically and dynamically.
 <h2 id="用法">用法</h2>
 <p>最简单的用法当然是做一个HTTP反向代理用。</p>
 <p>假设我们有一个HTTP服务 <code>http://10.16.28.17:8091/echo</code>, 我们用Trafik做为反向代理的配置 <code>trafik.toml</code> 如下：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="nv">logLevel</span> <span class="o">=</span> <span class="s2">&#34;DEBUG&#34;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="nv">defaultEntryPoints</span> <span class="o">=</span> <span class="o">[</span><span class="s2">&#34;http&#34;</span><span class="o">]</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="o">[</span>entryPoints<span class="o">]</span>
-</span></span><span class="line"><span class="cl">  <span class="o">[</span>entryPoints.http<span class="o">]</span>
-</span></span><span class="line"><span class="cl">  <span class="nv">address</span> <span class="o">=</span> <span class="s2">&#34;:8080&#34;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="o">[</span>file<span class="o">]</span>
-</span></span><span class="line"><span class="cl">  <span class="o">[</span>backends<span class="o">]</span>
-</span></span><span class="line"><span class="cl">    <span class="o">[</span>backends.httpecho<span class="o">]</span>
-</span></span><span class="line"><span class="cl">      <span class="o">[</span>backends.httpecho.servers.server1<span class="o">]</span>
-</span></span><span class="line"><span class="cl">        <span class="nv">url</span> <span class="o">=</span> <span class="s2">&#34;http://10.16.28.17:8091&#34;</span>
-</span></span><span class="line"><span class="cl">        <span class="nv">weight</span> <span class="o">=</span> <span class="m">1</span>
-</span></span><span class="line"><span class="cl">  <span class="o">[</span>frontends<span class="o">]</span>
-</span></span><span class="line"><span class="cl">    <span class="o">[</span>frontends.fe1<span class="o">]</span>
-</span></span><span class="line"><span class="cl">    <span class="nv">backend</span> <span class="o">=</span> <span class="s2">&#34;httpecho&#34;</span>
-</span></span><span class="line"><span class="cl">      <span class="o">[</span>frontends.fe1.routes.rule1<span class="o">]</span>
-</span></span><span class="line"><span class="cl">      <span class="nv">rule</span> <span class="o">=</span> <span class="s2">&#34;Path:/echo&#34;</span>
-</span></span></code></pre></div><p>参考Trafik官方文档说明，我们这个配置解释如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="nv">logLevel</span> <span class="o">=</span> <span class="s2">&#34;DEBUG&#34;</span>
+
+<span class="nv">defaultEntryPoints</span> <span class="o">=</span> <span class="o">[</span><span class="s2">&#34;http&#34;</span><span class="o">]</span>
+
+<span class="o">[</span>entryPoints<span class="o">]</span>
+  <span class="o">[</span>entryPoints.http<span class="o">]</span>
+  <span class="nv">address</span> <span class="o">=</span> <span class="s2">&#34;:8080&#34;</span>
+
+<span class="o">[</span>file<span class="o">]</span>
+  <span class="o">[</span>backends<span class="o">]</span>
+    <span class="o">[</span>backends.httpecho<span class="o">]</span>
+      <span class="o">[</span>backends.httpecho.servers.server1<span class="o">]</span>
+        <span class="nv">url</span> <span class="o">=</span> <span class="s2">&#34;http://10.16.28.17:8091&#34;</span>
+        <span class="nv">weight</span> <span class="o">=</span> <span class="m">1</span>
+  <span class="o">[</span>frontends<span class="o">]</span>
+    <span class="o">[</span>frontends.fe1<span class="o">]</span>
+    <span class="nv">backend</span> <span class="o">=</span> <span class="s2">&#34;httpecho&#34;</span>
+      <span class="o">[</span>frontends.fe1.routes.rule1<span class="o">]</span>
+      <span class="nv">rule</span> <span class="o">=</span> <span class="s2">&#34;Path:/echo&#34;</span>
+</code></pre></div><p>参考Trafik官方文档说明，我们这个配置解释如下：</p>
 <ol>
 <li>将Trafik的日志级别 <code>logLevel</code> 定义为 <code>DEBUG</code></li>
 <li>默认的接入点 <code>defaultEntryPoints</code> 定义为 <code>http</code>，并且其端口为 <code>8080</code></li>
@@ -119,25 +119,25 @@ to manage its configuration automatically and dynamically.
 <li>提前下载好 glide 的源码并编译出二进制出来安装的 $PATH 路径下</li>
 <li>如果在windows下编译的话，trafik依赖的一个 <code>github.com/mailgun/log</code> 库支持unix系统，需要做一下修改。将<code>NewSysLogger</code>函数修改如下：</li>
 </ol>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">NewSysLogger</span><span class="p">(</span><span class="nx">conf</span> <span class="nx">Config</span><span class="p">)</span> <span class="p">(</span><span class="nx">Logger</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">debugW</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">infoW</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">warnW</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">errorW</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">sev</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">SeverityFromString</span><span class="p">(</span><span class="nx">conf</span><span class="p">.</span><span class="nx">Severity</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="o">&amp;</span><span class="nx">sysLogger</span><span class="p">{</span><span class="nx">sev</span><span class="p">,</span> <span class="nx">debugW</span><span class="p">,</span> <span class="nx">infoW</span><span class="p">,</span> <span class="nx">warnW</span><span class="p">,</span> <span class="nx">errorW</span><span class="p">},</span> <span class="kc">nil</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></div><h3 id="http多路分发器mux">HTTP多路分发器：mux</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">NewSysLogger</span><span class="p">(</span><span class="nx">conf</span> <span class="nx">Config</span><span class="p">)</span> <span class="p">(</span><span class="nx">Logger</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">debugW</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span>
+	<span class="nx">infoW</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span>
+	<span class="nx">warnW</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span>
+	<span class="nx">errorW</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span>
+
+	<span class="nx">sev</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">SeverityFromString</span><span class="p">(</span><span class="nx">conf</span><span class="p">.</span><span class="nx">Severity</span><span class="p">)</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+	<span class="p">}</span>
+
+	<span class="k">return</span> <span class="o">&amp;</span><span class="nx">sysLogger</span><span class="p">{</span><span class="nx">sev</span><span class="p">,</span> <span class="nx">debugW</span><span class="p">,</span> <span class="nx">infoW</span><span class="p">,</span> <span class="nx">warnW</span><span class="p">,</span> <span class="nx">errorW</span><span class="p">},</span> <span class="kc">nil</span>
+<span class="p">}</span>
+</code></pre></div><h3 id="http多路分发器mux">HTTP多路分发器：mux</h3>
 <p><code>github.com/gorilla/mux</code> 是一个HTTP多路分发器，其原理也比较简单，就是实现了Golang标准库中的 <code>net.http.Handler</code> 接口，即如下：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">Handler</span> <span class="kd">interface</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="nf">ServeHTTP</span><span class="p">(</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="o">*</span><span class="nx">Request</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></div><p>当mux注册到HTTP服务之后，所有的HTTP请求就会由标准库 <code>net/http</code> 转发到mux库中的 <code>func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request)</code> 函数中，
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">Handler</span> <span class="kd">interface</span> <span class="p">{</span>
+    <span class="nf">ServeHTTP</span><span class="p">(</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="o">*</span><span class="nx">Request</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div><p>当mux注册到HTTP服务之后，所有的HTTP请求就会由标准库 <code>net/http</code> 转发到mux库中的 <code>func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request)</code> 函数中，
 mux.Router.ServeHTTP这个函数再进行自己的路由规则匹配和转发。</p>
 <p>Trafik使用 <code>github.com/gorilla/mux</code> 库做路由转发。</p>
 <h2 id="参考">参考</h2>
@@ -153,9 +153,6 @@ mux.Router.ServeHTTP这个函数再进行自己的路由规则匹配和转发。
 
     
       
-  
-
-
     
   </body>
 </html>

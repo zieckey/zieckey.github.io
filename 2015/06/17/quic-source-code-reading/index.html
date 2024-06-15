@@ -3,7 +3,7 @@
 <head>
   <link href="https://gmpg.org/xfn/11" rel="profile">
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <meta name="generator" content="Hugo 0.127.0">
+  <meta name="generator" content="Hugo 0.89.4" />
 
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -44,7 +44,7 @@
       </ul>
     </nav>
 
-    <p>&copy; 2024. All rights reserved. </p>
+    <p>&copy; 2021. All rights reserved. </p>
   </div>
 </aside>
 
@@ -103,27 +103,27 @@
 </ol>
 <h3 id="源码阅读">源码阅读</h3>
 <h4 id="quicpacketpublicheader">QuicPacketPublicHeader</h4>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">QuicPacketPublicHeader</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="c1">// Universal header. All QuicPacket headers will have a connection_id and
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="c1">// public flags.
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">QuicConnectionId</span> <span class="n">connection_id</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">  <span class="n">QuicConnectionIdLength</span> <span class="n">connection_id_length</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">  <span class="kt">bool</span> <span class="n">reset_flag</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">  <span class="kt">bool</span> <span class="n">version_flag</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">  <span class="n">QuicSequenceNumberLength</span> <span class="n">sequence_number_length</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">  <span class="n">QuicVersionVector</span> <span class="n">versions</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl"><span class="p">};</span>
-</span></span></code></pre></div><h4 id="quicpacketheader">QuicPacketHeader</h4>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">QuicPacketHeader</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="n">QuicPacketPublicHeader</span> <span class="n">public_header</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">  <span class="kt">bool</span> <span class="n">fec_flag</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">  <span class="kt">bool</span> <span class="n">entropy_flag</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">  <span class="n">QuicPacketEntropyHash</span> <span class="n">entropy_hash</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">  <span class="n">QuicPacketSequenceNumber</span> <span class="n">packet_sequence_number</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">  <span class="n">InFecGroup</span> <span class="n">is_in_fec_group</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">  <span class="n">QuicFecGroupNumber</span> <span class="n">fec_group</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl"><span class="p">};</span>
-</span></span></code></pre></div><h4 id="void-quicdispatcheronunauthenticatedheaderconst-quicpacketheader-header">void QuicDispatcher::OnUnauthenticatedHeader(const QuicPacketHeader&amp; header)</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="k">struct</span> <span class="n">QuicPacketPublicHeader</span> <span class="p">{</span>
+  <span class="c1">// Universal header. All QuicPacket headers will have a connection_id and
+</span><span class="c1"></span>  <span class="c1">// public flags.
+</span><span class="c1"></span>  <span class="n">QuicConnectionId</span> <span class="n">connection_id</span><span class="p">;</span>
+  <span class="n">QuicConnectionIdLength</span> <span class="n">connection_id_length</span><span class="p">;</span>
+  <span class="kt">bool</span> <span class="n">reset_flag</span><span class="p">;</span>
+  <span class="kt">bool</span> <span class="n">version_flag</span><span class="p">;</span>
+  <span class="n">QuicSequenceNumberLength</span> <span class="n">sequence_number_length</span><span class="p">;</span>
+  <span class="n">QuicVersionVector</span> <span class="n">versions</span><span class="p">;</span>
+<span class="p">};</span>
+</code></pre></div><h4 id="quicpacketheader">QuicPacketHeader</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="k">struct</span> <span class="n">QuicPacketHeader</span> <span class="p">{</span>
+  <span class="n">QuicPacketPublicHeader</span> <span class="n">public_header</span><span class="p">;</span>
+  <span class="kt">bool</span> <span class="n">fec_flag</span><span class="p">;</span>
+  <span class="kt">bool</span> <span class="n">entropy_flag</span><span class="p">;</span>
+  <span class="n">QuicPacketEntropyHash</span> <span class="n">entropy_hash</span><span class="p">;</span>
+  <span class="n">QuicPacketSequenceNumber</span> <span class="n">packet_sequence_number</span><span class="p">;</span>
+  <span class="n">InFecGroup</span> <span class="n">is_in_fec_group</span><span class="p">;</span>
+  <span class="n">QuicFecGroupNumber</span> <span class="n">fec_group</span><span class="p">;</span>
+<span class="p">};</span>
+</code></pre></div><h4 id="void-quicdispatcheronunauthenticatedheaderconst-quicpacketheader-header">void QuicDispatcher::OnUnauthenticatedHeader(const QuicPacketHeader&amp; header)</h4>
 
 </div>
 
@@ -132,9 +132,6 @@
 
     
       
-  
-
-
     
   </body>
 </html>

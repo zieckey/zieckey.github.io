@@ -4,17 +4,18 @@
     <title>Java on CodeG Blog</title>
     <link>http://blog.codeg.cn/tags/Java/</link>
     <description>Recent content in Java on CodeG Blog</description>
-    <generator>Hugo</generator>
+    <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
     <copyright>Copyright (c) 2015. All rights reserved.</copyright>
-    <lastBuildDate>Sun, 14 Dec 2014 00:00:00 +0000</lastBuildDate>
-    <atom:link href="http://blog.codeg.cn/tags/Java/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 14 Dec 2014 00:00:00 +0000</lastBuildDate><atom:link href="http://blog.codeg.cn/tags/Java/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>C&#43;&#43;与Java垃圾回收的区别</title>
       <link>http://blog.codeg.cn/2014/12/14/gc-cpp-java/</link>
       <pubDate>Sun, 14 Dec 2014 00:00:00 +0000</pubDate>
+      
       <guid>http://blog.codeg.cn/2014/12/14/gc-cpp-java/</guid>
       <description></description>
     </item>
+    
   </channel>
 </rss>
