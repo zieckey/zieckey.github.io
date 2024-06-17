@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta name="generator" content="Hugo 0.127.0">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <meta property="og:site_name" content="CodeG Blog">
+    <meta property="og:type" content="article">
+
+    
+    <meta property="og:image" content="http://blog.codeg.cn//">
+    <meta property="twitter:image" content="http://blog.codeg.cn//" />
+    
+
+    
+    <meta name="title" content="" />
+    <meta property="og:title" content="" />
+    <meta property="twitter:title" content="" />
+    
+
+    
+    <meta name="description" content="思路决定出路，态度决定高度。">
+    <meta property="og:description" content="思路决定出路，态度决定高度。" />
+    <meta property="twitter:description" content="思路决定出路，态度决定高度。" />
+    
+
+    
+    <meta property="twitter:card" content="summary" />
+    
+    
+
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="http://blog.codeg.cn/img/favicon.ico">
+
+    <title>CodeG Blog | </title>
+
+    <link rel="canonical" href="http://blog.codeg.cn/">
+
+    
+    
+    
+    <link rel="stylesheet" href="http://blog.codeg.cn/css/bootstrap.min.css">
+
+    
+    <link rel="stylesheet" href="http://blog.codeg.cn/css/hugo-theme-cleanwhite.min.css">
+
+    
+    <link rel="stylesheet" href="http://blog.codeg.cn/css/zanshang.css">
+
+    
+    <link rel="stylesheet" href="http://blog.codeg.cn/css/font-awesome.all.min.css">
+
+    
+    
+
+    
+    <script src="http://blog.codeg.cn/js/jquery.min.js"></script>
+
+    
+    <script src="http://blog.codeg.cn/js/bootstrap.min.js"></script>
+
+    
+    <script src="http://blog.codeg.cn/js/hux-blog.min.js"></script>
+
+    
+    <script src="http://blog.codeg.cn/js/lazysizes.min.js"></script>
+
+    
+    
+
+</head>
+
+
+
+
+
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+
+    <div class="container-fluid">
+        
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="http://blog.codeg.cn/">CodeG Blog</a>
+        </div>
+
+        
+        
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="http://blog.codeg.cn/">All Posts</a>
+                    </li>
+                    
+                        
+                        <li>
+                            <a href="http://blog.codeg.cn/categories/blog/">blog</a>
+                        </li>
+                        
+                        <li>
+                            <a href="http://blog.codeg.cn/categories/finance/">finance</a>
+                        </li>
+                        
+                        <li>
+                            <a href="http://blog.codeg.cn/categories/opinion/">opinion</a>
+                        </li>
+                        
+                        <li>
+                            <a href="http://blog.codeg.cn/categories/project/">project</a>
+                        </li>
+                        
+                        <li>
+                            <a href="http://blog.codeg.cn/categories/study/">study</a>
+                        </li>
+                        
+                    
+                    
+		    
+		            <li>
+                        <a href="http://blog.codeg.cn/search"><i class="fa fa-search"></i></a>
+		           </li>
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+    
+</nav>
+<script>
+    
+    
+    
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        
+            $navbar.className = " ";
+            
+            setTimeout(function(){
+                
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+
+<header class="intro-header" style="background-image: url('/')">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 ">
+                <div class="site-heading">
+                    <h1>CodeG Blog </h1>
+                    
+		    <span class="subheading"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+  
+<div data-pagefind-ignore="all" class="container">
+    <div class="row">
+        
+        
+   	    <div class="
+            col-lg-8 col-lg-offset-1
+            col-md-8 col-md-offset-1
+            col-sm-12
+            col-xs-12
+            post-container
+        ">
+            
+<div data-pagefind-ignore="all">
+
+<div class="post-preview">
+    <a href="http://blog.codeg.cn/2015/06/17/quic-source-code-reading/">
+        <h2 class="post-title">
+            QUIC（Quick UDP Internet Connections）源代码阅读
+        </h2>
+	
+        <div class="post-content-preview">
+	
+            类 基础类 base Pickle：针对二进制数据进行pack和unpack操作 MessagePump：消息泵基类，也就是做消息循环用的 TimeDelt
+       
+        </div>
+    </a>
+    <p class="post-meta">
+    
+        Posted by CodeG Blog on Wednesday, June 17, 2015
+        
+        
+    
+    </p>
+
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="http://blog.codeg.cn/2015/05/08/quic-protocol/">
+        <h2 class="post-title">
+            QUIC（Quick UDP Internet Connections）协议简要笔记(翻译)
+        </h2>
+	
+        <div class="post-content-preview">
+	
+            概述 动机 支持SPDY协议的动机 目标 我们希望开发出一套传输协议以支持下列目标： 在今天的因特网上的广泛的部署能力（例如，能够顺利通过中间路由、可
+       
+        </div>
+    </a>
+    <p class="post-meta">
+    
+        Posted by CodeG Blog on Friday, May 8, 2015
+        
+        
+    
+    </p>
+
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="http://blog.codeg.cn/2015/03/18/golang-how-to-make-a-multipart-http-request/">
+        <h2 class="post-title">
+            golang学习之如何构造一个multipart/form格式的HTTP请求
+        </h2>
+	
+        <div class="post-content-preview">
+	
+            使用PHP里面的curl扩展库可以方便的从一个php array来构造一个`multipart/form`格式的HTTP请求，但golang里构造起来稍稍麻烦一点，下面我们来介绍具体的构造方法。
+        
+        </div>
+    </a>
+    <p class="post-meta">
+    
+        Posted by CodeG Blog on Wednesday, March 18, 2015
+        
+        
+    
+    </p>
+
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="http://blog.codeg.cn/2015/02/12/golang-derive-override/">
+        <h2 class="post-title">
+            golang学习之继承和重载
+        </h2>
+	
+        <div class="post-content-preview">
+	
+            其实golang里是不提倡继承的，也不提倡重载的。但是有些场景下，我们还是想试验一下传统C&#43;&#43;或Java语言里的继承和重载能否用在golang里。
+        
+        </div>
+    </a>
+    <p class="post-meta">
+    
+        Posted by CodeG Blog on Thursday, February 12, 2015
+        
+        
+    
+    </p>
+
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="http://blog.codeg.cn/2015/02/02/docker-intro/">
+        <h2 class="post-title">
+            Docker介绍及初次使用教程
+        </h2>
+	
+        <div class="post-content-preview">
+	
+            本文针对第一次接触Docker的同学而写的手把手式使用指南。涉及到安装、镜像下载、build镜像、使用等等细节。
+        
+        </div>
+    </a>
+    <p class="post-meta">
+    
+        Posted by CodeG Blog on Monday, February 2, 2015
+        
+        
+    
+    </p>
+
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="http://blog.codeg.cn/2015/01/23/mime-golang-parsing/">
+        <h2 class="post-title">
+            golang解析MIME数据格式的代码示例
+        </h2>
+	
+        <div class="post-content-preview">
+	
+            本文介绍了如何使用golang来解析MIME以及multipart格式的数据。并给出了详细的示例代码。
+        
+        </div>
+    </a>
+    <p class="post-meta">
+    
+        Posted by CodeG Blog on Friday, January 23, 2015
+        
+        
+    
+    </p>
+
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="http://blog.codeg.cn/2015/01/13/linux-system-programming/">
+        <h2 class="post-title">
+            多进程编程
+        </h2>
+	
+        <div class="post-content-preview">
+	
+            wait 和 waitpid 当一个进程正常或异常退出时，内核就向其父进程发送SIGCHLD信号。因为子进程退出是一个异步事件，所以该信号也是内核向父进程发送的异步
+       
+        </div>
+    </a>
+    <p class="post-meta">
+    
+        Posted by CodeG Blog on Tuesday, January 13, 2015
+        
+        
+    
+    </p>
+
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="http://blog.codeg.cn/2015/01/12/go-source-code-reading-ConstantTimeByteEq/">
+        <h2 class="post-title">
+            Golang源码阅读——crypto/subtle.ConstantTimeByteEq 深度解析
+        </h2>
+	
+        <div class="post-content-preview">
+	
+            根据文档说明，`ConstantTimeByteEq`返回1，如果 x == y；相反则返回0。为什么一个简单的整数比较操作要搞一个单独的函数出来实现？并且其实现代码看起来要不`x == y`复杂多了？
+        
+        </div>
+    </a>
+    <p class="post-meta">
+    
+        Posted by CodeG Blog on Monday, January 12, 2015
+        
+        
+    
+    </p>
+
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="http://blog.codeg.cn/2015/01/07/golang-udp-client/">
+        <h2 class="post-title">
+            golang网络编程-udp客户端示例代码
+        </h2>
+	
+        <div class="post-content-preview">
+	
+            介绍了golang如何实现一个udp客户端
+        
+        </div>
+    </a>
+    <p class="post-meta">
+    
+        Posted by CodeG Blog on Wednesday, January 7, 2015
+        
+        
+    
+    </p>
+
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="http://blog.codeg.cn/2015/01/06/ngx_pool_t/">
+        <h2 class="post-title">
+            Nginx源码研究（7）——内存池结构ngx_pool_t
+        </h2>
+	
+        <div class="post-content-preview">
+	
+            本文主要介绍Nginx内存池结构`ngx_pool_t`这一重要的数据结构的使用方法和具体实现。同时为了方便学习和研究，还从`ngx_pool_t`抽取了一个完全独立的`cg_pool_t`结构，不依赖Nginx，也不依赖任何第三方类库，可以直接将源码拿走集成进现有系统中。
+        
+        </div>
+    </a>
+    <p class="post-meta">
+    
+        Posted by CodeG Blog on Tuesday, January 6, 2015
+        
+        
+    
+    </p>
+
+</div>
+<hr>
+
+</div>
+
+            
+
+
+<ul class="pager" data-pagefind-ignore="all">
+    
+    <li class="previous">
+        <a href="http://blog.codeg.cn/paginator/3/">&larr; Newer Posts</a>
+    </li>
+    
+    
+    <li class="next">
+        <a href="http://blog.codeg.cn/paginator/5/">Older Posts &rarr;</a>
+    </li>
+    
+</ul>
+
+
+       	</div>
+        
+
+<div class="
+    col-lg-3 col-lg-offset-0
+    col-md-3 col-md-offset-0
+    col-sm-12
+    col-xs-12
+    sidebar-container
+">
+    
+	
+    
+    
+    
+    
+
+    
+    
+    
+</div>
+
+	</div>
+</div>
+
+
+
+
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">                  
+                    
+                    
+                    
+                    
+                    
+
+		            
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+            
+            
+            
+           
+             </ul>
+		<p class="copyright text-muted">
+                    Copyright &copy; CodeG Blog 2024
+                    
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+<script>
+    function loadAsync(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+
+
+
+
+<script>
+    
+    if($('#tag_cloud').length !== 0){
+        loadAsync("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+
+<script>
+    loadAsync("https://cdn.jsdelivr.net/npm/fastclick@1.0.6/lib/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+
+
+
+
+<script type="text/javascript">
+    function generateCatalog(selector) {
+
+        
+        
+        
+        
+            _containerSelector = 'div.post-container'
+        
+
+        
+        var P = $(_containerSelector), a, n, t, l, i, c;
+        a = P.find('h1,h2,h3,h4,h5,h6');
+
+        
+        $(selector).html('')
+
+        
+        a.each(function () {
+            n = $(this).prop('tagName').toLowerCase();
+            i = "#" + $(this).prop('id');
+            t = $(this).text();
+            c = $('<a href="' + i + '" rel="nofollow">' + t + '</a>');
+            l = $('<li class="' + n + '_nav"></li>').append(c);
+            $(selector).append(l);
+        });
+        return true;
+    }
+
+    generateCatalog(".catalog-body");
+
+    
+    $(".catalog-toggle").click((function (e) {
+        e.preventDefault();
+        $('.side-catalog').toggleClass("fold")
+    }))
+
+    
+
+
+    loadAsync("\/js\/jquery.nav.js", function () {
+        $('.catalog-body').onePageNav({
+            currentClass: "active",
+            changeHash: !1,
+            easing: "swing",
+            filter: "",
+            scrollSpeed: 700,
+            scrollOffset: 0,
+            scrollThreshold: .2,
+            begin: null,
+            end: null,
+            scrollChange: null,
+            padding: 80
+        });
+    });
+</script>
+
+
+
+
+
+
+</body>
+</html>

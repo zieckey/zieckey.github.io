@@ -2,88 +2,88 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>网络编程 on CodeG Blog</title>
-    <link>http://localhost:1313/tags/%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/</link>
+    <link>http://blog.codeg.cn/tags/%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/</link>
     <description>Recent content in 网络编程 on CodeG Blog</description>
     <generator>Hugo</generator>
     <language>zh-CN</language>
     <copyright>Copyright (c) 2015. All rights reserved.</copyright>
     <lastBuildDate>Wed, 17 Jun 2015 00:00:00 +0000</lastBuildDate>
-    <atom:link href="http://localhost:1313/tags/%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://blog.codeg.cn/tags/%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>QUIC（Quick UDP Internet Connections）源代码阅读</title>
-      <link>http://localhost:1313/2015/06/17/quic-source-code-reading/</link>
+      <link>http://blog.codeg.cn/2015/06/17/quic-source-code-reading/</link>
       <pubDate>Wed, 17 Jun 2015 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2015/06/17/quic-source-code-reading/</guid>
+      <guid>http://blog.codeg.cn/2015/06/17/quic-source-code-reading/</guid>
       <description>类 基础类 base Pickle：针对二进制数据进行pack和unpack操作 MessagePump：消息泵基类，也就是做消息循环用的 TimeDelt</description>
     </item>
     <item>
       <title>QUIC（Quick UDP Internet Connections）协议简要笔记(翻译)</title>
-      <link>http://localhost:1313/2015/05/08/quic-protocol/</link>
+      <link>http://blog.codeg.cn/2015/05/08/quic-protocol/</link>
       <pubDate>Fri, 08 May 2015 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2015/05/08/quic-protocol/</guid>
+      <guid>http://blog.codeg.cn/2015/05/08/quic-protocol/</guid>
       <description>概述 动机 支持SPDY协议的动机 目标 我们希望开发出一套传输协议以支持下列目标： 在今天的因特网上的广泛的部署能力（例如，能够顺利通过中间路由、可</description>
     </item>
     <item>
       <title>golang网络编程-udp客户端示例代码</title>
-      <link>http://localhost:1313/2015/01/07/golang-udp-client/</link>
+      <link>http://blog.codeg.cn/2015/01/07/golang-udp-client/</link>
       <pubDate>Wed, 07 Jan 2015 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2015/01/07/golang-udp-client/</guid>
+      <guid>http://blog.codeg.cn/2015/01/07/golang-udp-client/</guid>
       <description>最简单的一个客户端 编程步骤： 创建一个udp socket并连接服务器 发送数据给服务器 从服务器接收数据 关闭udp socket package main import ( &amp;#34;fmt&amp;#34; &amp;#34;net&amp;#34; &amp;#34;os&amp;#34; ) func main() { hostport := &amp;#34;10.16.28.17:1053&amp;#34; if</description>
     </item>
     <item>
       <title>Nginx源码研究（7）——内存池结构ngx_pool_t</title>
-      <link>http://localhost:1313/2015/01/06/ngx_pool_t/</link>
+      <link>http://blog.codeg.cn/2015/01/06/ngx_pool_t/</link>
       <pubDate>Tue, 06 Jan 2015 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2015/01/06/ngx_pool_t/</guid>
+      <guid>http://blog.codeg.cn/2015/01/06/ngx_pool_t/</guid>
       <description>简介 本文主要介绍Nginx内存池结构ngx_pool_t这一重要的数据结构的使用方法和具体实现。同时为了方便学习和研究，还从ngx_pool</description>
     </item>
     <item>
       <title>Nginx源码研究（5）——单向链表结构ngx_list_t</title>
-      <link>http://localhost:1313/2015/01/04/ngx_list_t/</link>
+      <link>http://blog.codeg.cn/2015/01/04/ngx_list_t/</link>
       <pubDate>Sun, 04 Jan 2015 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2015/01/04/ngx_list_t/</guid>
+      <guid>http://blog.codeg.cn/2015/01/04/ngx_list_t/</guid>
       <description>简介 本文主要介绍Nginx单向链表结构ngx_list_t这一重要的数据结构的使用方法和具体实现。 该链表结构与我们常说的链表结构(例如std</description>
     </item>
     <item>
       <title>Nginx源码研究（6）——双向链表结构ngx_queue_t</title>
-      <link>http://localhost:1313/2015/01/04/ngx_queue_t/</link>
+      <link>http://blog.codeg.cn/2015/01/04/ngx_queue_t/</link>
       <pubDate>Sun, 04 Jan 2015 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2015/01/04/ngx_queue_t/</guid>
+      <guid>http://blog.codeg.cn/2015/01/04/ngx_queue_t/</guid>
       <description>简介 本文主要介绍Nginx双向链表结构ngx_queue_t这一重要的数据结构的使用方法和具体实现。 ngx_queue_t 是Nginx提供的一个轻量级双向链表容</description>
     </item>
     <item>
       <title>Nginx源码研究（3）——Nginx数组ngx_array_t和示例</title>
-      <link>http://localhost:1313/2015/01/03/ngx_array_t/</link>
+      <link>http://blog.codeg.cn/2015/01/03/ngx_array_t/</link>
       <pubDate>Sat, 03 Jan 2015 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2015/01/03/ngx_array_t/</guid>
+      <guid>http://blog.codeg.cn/2015/01/03/ngx_array_t/</guid>
       <description>本文主要介绍Nginx数组ngx_array_t这一重要的数据结构的使用方法和具体实现。 ngx_array_t是nginx内部使用的数组结构</description>
     </item>
     <item>
       <title>Nginx源码研究（4）——hash结构ngx_hash_t</title>
-      <link>http://localhost:1313/2015/01/03/ngx_hash_t/</link>
+      <link>http://blog.codeg.cn/2015/01/03/ngx_hash_t/</link>
       <pubDate>Sat, 03 Jan 2015 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2015/01/03/ngx_hash_t/</guid>
+      <guid>http://blog.codeg.cn/2015/01/03/ngx_hash_t/</guid>
       <description>简介 本文主要介绍Nginx的hash结构ngx_hash_t这一重要的数据结构的使用方法和具体实现。nginx实现的hash表特点是构建一次</description>
     </item>
     <item>
       <title>Nginx源码研究（1）——项目介绍</title>
-      <link>http://localhost:1313/2015/01/02/nginx-research-readme/</link>
+      <link>http://blog.codeg.cn/2015/01/02/nginx-research-readme/</link>
       <pubDate>Fri, 02 Jan 2015 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2015/01/02/nginx-research-readme/</guid>
+      <guid>http://blog.codeg.cn/2015/01/02/nginx-research-readme/</guid>
       <description>nginx-research 本项目是为了研究Nginx源码而建立的。该项目有以下几点比较不错的优点： VS2013源码编译和调试 将Nginx看做一个优秀的C库使用，已经</description>
     </item>
     <item>
       <title>Nginx源码研究（2）——编译Nginx为静(动)态库以及验证</title>
-      <link>http://localhost:1313/2014/12/31/compile-nginx-to-static-lib-and-1st-usage/</link>
+      <link>http://blog.codeg.cn/2014/12/31/compile-nginx-to-static-lib-and-1st-usage/</link>
       <pubDate>Wed, 31 Dec 2014 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2014/12/31/compile-nginx-to-static-lib-and-1st-usage/</guid>
+      <guid>http://blog.codeg.cn/2014/12/31/compile-nginx-to-static-lib-and-1st-usage/</guid>
       <description>最近编程哥又开始阅读和研究Nginx源码，这一过程中做了一些笔记，从而形成本系列文章。 本文主要介绍如何将nginx编译为一个动态库或静态库，</description>
     </item>
     <item>
       <title>Golang写的HTTP服务与Nginx对比</title>
-      <link>http://localhost:1313/2014/12/13/golang-vs-nginx-at-httpecho/</link>
+      <link>http://blog.codeg.cn/2014/12/13/golang-vs-nginx-at-httpecho/</link>
       <pubDate>Sat, 13 Dec 2014 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2014/12/13/golang-vs-nginx-at-httpecho/</guid>
+      <guid>http://blog.codeg.cn/2014/12/13/golang-vs-nginx-at-httpecho/</guid>
       <description>Golang写网络程序的确很简单，一个HTTP Echo服务，几行源码就可以搞定。Golang源码如下： package main import ( &amp;#34;log&amp;#34; &amp;#34;net/http&amp;#34; &amp;#34;io/ioutil&amp;#34; ) func handler(w http.ResponseWriter, r *http.Request) { buf, err := ioutil.ReadAll(r.Body) //Read</description>
     </item>
   </channel>

@@ -2,375 +2,375 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Blog on CodeG Blog</title>
-    <link>http://localhost:1313/categories/blog/</link>
+    <link>http://blog.codeg.cn/categories/blog/</link>
     <description>Recent content in Blog on CodeG Blog</description>
     <generator>Hugo</generator>
     <language>zh-CN</language>
     <copyright>Copyright (c) 2015. All rights reserved.</copyright>
     <lastBuildDate>Sun, 12 Dec 2021 20:43:00 +0000</lastBuildDate>
-    <atom:link href="http://localhost:1313/categories/blog/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://blog.codeg.cn/categories/blog/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>关于我自己</title>
-      <link>http://localhost:1313/about/</link>
+      <link>http://blog.codeg.cn/about/</link>
       <pubDate>Sun, 12 Dec 2021 20:43:00 +0000</pubDate>
-      <guid>http://localhost:1313/about/</guid>
+      <guid>http://blog.codeg.cn/about/</guid>
       <description>本科期间不算学霸，但学业成绩也不算差，课外参加一些电赛、嵌入式竞赛之类的，也获得一些奖项，然后保送混了个研究生文凭。 大四和研究生期间在某大专</description>
     </item>
     <item>
       <title>手把手制作一个vcpkg的安装包及port file相关说明</title>
-      <link>http://localhost:1313/post/blog/2017-05-28-how-to-build-a-vcpkg/</link>
+      <link>http://blog.codeg.cn/post/blog/2017-05-28-how-to-build-a-vcpkg/</link>
       <pubDate>Sun, 28 May 2017 18:11:01 +0000</pubDate>
-      <guid>http://localhost:1313/post/blog/2017-05-28-how-to-build-a-vcpkg/</guid>
+      <guid>http://blog.codeg.cn/post/blog/2017-05-28-how-to-build-a-vcpkg/</guid>
       <description>0. 前言 Windows平台的程序包的依赖管理一直以来都是个大难题。之前有NuGet，现在有vcpkg。 本文的重点是先介绍一下vcpkg的特性，</description>
     </item>
     <item>
       <title>evpp设计细节系列(1)：利用 enable_shared_from_this 实现一个自管理的定时器</title>
-      <link>http://localhost:1313/post/blog/2017-04-19-the-detail-design-of-evpp-invoke-timer/</link>
+      <link>http://blog.codeg.cn/post/blog/2017-04-19-the-detail-design-of-evpp-invoke-timer/</link>
       <pubDate>Wed, 19 Apr 2017 10:11:01 +0000</pubDate>
-      <guid>http://localhost:1313/post/blog/2017-04-19-the-detail-design-of-evpp-invoke-timer/</guid>
+      <guid>http://blog.codeg.cn/post/blog/2017-04-19-the-detail-design-of-evpp-invoke-timer/</guid>
       <description>0. 前言 https://github.com/Qihoo360/evpp是一个高性能的Reactor模式的现代化的C++11版本的高性能网络库</description>
     </item>
     <item>
       <title>基于evpp的EventLoop实现来对无锁队列boost::lockfree::queue和moodycamel::ConcurrentQueue做一个性能测试对比</title>
-      <link>http://localhost:1313/post/blog/2017-04-09-the-benchmark-of-lockfree/</link>
+      <link>http://blog.codeg.cn/post/blog/2017-04-09-the-benchmark-of-lockfree/</link>
       <pubDate>Sun, 09 Apr 2017 10:11:01 +0000</pubDate>
-      <guid>http://localhost:1313/post/blog/2017-04-09-the-benchmark-of-lockfree/</guid>
+      <guid>http://blog.codeg.cn/post/blog/2017-04-09-the-benchmark-of-lockfree/</guid>
       <description>English version : The performance benchmark of queue with std::mutex against boost::lockfree::queue and moodycamel::ConcurrentQueue Brief 我们使用https://github.com/Qihoo360/evpp项目中的EventLoop::Queu</description>
     </item>
     <item>
       <title>evpp与asio吞吐量对比</title>
-      <link>http://localhost:1313/post/blog/2017-04-04-the-throughput-benchmark-test-of-evpp-vs-asio/</link>
+      <link>http://blog.codeg.cn/post/blog/2017-04-04-the-throughput-benchmark-test-of-evpp-vs-asio/</link>
       <pubDate>Tue, 04 Apr 2017 18:13:00 +0000</pubDate>
-      <guid>http://localhost:1313/post/blog/2017-04-04-the-throughput-benchmark-test-of-evpp-vs-asio/</guid>
+      <guid>http://blog.codeg.cn/post/blog/2017-04-04-the-throughput-benchmark-test-of-evpp-vs-asio/</guid>
       <description>简介 Boost.Asio是用于网络和低层IO编程的跨平台C++库,为开发者提供了C++环境下稳定的异步编程模型。也是业内公认的优秀的C++网</description>
     </item>
     <item>
       <title>evpp与muduo吞吐量对比</title>
-      <link>http://localhost:1313/post/blog/2017-03-14-the-throughput-benchmark-test-of-evpp-vs-muduo/</link>
+      <link>http://blog.codeg.cn/post/blog/2017-03-14-the-throughput-benchmark-test-of-evpp-vs-muduo/</link>
       <pubDate>Tue, 14 Mar 2017 18:13:00 +0000</pubDate>
-      <guid>http://localhost:1313/post/blog/2017-03-14-the-throughput-benchmark-test-of-evpp-vs-muduo/</guid>
+      <guid>http://blog.codeg.cn/post/blog/2017-03-14-the-throughput-benchmark-test-of-evpp-vs-muduo/</guid>
       <description>简介 muduo是最近几年中国开源界里产生的优秀作品。它是由业内大牛陈硕实现的。详细介绍，请参考其博客介绍http://blog.csdn.n</description>
     </item>
     <item>
       <title>发布一个高性能的Reactor模式的C&#43;&#43;网络库：evpp</title>
-      <link>http://localhost:1313/post/blog/2017-03-13-release-a-high-performance-C&#43;&#43;11-network-library/</link>
+      <link>http://blog.codeg.cn/post/blog/2017-03-13-release-a-high-performance-C&#43;&#43;11-network-library/</link>
       <pubDate>Mon, 13 Mar 2017 18:13:00 +0000</pubDate>
-      <guid>http://localhost:1313/post/blog/2017-03-13-release-a-high-performance-C&#43;&#43;11-network-library/</guid>
+      <guid>http://blog.codeg.cn/post/blog/2017-03-13-release-a-high-performance-C&#43;&#43;11-network-library/</guid>
       <description>简介 evpp是一个基于libevent开发的现代化的支持C++11特性的高性能网络库，自带TCP/UDP/HTTP等协议的异步非阻塞式的服务</description>
     </item>
     <item>
       <title>minio源码阅读</title>
-      <link>http://localhost:1313/post/blog/2016-09-06-minio-source-code-reading/</link>
+      <link>http://blog.codeg.cn/post/blog/2016-09-06-minio-source-code-reading/</link>
       <pubDate>Tue, 06 Sep 2016 11:52:00 +0000</pubDate>
-      <guid>http://localhost:1313/post/blog/2016-09-06-minio-source-code-reading/</guid>
+      <guid>http://blog.codeg.cn/post/blog/2016-09-06-minio-source-code-reading/</guid>
       <description>简介 minio是Go实现的一个完全兼容S3的服务，和大多Go项目一样，干净小巧，没有依赖，编译运行一键搞定，便利之极。 源码阅读 HTTP事件注</description>
     </item>
     <item>
       <title>发布一个Golang版本的INI解析器</title>
-      <link>http://localhost:1313/post/blog/2016-05-29-a-new-ini-parser-for-golang/</link>
+      <link>http://blog.codeg.cn/post/blog/2016-05-29-a-new-ini-parser-for-golang/</link>
       <pubDate>Sun, 29 May 2016 13:14:00 +0000</pubDate>
-      <guid>http://localhost:1313/post/blog/2016-05-29-a-new-ini-parser-for-golang/</guid>
+      <guid>http://blog.codeg.cn/post/blog/2016-05-29-a-new-ini-parser-for-golang/</guid>
       <description>goini 这是一个为Golang开发的读取INI格式文件的库，它还能读取类似于INI格式的key/value对数据。 goini 的设计目标是简单、灵活、高效，</description>
     </item>
     <item>
       <title>Trafik源代码阅读</title>
-      <link>http://localhost:1313/post/blog/2016-05-26-trafik-source-code-reading/</link>
+      <link>http://blog.codeg.cn/post/blog/2016-05-26-trafik-source-code-reading/</link>
       <pubDate>Thu, 26 May 2016 07:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/post/blog/2016-05-26-trafik-source-code-reading/</guid>
+      <guid>http://blog.codeg.cn/post/blog/2016-05-26-trafik-source-code-reading/</guid>
       <description>Trafik介绍 其官网是这么介绍的： Træfɪk is a modern HTTP reverse proxy and load balancer made to deploy microservices with ease. It supports several backends (Docker, Swarm, Mesos/Marathon, Consul, Etcd, Zookeeper, BoltDB, Rest API, file...) to manage its configuration automatically and dynamically. 翻译过来就是：Træ</description>
     </item>
     <item>
       <title>如何在win7 64位系统下安装gopcap包及使用</title>
-      <link>http://localhost:1313/post/blog/2016-05-26-howto-build-gopcap-on-windows-x64/</link>
+      <link>http://blog.codeg.cn/post/blog/2016-05-26-howto-build-gopcap-on-windows-x64/</link>
       <pubDate>Wed, 25 May 2016 20:12:01 +0000</pubDate>
-      <guid>http://localhost:1313/post/blog/2016-05-26-howto-build-gopcap-on-windows-x64/</guid>
+      <guid>http://blog.codeg.cn/post/blog/2016-05-26-howto-build-gopcap-on-windows-x64/</guid>
       <description>gopcap是libpcap库的Golang封装，其项目地址在这里 https://github.com/akrennmair/gopcap 。 本文简要介绍一下如何在win7 64位系统平台上使用 gopcap 库。 安装步骤如下：</description>
     </item>
     <item>
       <title>Golang CGO编程之调用返回char*指针及长度的C函数库</title>
-      <link>http://localhost:1313/post/blog/2016-04-20-golang-cgo/</link>
+      <link>http://blog.codeg.cn/post/blog/2016-04-20-golang-cgo/</link>
       <pubDate>Wed, 20 Apr 2016 21:43:00 +0000</pubDate>
-      <guid>http://localhost:1313/post/blog/2016-04-20-golang-cgo/</guid>
+      <guid>http://blog.codeg.cn/post/blog/2016-04-20-golang-cgo/</guid>
       <description>现代所有主流操作系统几乎都是用C语音实现的，几乎所有高级语言都能调用C语言，例如PHP可以调用C语言写的PHP扩展，Python也可以调用C</description>
     </item>
     <item>
       <title>使用Golang利用ectd实现一个分布式锁</title>
-      <link>http://localhost:1313/post/blog/2016-02-24-distrubute-lock-over-etcd/</link>
+      <link>http://blog.codeg.cn/post/blog/2016-02-24-distrubute-lock-over-etcd/</link>
       <pubDate>Wed, 24 Feb 2016 20:43:00 +0000</pubDate>
-      <guid>http://localhost:1313/post/blog/2016-02-24-distrubute-lock-over-etcd/</guid>
+      <guid>http://blog.codeg.cn/post/blog/2016-02-24-distrubute-lock-over-etcd/</guid>
       <description>etcd是随着CoreOS项目一起成长起来的，随着Golang和CoreOS等项目在开源社区日益火热， etcd作为一个高可用、强一致性的分布</description>
     </item>
     <item>
       <title>编译Golang包为C语言库文件</title>
-      <link>http://localhost:1313/2016/02/19/sharing-golang-package-to-C/</link>
+      <link>http://blog.codeg.cn/2016/02/19/sharing-golang-package-to-C/</link>
       <pubDate>Fri, 19 Feb 2016 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2016/02/19/sharing-golang-package-to-C/</guid>
+      <guid>http://blog.codeg.cn/2016/02/19/sharing-golang-package-to-C/</guid>
       <description>Go 1.5发布后，其包含一个特性：可以编译生成C语言动态链接库或静态库。本文给出了示例代码和用法。 go build和go install命令，可以使</description>
     </item>
     <item>
       <title>Golang发送邮件</title>
-      <link>http://localhost:1313/2016/02/14/send-email-for-golang/</link>
+      <link>http://blog.codeg.cn/2016/02/14/send-email-for-golang/</link>
       <pubDate>Sun, 14 Feb 2016 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2016/02/14/send-email-for-golang/</guid>
+      <guid>http://blog.codeg.cn/2016/02/14/send-email-for-golang/</guid>
       <description>本文介绍一个简单的方法使用Go语言发送邮件。直接调用系统自带的mail命令发送邮件。 在网上找了很多例子，基本上都是基于Golang本身自带的</description>
     </item>
     <item>
       <title>Golang版本的remove_if函数实现</title>
-      <link>http://localhost:1313/2016/02/14/golang-remove_if/</link>
+      <link>http://blog.codeg.cn/2016/02/14/golang-remove_if/</link>
       <pubDate>Sun, 14 Feb 2016 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2016/02/14/golang-remove_if/</guid>
+      <guid>http://blog.codeg.cn/2016/02/14/golang-remove_if/</guid>
       <description>C++中的std::remove_if函数实现了一个算法，可以将一个容器中的元素按照一定的规则进行删除，但Go语言中却没有类似的函数。代码其</description>
     </item>
     <item>
       <title>使用grafana&#43;influxdb搭建炫酷的实时可视化监控平台</title>
-      <link>http://localhost:1313/2016/02/05/influxdb-grafana/</link>
+      <link>http://blog.codeg.cn/2016/02/05/influxdb-grafana/</link>
       <pubDate>Fri, 05 Feb 2016 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2016/02/05/influxdb-grafana/</guid>
+      <guid>http://blog.codeg.cn/2016/02/05/influxdb-grafana/</guid>
       <description>最近看到一篇介绍influxdb的文章，然后又看到用grafana配合图形展示，就简单试用了一下，确实还不错。但其中也遇到一些低级问题，这篇</description>
     </item>
     <item>
       <title>源码阅读-悟空搜索引擎</title>
-      <link>http://localhost:1313/2016/02/02/wukong-source-code-reading/</link>
+      <link>http://blog.codeg.cn/2016/02/02/wukong-source-code-reading/</link>
       <pubDate>Tue, 02 Feb 2016 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2016/02/02/wukong-source-code-reading/</guid>
+      <guid>http://blog.codeg.cn/2016/02/02/wukong-source-code-reading/</guid>
       <description>一个最简单的例子 我们还是从一个最简单的示例代码开始： package main import ( &amp;#34;github.com/huichen/wukong/engine&amp;#34; &amp;#34;github.com/huichen/wukong/types&amp;#34; &amp;#34;log&amp;#34; ) var ( // searcher是协程安全的 searcher = engine.Engine{} ) func main() { // 初始化 searcher.Init(types.EngineInitOptions{ SegmenterDictionaries: &amp;#34;./data/dictionary.txt&amp;#34;}) defer searcher.Close() // 将文</description>
     </item>
     <item>
       <title>应用双缓冲技术完美解决资源数据优雅无损的热加载问题</title>
-      <link>http://localhost:1313/2016/01/27/double-buffering/</link>
+      <link>http://blog.codeg.cn/2016/01/27/double-buffering/</link>
       <pubDate>Wed, 27 Jan 2016 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2016/01/27/double-buffering/</guid>
+      <guid>http://blog.codeg.cn/2016/01/27/double-buffering/</guid>
       <description>简介 在一个网络服务器不间断运行过程中，有一些资源数据需要实时更新，例如需要及时更新一份白名单列表，怎么做才能做到优雅无损的更新到服务的进程空</description>
     </item>
     <item>
       <title>serf介绍</title>
-      <link>http://localhost:1313/2015/12/20/serf/</link>
+      <link>http://blog.codeg.cn/2015/12/20/serf/</link>
       <pubDate>Sun, 20 Dec 2015 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2015/12/20/serf/</guid>
+      <guid>http://blog.codeg.cn/2015/12/20/serf/</guid>
       <description>简介 Serf是一个无中心化的服务调度和服务发现工具。它容错性极好、无中心化设计、没有单点故障。Serf是建立在Gossip协议之上的，Gos</description>
     </item>
     <item>
       <title>godotenv介绍</title>
-      <link>http://localhost:1313/2015/12/15/godotenv/</link>
+      <link>http://blog.codeg.cn/2015/12/15/godotenv/</link>
       <pubDate>Tue, 15 Dec 2015 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2015/12/15/godotenv/</guid>
+      <guid>http://blog.codeg.cn/2015/12/15/godotenv/</guid>
       <description>简介 godotenv是ruby社区的dotenv的Golang移植版本。该库会解析 .env 文件，该文件是一个典型的INI格式的文件，类似于下面： SOME_ENV_VAR=somevalue</description>
     </item>
     <item>
       <title>nsq介绍及源码阅读</title>
-      <link>http://localhost:1313/2015/10/22/nsq/</link>
+      <link>http://blog.codeg.cn/2015/10/22/nsq/</link>
       <pubDate>Thu, 22 Oct 2015 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2015/10/22/nsq/</guid>
+      <guid>http://blog.codeg.cn/2015/10/22/nsq/</guid>
       <description>简介 nsq客户端逻辑 nsq消费者 主要请参考nsq_tail代码。nsqd的回应消息处理代码为func (c *Conn) readLoop()。 TCP消息流的</description>
     </item>
     <item>
       <title>ansible简介</title>
-      <link>http://localhost:1313/2015/10/08/ansible/</link>
+      <link>http://blog.codeg.cn/2015/10/08/ansible/</link>
       <pubDate>Thu, 08 Oct 2015 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2015/10/08/ansible/</guid>
+      <guid>http://blog.codeg.cn/2015/10/08/ansible/</guid>
       <description>简介 ansible是新出现的自动化运维工具，基于Python开发，集合了众多运维工具（puppet、cfengine、chef、func、f</description>
     </item>
     <item>
       <title>Golang开源项目源码阅读</title>
-      <link>http://localhost:1313/2015/09/19/golang-project-source-code-reading/</link>
+      <link>http://blog.codeg.cn/2015/09/19/golang-project-source-code-reading/</link>
       <pubDate>Sat, 19 Sep 2015 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2015/09/19/golang-project-source-code-reading/</guid>
+      <guid>http://blog.codeg.cn/2015/09/19/golang-project-source-code-reading/</guid>
       <description>总览 github.com/julienschmidt/httproute httprouter 是一个轻量级的高性能HTTP请求分发器，英文称之为multiplexer，简称mux。 httproute特性 仅支持精确匹配，及只匹配</description>
     </item>
     <item>
       <title>QUIC（Quick UDP Internet Connections）源代码阅读</title>
-      <link>http://localhost:1313/2015/06/17/quic-source-code-reading/</link>
+      <link>http://blog.codeg.cn/2015/06/17/quic-source-code-reading/</link>
       <pubDate>Wed, 17 Jun 2015 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2015/06/17/quic-source-code-reading/</guid>
+      <guid>http://blog.codeg.cn/2015/06/17/quic-source-code-reading/</guid>
       <description>类 基础类 base Pickle：针对二进制数据进行pack和unpack操作 MessagePump：消息泵基类，也就是做消息循环用的 TimeDelt</description>
     </item>
     <item>
       <title>QUIC（Quick UDP Internet Connections）协议简要笔记(翻译)</title>
-      <link>http://localhost:1313/2015/05/08/quic-protocol/</link>
+      <link>http://blog.codeg.cn/2015/05/08/quic-protocol/</link>
       <pubDate>Fri, 08 May 2015 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2015/05/08/quic-protocol/</guid>
+      <guid>http://blog.codeg.cn/2015/05/08/quic-protocol/</guid>
       <description>概述 动机 支持SPDY协议的动机 目标 我们希望开发出一套传输协议以支持下列目标： 在今天的因特网上的广泛的部署能力（例如，能够顺利通过中间路由、可</description>
     </item>
     <item>
       <title>golang学习之如何构造一个multipart/form格式的HTTP请求</title>
-      <link>http://localhost:1313/2015/03/18/golang-how-to-make-a-multipart-http-request/</link>
+      <link>http://blog.codeg.cn/2015/03/18/golang-how-to-make-a-multipart-http-request/</link>
       <pubDate>Wed, 18 Mar 2015 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2015/03/18/golang-how-to-make-a-multipart-http-request/</guid>
+      <guid>http://blog.codeg.cn/2015/03/18/golang-how-to-make-a-multipart-http-request/</guid>
       <description>使用PHP里面的curl扩展库可以方便的从一个php array来构造一个multipart/form格式的HTTP请求，但golang里构造</description>
     </item>
     <item>
       <title>golang学习之继承和重载</title>
-      <link>http://localhost:1313/2015/02/12/golang-derive-override/</link>
+      <link>http://blog.codeg.cn/2015/02/12/golang-derive-override/</link>
       <pubDate>Thu, 12 Feb 2015 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2015/02/12/golang-derive-override/</guid>
+      <guid>http://blog.codeg.cn/2015/02/12/golang-derive-override/</guid>
       <description>其实golang里是不提倡继承的，也不提倡重载的。但是有些场景下，我们还是想试验一下传统C++或Java语言里的继承和重载能否用在golan</description>
     </item>
     <item>
       <title>Docker介绍及初次使用教程</title>
-      <link>http://localhost:1313/2015/02/02/docker-intro/</link>
+      <link>http://blog.codeg.cn/2015/02/02/docker-intro/</link>
       <pubDate>Mon, 02 Feb 2015 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2015/02/02/docker-intro/</guid>
+      <guid>http://blog.codeg.cn/2015/02/02/docker-intro/</guid>
       <description>介绍 请参考下列文章： 深入浅出Docker（一）：Docker核心技术预览 Docker镜像文件（images）的存储结构 初次使用 实验环境 $ uname -a</description>
     </item>
     <item>
       <title>golang解析MIME数据格式的代码示例</title>
-      <link>http://localhost:1313/2015/01/23/mime-golang-parsing/</link>
+      <link>http://blog.codeg.cn/2015/01/23/mime-golang-parsing/</link>
       <pubDate>Fri, 23 Jan 2015 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2015/01/23/mime-golang-parsing/</guid>
+      <guid>http://blog.codeg.cn/2015/01/23/mime-golang-parsing/</guid>
       <description>MIME格式 MIME是multipurpose Internet mail extensions 的缩写。它是一种协议，可使电子邮件除包含一般纯文本以外，还可加上彩色图片、视频、声音或二</description>
     </item>
     <item>
       <title>多进程编程</title>
-      <link>http://localhost:1313/2015/01/13/linux-system-programming/</link>
+      <link>http://blog.codeg.cn/2015/01/13/linux-system-programming/</link>
       <pubDate>Tue, 13 Jan 2015 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2015/01/13/linux-system-programming/</guid>
+      <guid>http://blog.codeg.cn/2015/01/13/linux-system-programming/</guid>
       <description>wait 和 waitpid 当一个进程正常或异常退出时，内核就向其父进程发送SIGCHLD信号。因为子进程退出是一个异步事件，所以该信号也是内核向父进程发送的异步</description>
     </item>
     <item>
       <title>Golang源码阅读——crypto/subtle.ConstantTimeByteEq 深度解析</title>
-      <link>http://localhost:1313/2015/01/12/go-source-code-reading-ConstantTimeByteEq/</link>
+      <link>http://blog.codeg.cn/2015/01/12/go-source-code-reading-ConstantTimeByteEq/</link>
       <pubDate>Mon, 12 Jan 2015 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2015/01/12/go-source-code-reading-ConstantTimeByteEq/</guid>
+      <guid>http://blog.codeg.cn/2015/01/12/go-source-code-reading-ConstantTimeByteEq/</guid>
       <description>根据文档说明，ConstantTimeByteEq返回1，如果 x == y；相反则返回0。为什么一个简单整数比较操作要搞一个单独的函数出来实现？并</description>
     </item>
     <item>
       <title>golang网络编程-udp客户端示例代码</title>
-      <link>http://localhost:1313/2015/01/07/golang-udp-client/</link>
+      <link>http://blog.codeg.cn/2015/01/07/golang-udp-client/</link>
       <pubDate>Wed, 07 Jan 2015 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2015/01/07/golang-udp-client/</guid>
+      <guid>http://blog.codeg.cn/2015/01/07/golang-udp-client/</guid>
       <description>最简单的一个客户端 编程步骤： 创建一个udp socket并连接服务器 发送数据给服务器 从服务器接收数据 关闭udp socket package main import ( &amp;#34;fmt&amp;#34; &amp;#34;net&amp;#34; &amp;#34;os&amp;#34; ) func main() { hostport := &amp;#34;10.16.28.17:1053&amp;#34; if</description>
     </item>
     <item>
       <title>Nginx源码研究（7）——内存池结构ngx_pool_t</title>
-      <link>http://localhost:1313/2015/01/06/ngx_pool_t/</link>
+      <link>http://blog.codeg.cn/2015/01/06/ngx_pool_t/</link>
       <pubDate>Tue, 06 Jan 2015 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2015/01/06/ngx_pool_t/</guid>
+      <guid>http://blog.codeg.cn/2015/01/06/ngx_pool_t/</guid>
       <description>简介 本文主要介绍Nginx内存池结构ngx_pool_t这一重要的数据结构的使用方法和具体实现。同时为了方便学习和研究，还从ngx_pool</description>
     </item>
     <item>
       <title>Nginx源码研究（5）——单向链表结构ngx_list_t</title>
-      <link>http://localhost:1313/2015/01/04/ngx_list_t/</link>
+      <link>http://blog.codeg.cn/2015/01/04/ngx_list_t/</link>
       <pubDate>Sun, 04 Jan 2015 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2015/01/04/ngx_list_t/</guid>
+      <guid>http://blog.codeg.cn/2015/01/04/ngx_list_t/</guid>
       <description>简介 本文主要介绍Nginx单向链表结构ngx_list_t这一重要的数据结构的使用方法和具体实现。 该链表结构与我们常说的链表结构(例如std</description>
     </item>
     <item>
       <title>Nginx源码研究（6）——双向链表结构ngx_queue_t</title>
-      <link>http://localhost:1313/2015/01/04/ngx_queue_t/</link>
+      <link>http://blog.codeg.cn/2015/01/04/ngx_queue_t/</link>
       <pubDate>Sun, 04 Jan 2015 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2015/01/04/ngx_queue_t/</guid>
+      <guid>http://blog.codeg.cn/2015/01/04/ngx_queue_t/</guid>
       <description>简介 本文主要介绍Nginx双向链表结构ngx_queue_t这一重要的数据结构的使用方法和具体实现。 ngx_queue_t 是Nginx提供的一个轻量级双向链表容</description>
     </item>
     <item>
       <title>Nginx源码研究（3）——Nginx数组ngx_array_t和示例</title>
-      <link>http://localhost:1313/2015/01/03/ngx_array_t/</link>
+      <link>http://blog.codeg.cn/2015/01/03/ngx_array_t/</link>
       <pubDate>Sat, 03 Jan 2015 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2015/01/03/ngx_array_t/</guid>
+      <guid>http://blog.codeg.cn/2015/01/03/ngx_array_t/</guid>
       <description>本文主要介绍Nginx数组ngx_array_t这一重要的数据结构的使用方法和具体实现。 ngx_array_t是nginx内部使用的数组结构</description>
     </item>
     <item>
       <title>Nginx源码研究（4）——hash结构ngx_hash_t</title>
-      <link>http://localhost:1313/2015/01/03/ngx_hash_t/</link>
+      <link>http://blog.codeg.cn/2015/01/03/ngx_hash_t/</link>
       <pubDate>Sat, 03 Jan 2015 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2015/01/03/ngx_hash_t/</guid>
+      <guid>http://blog.codeg.cn/2015/01/03/ngx_hash_t/</guid>
       <description>简介 本文主要介绍Nginx的hash结构ngx_hash_t这一重要的数据结构的使用方法和具体实现。nginx实现的hash表特点是构建一次</description>
     </item>
     <item>
       <title>发布一个批量转码工具:gbk2utf8</title>
-      <link>http://localhost:1313/2015/01/03/gbk2utf8-by-golang/</link>
+      <link>http://blog.codeg.cn/2015/01/03/gbk2utf8-by-golang/</link>
       <pubDate>Sat, 03 Jan 2015 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2015/01/03/gbk2utf8-by-golang/</guid>
+      <guid>http://blog.codeg.cn/2015/01/03/gbk2utf8-by-golang/</guid>
       <description>Linux下的iconv是针对单个文件处理，但是转码后的数据直接输出到STDOUT，不方便批量处理。gbk2utf8工具可以针对一个目录以及</description>
     </item>
     <item>
       <title>Nginx源码研究（1）——项目介绍</title>
-      <link>http://localhost:1313/2015/01/02/nginx-research-readme/</link>
+      <link>http://blog.codeg.cn/2015/01/02/nginx-research-readme/</link>
       <pubDate>Fri, 02 Jan 2015 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2015/01/02/nginx-research-readme/</guid>
+      <guid>http://blog.codeg.cn/2015/01/02/nginx-research-readme/</guid>
       <description>nginx-research 本项目是为了研究Nginx源码而建立的。该项目有以下几点比较不错的优点： VS2013源码编译和调试 将Nginx看做一个优秀的C库使用，已经</description>
     </item>
     <item>
       <title>C&#43;&#43;11中std::move示例</title>
-      <link>http://localhost:1313/2015/01/01/c&#43;&#43;11-move/</link>
+      <link>http://blog.codeg.cn/2015/01/01/c&#43;&#43;11-move/</link>
       <pubDate>Thu, 01 Jan 2015 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2015/01/01/c&#43;&#43;11-move/</guid>
+      <guid>http://blog.codeg.cn/2015/01/01/c&#43;&#43;11-move/</guid>
       <description>std::move作用：如果其类型支持移动的话，会无条件的将其参数（可能是左值）强制转换为右值引用，从而表示其可以移动，它使得编译器随后能够</description>
     </item>
     <item>
       <title>Nginx源码研究（2）——编译Nginx为静(动)态库以及验证</title>
-      <link>http://localhost:1313/2014/12/31/compile-nginx-to-static-lib-and-1st-usage/</link>
+      <link>http://blog.codeg.cn/2014/12/31/compile-nginx-to-static-lib-and-1st-usage/</link>
       <pubDate>Wed, 31 Dec 2014 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2014/12/31/compile-nginx-to-static-lib-and-1st-usage/</guid>
+      <guid>http://blog.codeg.cn/2014/12/31/compile-nginx-to-static-lib-and-1st-usage/</guid>
       <description>最近编程哥又开始阅读和研究Nginx源码，这一过程中做了一些笔记，从而形成本系列文章。 本文主要介绍如何将nginx编译为一个动态库或静态库，</description>
     </item>
     <item>
       <title>测试覆盖率工具coveralls.io的配置介绍</title>
-      <link>http://localhost:1313/2014/12/30/coveralls-io-configuration-info/</link>
+      <link>http://blog.codeg.cn/2014/12/30/coveralls-io-configuration-info/</link>
       <pubDate>Tue, 30 Dec 2014 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2014/12/30/coveralls-io-configuration-info/</guid>
+      <guid>http://blog.codeg.cn/2014/12/30/coveralls-io-configuration-info/</guid>
       <description>这是一个测试覆盖率图标，非常的漂亮。我们可以在很多github的项目主页上看到，本文将介绍如何自动生成这个图标。 1. 在其主页上https://</description>
     </item>
     <item>
       <title>Golang源码阅读</title>
-      <link>http://localhost:1313/2014/12/28/go-source-code-reading/</link>
+      <link>http://blog.codeg.cn/2014/12/28/go-source-code-reading/</link>
       <pubDate>Sun, 28 Dec 2014 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2014/12/28/go-source-code-reading/</guid>
+      <guid>http://blog.codeg.cn/2014/12/28/go-source-code-reading/</guid>
       <description>总览 src/cmd/dist/buf.c 该文件提供两个数据结构：Buf、Vec，分别用来取代char*和char**的相关操作。Buf和Vec这两个数据结构非常简单易懂，其他</description>
     </item>
     <item>
       <title>发布一个使用简单的绘图工具</title>
-      <link>http://localhost:1313/2014/12/27/gochart-info/</link>
+      <link>http://blog.codeg.cn/2014/12/27/gochart-info/</link>
       <pubDate>Sat, 27 Dec 2014 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2014/12/27/gochart-info/</guid>
+      <guid>http://blog.codeg.cn/2014/12/27/gochart-info/</guid>
       <description>gochart是仿照goplot使用golang和highcharts开源库制作的一个使用起来非常简单的绘制图表的工具，图表风格有曲线图、折</description>
     </item>
     <item>
       <title>Golang1.4资源下载</title>
-      <link>http://localhost:1313/2014/12/15/golang1.4-resource-download/</link>
+      <link>http://blog.codeg.cn/2014/12/15/golang1.4-resource-download/</link>
       <pubDate>Mon, 15 Dec 2014 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2014/12/15/golang1.4-resource-download/</guid>
+      <guid>http://blog.codeg.cn/2014/12/15/golang1.4-resource-download/</guid>
       <description>当前golang官方主页背墙，且有些golang.org/x下面的库也下载不到，因此我将这项资源统一放在这里供大家下载。 golang.org</description>
     </item>
     <item>
       <title>Ubuntu中国源地址列表及更改方法</title>
-      <link>http://localhost:1313/2014/12/15/ubuntu-source-list-of-china/</link>
+      <link>http://blog.codeg.cn/2014/12/15/ubuntu-source-list-of-china/</link>
       <pubDate>Mon, 15 Dec 2014 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2014/12/15/ubuntu-source-list-of-china/</guid>
+      <guid>http://blog.codeg.cn/2014/12/15/ubuntu-source-list-of-china/</guid>
       <description>首先备份Ubuntu源列表 sudo cp /etc/apt/sources.list /etc/apt/sources.list.backup （备份下当前的源列表） sudo vim /etc/apt/sources.list 将下面的代码粘贴进去（“#”开头的那一行为注释，可以直接复制进文件中）之后，再</description>
     </item>
     <item>
       <title>C&#43;&#43;与Java垃圾回收的区别</title>
-      <link>http://localhost:1313/2014/12/14/gc-cpp-java/</link>
+      <link>http://blog.codeg.cn/2014/12/14/gc-cpp-java/</link>
       <pubDate>Sun, 14 Dec 2014 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2014/12/14/gc-cpp-java/</guid>
+      <guid>http://blog.codeg.cn/2014/12/14/gc-cpp-java/</guid>
       <description></description>
     </item>
     <item>
       <title>Jekyll在github上构建免费的Web应用</title>
-      <link>http://localhost:1313/2014/12/14/jekyll-install-on-win7/</link>
+      <link>http://blog.codeg.cn/2014/12/14/jekyll-install-on-win7/</link>
       <pubDate>Sun, 14 Dec 2014 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2014/12/14/jekyll-install-on-win7/</guid>
+      <guid>http://blog.codeg.cn/2014/12/14/jekyll-install-on-win7/</guid>
       <description>1. Jekyll介绍 Jekyll是一个静态站点生成器，它会根据网页源码生成静态文件。它提供了模板、变量、插件等功能，可以用来生成整个网站。 Je</description>
     </item>
     <item>
       <title>Golang写的HTTP服务与Nginx对比</title>
-      <link>http://localhost:1313/2014/12/13/golang-vs-nginx-at-httpecho/</link>
+      <link>http://blog.codeg.cn/2014/12/13/golang-vs-nginx-at-httpecho/</link>
       <pubDate>Sat, 13 Dec 2014 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2014/12/13/golang-vs-nginx-at-httpecho/</guid>
+      <guid>http://blog.codeg.cn/2014/12/13/golang-vs-nginx-at-httpecho/</guid>
       <description>Golang写网络程序的确很简单，一个HTTP Echo服务，几行源码就可以搞定。Golang源码如下： package main import ( &amp;#34;log&amp;#34; &amp;#34;net/http&amp;#34; &amp;#34;io/ioutil&amp;#34; ) func handler(w http.ResponseWriter, r *http.Request) { buf, err := ioutil.ReadAll(r.Body) //Read</description>
     </item>
     <item>
       <title>你好，编程哥</title>
-      <link>http://localhost:1313/2014/12/13/Hello-CodeG/</link>
+      <link>http://blog.codeg.cn/2014/12/13/Hello-CodeG/</link>
       <pubDate>Sat, 13 Dec 2014 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2014/12/13/Hello-CodeG/</guid>
+      <guid>http://blog.codeg.cn/2014/12/13/Hello-CodeG/</guid>
       <description>哥都不记得上次写博客的具体时间了，中间一直说写点什么，就是没有动手。原因有几： 哥的文笔不太好 总觉得技术水平不够高，文章写起来总没深度，不好意</description>
     </item>
     <item>
       <title>使用Github Pages建独立博客</title>
-      <link>http://localhost:1313/2014/12/13/github-pages/</link>
+      <link>http://blog.codeg.cn/2014/12/13/github-pages/</link>
       <pubDate>Sat, 13 Dec 2014 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2014/12/13/github-pages/</guid>
+      <guid>http://blog.codeg.cn/2014/12/13/github-pages/</guid>
       <description>本博客框架是直接在 BeiYuu：使用Github Pages建独立博客 上改造而来的。增加了下列特性： 文章Tags Tags聚合 时间显示 作者显示 感</description>
     </item>
   </channel>

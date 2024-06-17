@@ -2,53 +2,53 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>C&#43;&#43;11 on CodeG Blog</title>
-    <link>http://localhost:1313/tags/C&#43;&#43;11/</link>
+    <link>http://blog.codeg.cn/tags/C&#43;&#43;11/</link>
     <description>Recent content in C&#43;&#43;11 on CodeG Blog</description>
     <generator>Hugo</generator>
     <language>zh-CN</language>
     <copyright>Copyright (c) 2015. All rights reserved.</copyright>
     <lastBuildDate>Wed, 19 Apr 2017 10:11:01 +0000</lastBuildDate>
-    <atom:link href="http://localhost:1313/tags/C++11/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://blog.codeg.cn/tags/C++11/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>evpp设计细节系列(1)：利用 enable_shared_from_this 实现一个自管理的定时器</title>
-      <link>http://localhost:1313/post/blog/2017-04-19-the-detail-design-of-evpp-invoke-timer/</link>
+      <link>http://blog.codeg.cn/post/blog/2017-04-19-the-detail-design-of-evpp-invoke-timer/</link>
       <pubDate>Wed, 19 Apr 2017 10:11:01 +0000</pubDate>
-      <guid>http://localhost:1313/post/blog/2017-04-19-the-detail-design-of-evpp-invoke-timer/</guid>
+      <guid>http://blog.codeg.cn/post/blog/2017-04-19-the-detail-design-of-evpp-invoke-timer/</guid>
       <description>0. 前言 https://github.com/Qihoo360/evpp是一个高性能的Reactor模式的现代化的C++11版本的高性能网络库</description>
     </item>
     <item>
       <title>基于evpp的EventLoop实现来对无锁队列boost::lockfree::queue和moodycamel::ConcurrentQueue做一个性能测试对比</title>
-      <link>http://localhost:1313/post/blog/2017-04-09-the-benchmark-of-lockfree/</link>
+      <link>http://blog.codeg.cn/post/blog/2017-04-09-the-benchmark-of-lockfree/</link>
       <pubDate>Sun, 09 Apr 2017 10:11:01 +0000</pubDate>
-      <guid>http://localhost:1313/post/blog/2017-04-09-the-benchmark-of-lockfree/</guid>
+      <guid>http://blog.codeg.cn/post/blog/2017-04-09-the-benchmark-of-lockfree/</guid>
       <description>English version : The performance benchmark of queue with std::mutex against boost::lockfree::queue and moodycamel::ConcurrentQueue Brief 我们使用https://github.com/Qihoo360/evpp项目中的EventLoop::Queu</description>
     </item>
     <item>
       <title>evpp与asio吞吐量对比</title>
-      <link>http://localhost:1313/post/blog/2017-04-04-the-throughput-benchmark-test-of-evpp-vs-asio/</link>
+      <link>http://blog.codeg.cn/post/blog/2017-04-04-the-throughput-benchmark-test-of-evpp-vs-asio/</link>
       <pubDate>Tue, 04 Apr 2017 18:13:00 +0000</pubDate>
-      <guid>http://localhost:1313/post/blog/2017-04-04-the-throughput-benchmark-test-of-evpp-vs-asio/</guid>
+      <guid>http://blog.codeg.cn/post/blog/2017-04-04-the-throughput-benchmark-test-of-evpp-vs-asio/</guid>
       <description>简介 Boost.Asio是用于网络和低层IO编程的跨平台C++库,为开发者提供了C++环境下稳定的异步编程模型。也是业内公认的优秀的C++网</description>
     </item>
     <item>
       <title>evpp与muduo吞吐量对比</title>
-      <link>http://localhost:1313/post/blog/2017-03-14-the-throughput-benchmark-test-of-evpp-vs-muduo/</link>
+      <link>http://blog.codeg.cn/post/blog/2017-03-14-the-throughput-benchmark-test-of-evpp-vs-muduo/</link>
       <pubDate>Tue, 14 Mar 2017 18:13:00 +0000</pubDate>
-      <guid>http://localhost:1313/post/blog/2017-03-14-the-throughput-benchmark-test-of-evpp-vs-muduo/</guid>
+      <guid>http://blog.codeg.cn/post/blog/2017-03-14-the-throughput-benchmark-test-of-evpp-vs-muduo/</guid>
       <description>简介 muduo是最近几年中国开源界里产生的优秀作品。它是由业内大牛陈硕实现的。详细介绍，请参考其博客介绍http://blog.csdn.n</description>
     </item>
     <item>
       <title>发布一个高性能的Reactor模式的C&#43;&#43;网络库：evpp</title>
-      <link>http://localhost:1313/post/blog/2017-03-13-release-a-high-performance-C&#43;&#43;11-network-library/</link>
+      <link>http://blog.codeg.cn/post/blog/2017-03-13-release-a-high-performance-C&#43;&#43;11-network-library/</link>
       <pubDate>Mon, 13 Mar 2017 18:13:00 +0000</pubDate>
-      <guid>http://localhost:1313/post/blog/2017-03-13-release-a-high-performance-C&#43;&#43;11-network-library/</guid>
+      <guid>http://blog.codeg.cn/post/blog/2017-03-13-release-a-high-performance-C&#43;&#43;11-network-library/</guid>
       <description>简介 evpp是一个基于libevent开发的现代化的支持C++11特性的高性能网络库，自带TCP/UDP/HTTP等协议的异步非阻塞式的服务</description>
     </item>
     <item>
       <title>C&#43;&#43;11中std::move示例</title>
-      <link>http://localhost:1313/2015/01/01/c&#43;&#43;11-move/</link>
+      <link>http://blog.codeg.cn/2015/01/01/c&#43;&#43;11-move/</link>
       <pubDate>Thu, 01 Jan 2015 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/2015/01/01/c&#43;&#43;11-move/</guid>
+      <guid>http://blog.codeg.cn/2015/01/01/c&#43;&#43;11-move/</guid>
       <description>std::move作用：如果其类型支持移动的话，会无条件的将其参数（可能是左值）强制转换为右值引用，从而表示其可以移动，它使得编译器随后能够</description>
     </item>
   </channel>

@@ -1,58 +1,230 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN" lang="zh-CN">
-<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
-  <link href="https://gmpg.org/xfn/11" rel="profile">
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <meta name="generator" content="Hugo 0.127.0">
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta property="og:site_name" content="CodeG Blog">
+    <meta property="og:type" content="article">
 
-  <title>发布一个高性能的Reactor模式的C&#43;&#43;网络库：evpp &middot; CodeG Blog</title>
-  <meta name="description" content="" />
+    
+    <meta property="og:image" content="http://blog.codeg.cn//">
+    <meta property="twitter:image" content="http://blog.codeg.cn//" />
+    
 
-  
-  <link type="text/css" rel="stylesheet" href="http://localhost:1313/css/print.css" media="print">
-  <link type="text/css" rel="stylesheet" href="http://localhost:1313/css/poole.css">
-  <link type="text/css" rel="stylesheet" href="http://localhost:1313/css/syntax.css">
-  <link type="text/css" rel="stylesheet" href="http://localhost:1313/css/hyde.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
+    
+    <meta name="title" content="发布一个高性能的Reactor模式的C&#43;&#43;网络库：evpp" />
+    <meta property="og:title" content="发布一个高性能的Reactor模式的C&#43;&#43;网络库：evpp" />
+    <meta property="twitter:title" content="发布一个高性能的Reactor模式的C&#43;&#43;网络库：evpp" />
+    
 
+    
+    <meta name="description" content="思路决定出路，态度决定高度。">
+    <meta property="og:description" content="思路决定出路，态度决定高度。" />
+    <meta property="twitter:description" content="思路决定出路，态度决定高度。" />
+    
 
-  
-  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="http://localhost:1313/apple-touch-icon-144-precomposed.png">
-  <link rel="shortcut icon" href="http://localhost:1313/favicon.png">
+    
+    <meta property="twitter:card" content="summary" />
+    
+    
 
-  
-  
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="http://blog.codeg.cn/img/favicon.ico">
+
+    <title>发布一个高性能的Reactor模式的C&#43;&#43;网络库：evpp | </title>
+
+    <link rel="canonical" href="http://blog.codeg.cn/post/blog/2017-03-13-release-a-high-performance-C&#43;&#43;11-network-library/">
+
+    
+    
+    
+    <link rel="stylesheet" href="http://blog.codeg.cn/css/bootstrap.min.css">
+
+    
+    <link rel="stylesheet" href="http://blog.codeg.cn/css/hugo-theme-cleanwhite.min.css">
+
+    
+    <link rel="stylesheet" href="http://blog.codeg.cn/css/zanshang.css">
+
+    
+    <link rel="stylesheet" href="http://blog.codeg.cn/css/font-awesome.all.min.css">
+
+    
+    
+
+    
+    <script src="http://blog.codeg.cn/js/jquery.min.js"></script>
+
+    
+    <script src="http://blog.codeg.cn/js/bootstrap.min.js"></script>
+
+    
+    <script src="http://blog.codeg.cn/js/hux-blog.min.js"></script>
+
+    
+    <script src="http://blog.codeg.cn/js/lazysizes.min.js"></script>
+
+    
+    
+
 </head>
 
-  <body class=" ">
-  <aside class="sidebar">
-  <div class="container sidebar-sticky">
-    <div class="sidebar-about">
-      <a href="http://localhost:1313/"><h1>CodeG Blog</h1></a>
-      <p class="lead">
-       思路决定出路，态度决定高度。 
-      </p>
+
+
+
+
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+
+    <div class="container-fluid">
+        
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="http://blog.codeg.cn/">CodeG Blog</a>
+        </div>
+
+        
+        
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="http://blog.codeg.cn/">All Posts</a>
+                    </li>
+                    
+                        
+                        <li>
+                            <a href="http://blog.codeg.cn/categories/blog/">blog</a>
+                        </li>
+                        
+                        <li>
+                            <a href="http://blog.codeg.cn/categories/finance/">finance</a>
+                        </li>
+                        
+                        <li>
+                            <a href="http://blog.codeg.cn/categories/opinion/">opinion</a>
+                        </li>
+                        
+                        <li>
+                            <a href="http://blog.codeg.cn/categories/project/">project</a>
+                        </li>
+                        
+                        <li>
+                            <a href="http://blog.codeg.cn/categories/study/">study</a>
+                        </li>
+                        
+                    
+                    
+		    
+		            <li>
+                        <a href="http://blog.codeg.cn/search"><i class="fa fa-search"></i></a>
+		           </li>
+                </ul>
+            </div>
+        </div>
+        
     </div>
+    
+</nav>
+<script>
+    
+    
+    
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
 
-    <nav>
-      <ul class="sidebar-nav">
-        <li><a href="http://localhost:1313/">Home</a> </li>
-        <li><a href="http://localhost:1313/post/"> 技术文章 </a></li><li><a href="http://localhost:1313/about/"> 关于我 </a></li>
-      </ul>
-    </nav>
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        
+            $navbar.className = " ";
+            
+            setTimeout(function(){
+                
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
 
-    <p>&copy; 2024. All rights reserved. </p>
-  </div>
-</aside>
 
-    <main class="content container">
-    <div class="post">
-  <h1>发布一个高性能的Reactor模式的C&#43;&#43;网络库：evpp</h1>
-  <time datetime=2017-03-13T18:13:00Z class="post-date">Mon, Mar 13, 2017</time>
-  <h2 id="简介">简介</h2>
+
+
+<style type="text/css">
+    header.intro-header {
+        background-image: url('/')
+    }
+</style>
+
+<header class="intro-header" >
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="http://blog.codeg.cn/tags/C&#43;&#43;11" title="C&#43;&#43;11">
+                            C&#43;&#43;11
+                        </a>
+                        
+                        <a class="tag" href="http://blog.codeg.cn/tags/evpp" title="evpp">
+                            evpp
+                        </a>
+                        
+                    </div>
+                    <h1>发布一个高性能的Reactor模式的C&#43;&#43;网络库：evpp</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        
+                            Posted by 
+                            
+                                    CodeG Blog
+                             
+                            on 
+                            Monday, March 13, 2017
+                            
+                            
+                            
+                            
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<article>
+    <div class="container">
+        <div class="row">
+
+            
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                
+                <h2 id="简介">简介</h2>
 <p><a href="https://github.com/Qihoo360/evpp">evpp</a>是一个基于<a href="https://github.com/libevent/libevent">libevent</a>开发的现代化的支持C++11特性的高性能网络库，自带TCP/UDP/HTTP等协议的异步非阻塞式的服务器和客户端库。</p>
 <h2 id="特性">特性</h2>
 <ol>
@@ -66,8 +238,8 @@
 </ol>
 <p>除此之外，基于该库之上，还提供两个附带的应用层协议库：</p>
 <ol>
-<li><code>evmc</code> ：一个纯异步非阻塞式的<code>memcached</code>的C++客户端库，支持<code>membase</code>集群模式。该库已经用于生产环境，每天发起1000多<strong>亿</strong>次memcache查询请求。详情请见：<a href="http://localhost:1313/apps/evmc/readme.md">evmc readme</a></li>
-<li><code>evnsq</code> ： 一个纯异步非阻塞式的<code>NSQ</code>的C++客户端库，支持消费者、生产者、服务发现等特性。该库已经用于生产环境，每天生产200多<strong>亿</strong>条日志消息。详情请见：<a href="http://localhost:1313/apps/evnsq/readme.md">evnsq readme</a></li>
+<li><code>evmc</code> ：一个纯异步非阻塞式的<code>memcached</code>的C++客户端库，支持<code>membase</code>集群模式。该库已经用于生产环境，每天发起1000多<strong>亿</strong>次memcache查询请求。详情请见：<a href="http://blog.codeg.cn/apps/evmc/readme.md">evmc readme</a></li>
+<li><code>evnsq</code> ： 一个纯异步非阻塞式的<code>NSQ</code>的C++客户端库，支持消费者、生产者、服务发现等特性。该库已经用于生产环境，每天生产200多<strong>亿</strong>条日志消息。详情请见：<a href="http://blog.codeg.cn/apps/evnsq/readme.md">evnsq readme</a></li>
 </ol>
 <p>将来还会推出<code>redis</code>的客户端库。</p>
 <h2 id="项目由来">项目由来</h2>
@@ -101,8 +273,14 @@
 <li>操作系统：Linux CentOS 6.2, 2.6.32-220.7.1.el6.x86_64</li>
 <li>硬件CPU：Intel(R) Xeon(R) CPU E5-2630 v2 @ 2.60GHz</li>
 </ul>
-<p><img src="https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-libevent-1thread-all.png" alt="">
-<img src="https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-all.png" alt=""></p>
+<p>
+  <img src="https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-libevent-1thread-all.png" alt="">
+
+
+
+  <img src="https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-all.png" alt="">
+
+</p>
 <h2 id="几个简单的示例代码">几个简单的示例代码</h2>
 <h2 id="tcp-echo服务器">TCP Echo服务器</h2>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;evpp/tcp_server.h&gt;</span><span class="cp">
@@ -178,11 +356,211 @@
 <li><a href="https://github.com/Qihoo360/evpp">evpp</a>深度参考了<a href="https://github.com/chenshuo/muduo">muduo</a>项目的实现和设计，非常感谢<a href="https://github.com/chenshuo" title="https://github.com/chenshuo">Chen Shuo</a></li>
 </ol>
 
-</div>
+
+                
+
+                
+                <hr>
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="http://blog.codeg.cn/post/blog/2016-09-06-minio-source-code-reading/" data-toggle="tooltip" data-placement="top" title="minio源码阅读">&larr;
+                            Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="http://blog.codeg.cn/post/blog/2017-03-14-the-throughput-benchmark-test-of-evpp-vs-muduo/" data-toggle="tooltip" data-placement="top" title="evpp与muduo吞吐量对比">Next
+                            Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+                
+
+                
 
 
-    </main>
+            </div>
+
+            
+            
+            <div class="
+                col-lg-2 col-lg-offset-0
+                visible-lg-block
+                sidebar-container
+                catalog-container">
+                <div class="side-catalog">
+                    <hr class="hidden-sm hidden-xs">
+                    <h5>
+                        <a class="catalog-toggle" href="#">CATALOG</a>
+                    </h5>
+                    <ul class="catalog-body"></ul>
+                </div>
+            </div>
+            
+
+            
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                
+                
+
+                
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">                  
+                    
+                    
+                    
+                    
+                    
+
+		            
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+            
+            
+            
+           
+             </ul>
+		<p class="copyright text-muted">
+                    Copyright &copy; CodeG Blog 2024
+                    
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+<script>
+    function loadAsync(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+
+
+
+
+<script>
+    
+    if($('#tag_cloud').length !== 0){
+        loadAsync("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+
+<script>
+    loadAsync("https://cdn.jsdelivr.net/npm/fastclick@1.0.6/lib/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+
+
+
+
+<script type="text/javascript">
+    function generateCatalog(selector) {
+
+        
+        
+        
+        
+            _containerSelector = 'div.post-container'
+        
+
+        
+        var P = $(_containerSelector), a, n, t, l, i, c;
+        a = P.find('h1,h2,h3,h4,h5,h6');
+
+        
+        $(selector).html('')
+
+        
+        a.each(function () {
+            n = $(this).prop('tagName').toLowerCase();
+            i = "#" + $(this).prop('id');
+            t = $(this).text();
+            c = $('<a href="' + i + '" rel="nofollow">' + t + '</a>');
+            l = $('<li class="' + n + '_nav"></li>').append(c);
+            $(selector).append(l);
+        });
+        return true;
+    }
+
+    generateCatalog(".catalog-body");
 
     
-  </body>
+    $(".catalog-toggle").click((function (e) {
+        e.preventDefault();
+        $('.side-catalog').toggleClass("fold")
+    }))
+
+    
+
+
+    loadAsync("\/js\/jquery.nav.js", function () {
+        $('.catalog-body').onePageNav({
+            currentClass: "active",
+            changeHash: !1,
+            easing: "swing",
+            filter: "",
+            scrollSpeed: 700,
+            scrollOffset: 0,
+            scrollThreshold: .2,
+            begin: null,
+            end: null,
+            scrollChange: null,
+            padding: 80
+        });
+    });
+</script>
+
+
+
+
+
+
+</body>
 </html>
