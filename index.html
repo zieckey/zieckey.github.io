@@ -1,619 +1,728 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN" lang="zh-CN">
 <head>
-	<meta name="generator" content="Hugo 0.127.0">
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="generator" content="Hugo 0.127.0">
 
-    
-    <meta property="og:site_name" content="CodeG Blog">
-    <meta property="og:type" content="article">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    
-    <meta property="og:image" content="http://blog.codeg.cn//">
-    <meta property="twitter:image" content="http://blog.codeg.cn//" />
-    
+  <title>CodeG Blog</title>
+  <meta name="description" content="思路决定出路，态度决定高度。" />
 
-    
-    <meta name="title" content="" />
-    <meta property="og:title" content="" />
-    <meta property="twitter:title" content="" />
-    
-
-    
-    <meta name="description" content="思路决定出路，态度决定高度。">
-    <meta property="og:description" content="思路决定出路，态度决定高度。" />
-    <meta property="twitter:description" content="思路决定出路，态度决定高度。" />
-    
-
-    
-    <meta property="twitter:card" content="summary" />
-    
-    
-
-    <meta name="keyword"  content="">
-    <link rel="shortcut icon" href="http://blog.codeg.cn/img/favicon.ico">
-
-    <title>CodeG Blog | </title>
-
-    <link rel="canonical" href="http://blog.codeg.cn/">
-
-    
-    
-    
-    <link rel="stylesheet" href="http://blog.codeg.cn/css/bootstrap.min.css">
-
-    
-    <link rel="stylesheet" href="http://blog.codeg.cn/css/hugo-theme-cleanwhite.min.css">
-
-    
-    <link rel="stylesheet" href="http://blog.codeg.cn/css/zanshang.css">
-
-    
-    <link rel="stylesheet" href="http://blog.codeg.cn/css/font-awesome.all.min.css">
-
-    
-    
-
-    
-    <script src="http://blog.codeg.cn/js/jquery.min.js"></script>
-
-    
-    <script src="http://blog.codeg.cn/js/bootstrap.min.js"></script>
-
-    
-    <script src="http://blog.codeg.cn/js/hux-blog.min.js"></script>
-
-    
-    <script src="http://blog.codeg.cn/js/lazysizes.min.js"></script>
-
-    
-    
-
-</head>
-
-
-
-
-
-
-<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
-
-    <div class="container-fluid">
-        
-        <div class="navbar-header page-scroll">
-            <button type="button" class="navbar-toggle">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="http://blog.codeg.cn/">CodeG Blog</a>
-        </div>
-
-        
-        
-        <div id="huxblog_navbar">
-            <div class="navbar-collapse">
-                <ul class="nav navbar-nav navbar-right">
-                    <li>
-                        <a href="http://blog.codeg.cn/">All Posts</a>
-                    </li>
-                    
-                        
-                        <li>
-                            <a href="http://blog.codeg.cn/categories/blog/">blog</a>
-                        </li>
-                        
-                        <li>
-                            <a href="http://blog.codeg.cn/categories/finance/">finance</a>
-                        </li>
-                        
-                        <li>
-                            <a href="http://blog.codeg.cn/categories/opinion/">opinion</a>
-                        </li>
-                        
-                        <li>
-                            <a href="http://blog.codeg.cn/categories/project/">project</a>
-                        </li>
-                        
-                        <li>
-                            <a href="http://blog.codeg.cn/categories/study/">study</a>
-                        </li>
-                        
-                    
-                    
-		    
-		            <li>
-                        <a href="http://blog.codeg.cn/search"><i class="fa fa-search"></i></a>
-		           </li>
-                </ul>
-            </div>
-        </div>
-        
-    </div>
-    
-</nav>
-<script>
-    
-    
-    
-    var $body   = document.body;
-    var $toggle = document.querySelector('.navbar-toggle');
-    var $navbar = document.querySelector('#huxblog_navbar');
-    var $collapse = document.querySelector('.navbar-collapse');
-
-    $toggle.addEventListener('click', handleMagic)
-    function handleMagic(e){
-        if ($navbar.className.indexOf('in') > 0) {
-        
-            $navbar.className = " ";
-            
-            setTimeout(function(){
-                
-                if($navbar.className.indexOf('in') < 0) {
-                    $collapse.style.height = "0px"
-                }
-            },400)
-        }else{
-        
-            $collapse.style.height = "auto"
-            $navbar.className += " in";
-        }
-    }
-</script>
-
-
-
-<header class="intro-header" style="background-image: url('/')">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 ">
-                <div class="site-heading">
-                    <h1>CodeG Blog </h1>
-                    
-		    <span class="subheading"></span>
-                </div>
-            </div>
-        </div>
-    </div>
-</header>
-
+  
+  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/print.css" media="print">
+  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/poole.css">
+  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/syntax.css">
+  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/hyde.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
 
 
   
-<div data-pagefind-ignore="all" class="container">
-    <div class="row">
-        
-        
-   	    <div class="
-            col-lg-8 col-lg-offset-1
-            col-md-8 col-md-offset-1
-            col-sm-12
-            col-xs-12
-            post-container
-        ">
-            
-<div data-pagefind-ignore="all">
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="http://blog.codeg.cn/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="http://blog.codeg.cn/favicon.png">
 
-<div class="post-preview">
-    <a href="http://blog.codeg.cn/post/finance/2021-12-06-Cross-board-remittance/">
-        <h2 class="post-title">
-            跨境汇款的资金流过程简析（支付宝网络）
-        </h2>
-	
-        <div class="post-content-preview">
-	
-            简单介绍了张三给国内用户李四的汇款过程
-        
-        </div>
-    </a>
-    <p class="post-meta">
-    
-        Posted by CodeG Blog on Monday, December 6, 2021
-        
-        
-    
-    </p>
+  
+  <link href="http://blog.codeg.cn/index.xml" rel="alternate" type="application/rss+xml" title="CodeG Blog" />
+  
+</head>
 
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="http://blog.codeg.cn/post/finance/2021-12-06-Transfer-between-commercial-banks/">
-        <h2 class="post-title">
-            两个用户通过银行转账的资金流过程简析
-        </h2>
-	
-        <div class="post-content-preview">
-	
-            简单介绍了客户A准备用自己的工行卡给客户B的农行卡转一笔钱的各个机构之间的信息流和资金流交互过程
-        
-        </div>
-    </a>
-    <p class="post-meta">
-    
-        Posted by CodeG Blog on Monday, December 6, 2021
-        
-        
-    
-    </p>
-
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="http://blog.codeg.cn/post/study/2021-12-06-be-made-of/">
-        <h2 class="post-title">
-            英语基础短语解析：be made of/in/from/into
-        </h2>
-	
-        <div class="post-content-preview">
-	
-            This piece of wood will be made into a small bench. (这块木头将要被制成为一个小木凳。) 解析✨词组辨析 👉be made of 意为“由&hellip;制成”，一般指能够看出原材料，或发
-       
-        </div>
-    </a>
-    <p class="post-meta">
-    
-        Posted by CodeG Blog on Monday, December 6, 2021
-        
-        
-    
-    </p>
-
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="http://blog.codeg.cn/post/opinion/2021-11-29-A-litle-view-of-management-2-Leapfrog-communication-and-leapfrog-management/">
-        <h2 class="post-title">
-            一点管理学的杂谈（2）：越级沟通和越级管理
-        </h2>
-	
-        <div class="post-content-preview">
-	
-            互联网公司组织结构相对比较扁平，沟通也很直接。比如一个群里有三个人，张三、李四、王五，张三向李四汇报，李四向王五汇报。这天，张三在群里说个事
-       
-        </div>
-    </a>
-    <p class="post-meta">
-    
-        Posted by CodeG Blog on Monday, November 29, 2021
-        
-        
-    
-    </p>
-
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="http://blog.codeg.cn/post/opinion/2021-11-25-national-tide/">
-        <h2 class="post-title">
-            这一波国潮来的错不及防
-        </h2>
-	
-        <div class="post-content-preview">
-	
-            有幸见证了国货的崛起！支持国货从我做起。 下表是我日常生活中逐渐用国货替代洋货的清单，会陆续增加！ 品类 以前用的外国品牌 现在在用的国货 润唇膏 妮维
-       
-        </div>
-    </a>
-    <p class="post-meta">
-    
-        Posted by CodeG Blog on Thursday, November 25, 2021
-        
-        
-    
-    </p>
-
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="http://blog.codeg.cn/post/opinion/2021-11-24-A-litle-view-of-management/">
-        <h2 class="post-title">
-            一点管理学的杂谈（1）：从“三个和尚没水喝”开始
-        </h2>
-	
-        <div class="post-content-preview">
-	
-            相信很多人都听过“一个和尚挑水喝，两个和尚抬水喝，三个和尚没水喝”的故事。这在管理学上是一个很经典的现象，就是责任分散了，就没有人担责了。在
-       
-        </div>
-    </a>
-    <p class="post-meta">
-    
-        Posted by CodeG Blog on Wednesday, November 24, 2021
-        
-        
-    
-    </p>
-
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="http://blog.codeg.cn/post/blog/2017-05-28-how-to-build-a-vcpkg/">
-        <h2 class="post-title">
-            手把手制作一个vcpkg的安装包及port file相关说明
-        </h2>
-	
-        <div class="post-content-preview">
-	
-            0. 前言 Windows平台的程序包的依赖管理一直以来都是个大难题。之前有NuGet，现在有vcpkg。 本文的重点是先介绍一下vcpkg的特性，
-       
-        </div>
-    </a>
-    <p class="post-meta">
-    
-        Posted by CodeG Blog on Sunday, May 28, 2017
-        
-        
-    
-    </p>
-
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="http://blog.codeg.cn/post/blog/2017-04-19-the-detail-design-of-evpp-invoke-timer/">
-        <h2 class="post-title">
-            evpp设计细节系列(1)：利用 enable_shared_from_this 实现一个自管理的定时器
-        </h2>
-	
-        <div class="post-content-preview">
-	
-            0. 前言 https://github.com/Qihoo360/evpp是一个高性能的Reactor模式的现代化的C++11版本的高性能网络库
-       
-        </div>
-    </a>
-    <p class="post-meta">
-    
-        Posted by CodeG Blog on Wednesday, April 19, 2017
-        
-        
-    
-    </p>
-
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="http://blog.codeg.cn/post/blog/2017-04-09-the-benchmark-of-lockfree/">
-        <h2 class="post-title">
-            基于evpp的EventLoop实现来对无锁队列boost::lockfree::queue和moodycamel::ConcurrentQueue做一个性能测试对比
-        </h2>
-	
-        <div class="post-content-preview">
-	
-            English version : The performance benchmark of queue with std::mutex against boost::lockfree::queue and moodycamel::ConcurrentQueue Brief 我们使用https://github.com/Qihoo360/evpp项目中的EventLoop::Queu
-       
-        </div>
-    </a>
-    <p class="post-meta">
-    
-        Posted by CodeG Blog on Sunday, April 9, 2017
-        
-        
-    
-    </p>
-
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="http://blog.codeg.cn/post/blog/2017-04-04-the-throughput-benchmark-test-of-evpp-vs-asio/">
-        <h2 class="post-title">
-            evpp与asio吞吐量对比
-        </h2>
-	
-        <div class="post-content-preview">
-	
-            简介 Boost.Asio是用于网络和低层IO编程的跨平台C++库,为开发者提供了C++环境下稳定的异步编程模型。也是业内公认的优秀的C++网
-       
-        </div>
-    </a>
-    <p class="post-meta">
-    
-        Posted by CodeG Blog on Tuesday, April 4, 2017
-        
-        
-    
-    </p>
-
-</div>
-<hr>
-
-</div>
-
-            
-
-
-<ul class="pager" data-pagefind-ignore="all">
-    
-    
-    <li class="next">
-        <a href="http://blog.codeg.cn/paginator/2/">Older Posts &rarr;</a>
-    </li>
-    
-</ul>
-
-
-       	</div>
-        
-
-<div class="
-    col-lg-3 col-lg-offset-0
-    col-md-3 col-md-offset-0
-    col-sm-12
-    col-xs-12
-    sidebar-container
-">
-    
-	
-    
-    
-    
-    
-
-    
-    
-    
-</div>
-
-	</div>
-</div>
-
-
-
-
-
-<footer>
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-                <ul class="list-inline text-center">                  
-                    
-                    
-                    
-                    
-                    
-
-		            
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-            
-            
-            
-           
-             </ul>
-		<p class="copyright text-muted">
-                    Copyright &copy; CodeG Blog 2024
-                    
-                </p>
-            </div>
-        </div>
+  <body class=" ">
+  <aside class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <a href="http://blog.codeg.cn/"><h1>CodeG Blog</h1></a>
+      <p class="lead">
+       思路决定出路，态度决定高度。 
+      </p>
     </div>
-</footer>
 
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="http://blog.codeg.cn/">Home</a> </li>
+        <li><a href="http://blog.codeg.cn/post/"> 技术文章 </a></li><li><a href="http://blog.codeg.cn/about/"> 关于我 </a></li>
+      </ul>
+    </nav>
 
+    <p>&copy; 2024. All rights reserved. </p>
+  </div>
+</aside>
 
+    <main class="content container">
+    <div class="posts">
+<article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/about/">关于我自己</a>
+  </h1>
+  <time datetime="2021-12-12T20:43:00Z" class="post-date">Sun, Dec 12, 2021</time>
+  本科期间不算学霸，但学业成绩也不算差，课外参加一些电赛、嵌入式竞赛之类的，也获得一些奖项，然后保送混了个研究生文凭。 大四和研究生期间在某大专
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/about/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/post/finance/2021-12-06-Cross-board-remittance/">跨境汇款的资金流过程简析（支付宝网络）</a>
+  </h1>
+  <time datetime="2021-12-06T01:00:00Z" class="post-date">Mon, Dec 6, 2021</time>
+  假设张三在美国，准备通过华美银行给中国的李四的工行卡汇款。假设汇款网络走的支付宝渠道。 前期各机构准备工作 美国华美银行跟支付宝国际进行系统对接
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/post/finance/2021-12-06-Cross-board-remittance/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/post/finance/2021-12-06-Transfer-between-commercial-banks/">两个用户通过银行转账的资金流过程简析</a>
+  </h1>
+  <time datetime="2021-12-06T00:00:00Z" class="post-date">Mon, Dec 6, 2021</time>
+  本示例显示了客户A准备用自己的工行卡给客户B的农行卡转一笔钱的各个机构之间的信息流和资金流交互过程。有任何疑问欢迎指正。 附录：http://
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/post/finance/2021-12-06-Transfer-between-commercial-banks/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/post/study/2021-12-06-be-made-of/">英语基础短语解析：be made of/in/from/into</a>
+  </h1>
+  <time datetime="2021-12-06T00:00:00Z" class="post-date">Mon, Dec 6, 2021</time>
+  This piece of wood will be made into a small bench. (这块木头将要被制成为一个小木凳。) 解析✨词组辨析 👉be made of 意为“由&hellip;制成”，一般指能够看出原材料，或发
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/post/study/2021-12-06-be-made-of/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/post/opinion/2021-11-29-A-litle-view-of-management-2-Leapfrog-communication-and-leapfrog-management/">一点管理学的杂谈（2）：越级沟通和越级管理</a>
+  </h1>
+  <time datetime="2021-11-29T00:00:00Z" class="post-date">Mon, Nov 29, 2021</time>
+  互联网公司组织结构相对比较扁平，沟通也很直接。比如一个群里有三个人，张三、李四、王五，张三向李四汇报，李四向王五汇报。这天，张三在群里说个事
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/post/opinion/2021-11-29-A-litle-view-of-management-2-Leapfrog-communication-and-leapfrog-management/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/post/opinion/2021-11-25-national-tide/">这一波国潮来的错不及防</a>
+  </h1>
+  <time datetime="2021-11-25T00:00:00Z" class="post-date">Thu, Nov 25, 2021</time>
+  有幸见证了国货的崛起！支持国货从我做起。 下表是我日常生活中逐渐用国货替代洋货的清单，会陆续增加！ 品类 以前用的外国品牌 现在在用的国货 润唇膏 妮维
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/post/opinion/2021-11-25-national-tide/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/post/opinion/2021-11-24-A-litle-view-of-management/">一点管理学的杂谈（1）：从“三个和尚没水喝”开始</a>
+  </h1>
+  <time datetime="2021-11-24T00:00:00Z" class="post-date">Wed, Nov 24, 2021</time>
+  相信很多人都听过“一个和尚挑水喝，两个和尚抬水喝，三个和尚没水喝”的故事。这在管理学上是一个很经典的现象，就是责任分散了，就没有人担责了。在
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/post/opinion/2021-11-24-A-litle-view-of-management/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/post/blog/2017-05-28-how-to-build-a-vcpkg/">手把手制作一个vcpkg的安装包及port file相关说明</a>
+  </h1>
+  <time datetime="2017-05-28T18:11:01Z" class="post-date">Sun, May 28, 2017</time>
+  0. 前言 Windows平台的程序包的依赖管理一直以来都是个大难题。之前有NuGet，现在有vcpkg。 本文的重点是先介绍一下vcpkg的特性，
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/post/blog/2017-05-28-how-to-build-a-vcpkg/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/post/blog/2017-04-19-the-detail-design-of-evpp-invoke-timer/">evpp设计细节系列(1)：利用 enable_shared_from_this 实现一个自管理的定时器</a>
+  </h1>
+  <time datetime="2017-04-19T10:11:01Z" class="post-date">Wed, Apr 19, 2017</time>
+  0. 前言 https://github.com/Qihoo360/evpp是一个高性能的Reactor模式的现代化的C++11版本的高性能网络库
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/post/blog/2017-04-19-the-detail-design-of-evpp-invoke-timer/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/post/blog/2017-04-09-the-benchmark-of-lockfree/">基于evpp的EventLoop实现来对无锁队列boost::lockfree::queue和moodycamel::ConcurrentQueue做一个性能测试对比</a>
+  </h1>
+  <time datetime="2017-04-09T10:11:01Z" class="post-date">Sun, Apr 9, 2017</time>
+  English version : The performance benchmark of queue with std::mutex against boost::lockfree::queue and moodycamel::ConcurrentQueue Brief 我们使用https://github.com/Qihoo360/evpp项目中的EventLoop::Queu
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/post/blog/2017-04-09-the-benchmark-of-lockfree/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/post/blog/2017-04-04-the-throughput-benchmark-test-of-evpp-vs-asio/">evpp与asio吞吐量对比</a>
+  </h1>
+  <time datetime="2017-04-04T18:13:00Z" class="post-date">Tue, Apr 4, 2017</time>
+  简介 Boost.Asio是用于网络和低层IO编程的跨平台C++库,为开发者提供了C++环境下稳定的异步编程模型。也是业内公认的优秀的C++网
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/post/blog/2017-04-04-the-throughput-benchmark-test-of-evpp-vs-asio/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/post/blog/2017-03-14-the-throughput-benchmark-test-of-evpp-vs-muduo/">evpp与muduo吞吐量对比</a>
+  </h1>
+  <time datetime="2017-03-14T18:13:00Z" class="post-date">Tue, Mar 14, 2017</time>
+  简介 muduo是最近几年中国开源界里产生的优秀作品。它是由业内大牛陈硕实现的。详细介绍，请参考其博客介绍http://blog.csdn.n
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/post/blog/2017-03-14-the-throughput-benchmark-test-of-evpp-vs-muduo/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/post/blog/2017-03-13-release-a-high-performance-C&#43;&#43;11-network-library/">发布一个高性能的Reactor模式的C&#43;&#43;网络库：evpp</a>
+  </h1>
+  <time datetime="2017-03-13T18:13:00Z" class="post-date">Mon, Mar 13, 2017</time>
+  简介 evpp是一个基于libevent开发的现代化的支持C++11特性的高性能网络库，自带TCP/UDP/HTTP等协议的异步非阻塞式的服务
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/post/blog/2017-03-13-release-a-high-performance-C&#43;&#43;11-network-library/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/post/blog/2016-09-06-minio-source-code-reading/">minio源码阅读</a>
+  </h1>
+  <time datetime="2016-09-06T11:52:00Z" class="post-date">Tue, Sep 6, 2016</time>
+  简介 minio是Go实现的一个完全兼容S3的服务，和大多Go项目一样，干净小巧，没有依赖，编译运行一键搞定，便利之极。 源码阅读 HTTP事件注
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/post/blog/2016-09-06-minio-source-code-reading/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/post/blog/2016-05-29-a-new-ini-parser-for-golang/">发布一个Golang版本的INI解析器</a>
+  </h1>
+  <time datetime="2016-05-29T13:14:00Z" class="post-date">Sun, May 29, 2016</time>
+  goini 这是一个为Golang开发的读取INI格式文件的库，它还能读取类似于INI格式的key/value对数据。 goini 的设计目标是简单、灵活、高效，
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/post/blog/2016-05-29-a-new-ini-parser-for-golang/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/post/blog/2016-05-26-trafik-source-code-reading/">Trafik源代码阅读</a>
+  </h1>
+  <time datetime="2016-05-26T07:00:00Z" class="post-date">Thu, May 26, 2016</time>
+  Trafik介绍 其官网是这么介绍的： Træfɪk is a modern HTTP reverse proxy and load balancer made to deploy microservices with ease. It supports several backends (Docker, Swarm, Mesos/Marathon, Consul, Etcd, Zookeeper, BoltDB, Rest API, file...) to manage its configuration automatically and dynamically. 翻译过来就是：Træ
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/post/blog/2016-05-26-trafik-source-code-reading/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/post/blog/2016-05-26-howto-build-gopcap-on-windows-x64/">如何在win7 64位系统下安装gopcap包及使用</a>
+  </h1>
+  <time datetime="2016-05-25T20:12:01Z" class="post-date">Wed, May 25, 2016</time>
+  gopcap是libpcap库的Golang封装，其项目地址在这里 https://github.com/akrennmair/gopcap 。 本文简要介绍一下如何在win7 64位系统平台上使用 gopcap 库。 安装步骤如下：
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/post/blog/2016-05-26-howto-build-gopcap-on-windows-x64/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/post/blog/2016-04-20-golang-cgo/">Golang CGO编程之调用返回char*指针及长度的C函数库</a>
+  </h1>
+  <time datetime="2016-04-20T21:43:00Z" class="post-date">Wed, Apr 20, 2016</time>
+  现代所有主流操作系统几乎都是用C语音实现的，几乎所有高级语言都能调用C语言，例如PHP可以调用C语言写的PHP扩展，Python也可以调用C
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/post/blog/2016-04-20-golang-cgo/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/post/blog/2016-02-24-distrubute-lock-over-etcd/">使用Golang利用ectd实现一个分布式锁</a>
+  </h1>
+  <time datetime="2016-02-24T20:43:00Z" class="post-date">Wed, Feb 24, 2016</time>
+  etcd是随着CoreOS项目一起成长起来的，随着Golang和CoreOS等项目在开源社区日益火热， etcd作为一个高可用、强一致性的分布
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/post/blog/2016-02-24-distrubute-lock-over-etcd/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/post/opinion/2016-02-20-migrate-to-hugo-from-jekyll/">将博客从jekyll迁移到hugo</a>
+  </h1>
+  <time datetime="2016-02-20T22:43:00Z" class="post-date">Sat, Feb 20, 2016</time>
+  之前的博客内容都是用jekyll来渲染的，这是用ruby写，部署起来比较麻烦。最近看到Golang开发的 hugo 工具，真是眼前一亮啊。 促使我做这种
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/post/opinion/2016-02-20-migrate-to-hugo-from-jekyll/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2016/02/19/sharing-golang-package-to-C/">编译Golang包为C语言库文件</a>
+  </h1>
+  <time datetime="2016-02-19T00:00:00Z" class="post-date">Fri, Feb 19, 2016</time>
+  Go 1.5发布后，其包含一个特性：可以编译生成C语言动态链接库或静态库。本文给出了示例代码和用法。 go build和go install命令，可以使
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2016/02/19/sharing-golang-package-to-C/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2016/02/14/send-email-for-golang/">Golang发送邮件</a>
+  </h1>
+  <time datetime="2016-02-14T00:00:00Z" class="post-date">Sun, Feb 14, 2016</time>
+  本文介绍一个简单的方法使用Go语言发送邮件。直接调用系统自带的mail命令发送邮件。 在网上找了很多例子，基本上都是基于Golang本身自带的
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2016/02/14/send-email-for-golang/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2016/02/14/golang-remove_if/">Golang版本的remove_if函数实现</a>
+  </h1>
+  <time datetime="2016-02-14T00:00:00Z" class="post-date">Sun, Feb 14, 2016</time>
+  C++中的std::remove_if函数实现了一个算法，可以将一个容器中的元素按照一定的规则进行删除，但Go语言中却没有类似的函数。代码其
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2016/02/14/golang-remove_if/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2016/02/05/influxdb-grafana/">使用grafana&#43;influxdb搭建炫酷的实时可视化监控平台</a>
+  </h1>
+  <time datetime="2016-02-05T00:00:00Z" class="post-date">Fri, Feb 5, 2016</time>
+  最近看到一篇介绍influxdb的文章，然后又看到用grafana配合图形展示，就简单试用了一下，确实还不错。但其中也遇到一些低级问题，这篇
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2016/02/05/influxdb-grafana/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2016/02/02/wukong-source-code-reading/">源码阅读-悟空搜索引擎</a>
+  </h1>
+  <time datetime="2016-02-02T00:00:00Z" class="post-date">Tue, Feb 2, 2016</time>
+  一个最简单的例子 我们还是从一个最简单的示例代码开始： package main import ( &#34;github.com/huichen/wukong/engine&#34; &#34;github.com/huichen/wukong/types&#34; &#34;log&#34; ) var ( // searcher是协程安全的 searcher = engine.Engine{} ) func main() { // 初始化 searcher.Init(types.EngineInitOptions{ SegmenterDictionaries: &#34;./data/dictionary.txt&#34;}) defer searcher.Close() // 将文
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2016/02/02/wukong-source-code-reading/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2016/01/27/double-buffering/">应用双缓冲技术完美解决资源数据优雅无损的热加载问题</a>
+  </h1>
+  <time datetime="2016-01-27T00:00:00Z" class="post-date">Wed, Jan 27, 2016</time>
+  简介 在一个网络服务器不间断运行过程中，有一些资源数据需要实时更新，例如需要及时更新一份白名单列表，怎么做才能做到优雅无损的更新到服务的进程空
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2016/01/27/double-buffering/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2015/12/20/serf/">serf介绍</a>
+  </h1>
+  <time datetime="2015-12-20T00:00:00Z" class="post-date">Sun, Dec 20, 2015</time>
+  简介 Serf是一个无中心化的服务调度和服务发现工具。它容错性极好、无中心化设计、没有单点故障。Serf是建立在Gossip协议之上的，Gos
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2015/12/20/serf/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2015/12/15/godotenv/">godotenv介绍</a>
+  </h1>
+  <time datetime="2015-12-15T00:00:00Z" class="post-date">Tue, Dec 15, 2015</time>
+  简介 godotenv是ruby社区的dotenv的Golang移植版本。该库会解析 .env 文件，该文件是一个典型的INI格式的文件，类似于下面： SOME_ENV_VAR=somevalue
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2015/12/15/godotenv/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2015/10/22/nsq/">nsq介绍及源码阅读</a>
+  </h1>
+  <time datetime="2015-10-22T00:00:00Z" class="post-date">Thu, Oct 22, 2015</time>
+  简介 nsq客户端逻辑 nsq消费者 主要请参考nsq_tail代码。nsqd的回应消息处理代码为func (c *Conn) readLoop()。 TCP消息流的
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2015/10/22/nsq/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2015/10/08/ansible/">ansible简介</a>
+  </h1>
+  <time datetime="2015-10-08T00:00:00Z" class="post-date">Thu, Oct 8, 2015</time>
+  简介 ansible是新出现的自动化运维工具，基于Python开发，集合了众多运维工具（puppet、cfengine、chef、func、f
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2015/10/08/ansible/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2015/09/19/golang-project-source-code-reading/">Golang开源项目源码阅读</a>
+  </h1>
+  <time datetime="2015-09-19T00:00:00Z" class="post-date">Sat, Sep 19, 2015</time>
+  总览 github.com/julienschmidt/httproute httprouter 是一个轻量级的高性能HTTP请求分发器，英文称之为multiplexer，简称mux。 httproute特性 仅支持精确匹配，及只匹配
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2015/09/19/golang-project-source-code-reading/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2015/06/17/quic-source-code-reading/">QUIC（Quick UDP Internet Connections）源代码阅读</a>
+  </h1>
+  <time datetime="2015-06-17T00:00:00Z" class="post-date">Wed, Jun 17, 2015</time>
+  类 基础类 base Pickle：针对二进制数据进行pack和unpack操作 MessagePump：消息泵基类，也就是做消息循环用的 TimeDelt
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2015/06/17/quic-source-code-reading/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2015/05/08/quic-protocol/">QUIC（Quick UDP Internet Connections）协议简要笔记(翻译)</a>
+  </h1>
+  <time datetime="2015-05-08T00:00:00Z" class="post-date">Fri, May 8, 2015</time>
+  概述 动机 支持SPDY协议的动机 目标 我们希望开发出一套传输协议以支持下列目标： 在今天的因特网上的广泛的部署能力（例如，能够顺利通过中间路由、可
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2015/05/08/quic-protocol/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2015/03/18/golang-how-to-make-a-multipart-http-request/">golang学习之如何构造一个multipart/form格式的HTTP请求</a>
+  </h1>
+  <time datetime="2015-03-18T00:00:00Z" class="post-date">Wed, Mar 18, 2015</time>
+  使用PHP里面的curl扩展库可以方便的从一个php array来构造一个multipart/form格式的HTTP请求，但golang里构造
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2015/03/18/golang-how-to-make-a-multipart-http-request/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2015/02/12/golang-derive-override/">golang学习之继承和重载</a>
+  </h1>
+  <time datetime="2015-02-12T00:00:00Z" class="post-date">Thu, Feb 12, 2015</time>
+  其实golang里是不提倡继承的，也不提倡重载的。但是有些场景下，我们还是想试验一下传统C++或Java语言里的继承和重载能否用在golan
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2015/02/12/golang-derive-override/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2015/02/02/docker-intro/">Docker介绍及初次使用教程</a>
+  </h1>
+  <time datetime="2015-02-02T00:00:00Z" class="post-date">Mon, Feb 2, 2015</time>
+  介绍 请参考下列文章： 深入浅出Docker（一）：Docker核心技术预览 Docker镜像文件（images）的存储结构 初次使用 实验环境 $ uname -a
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2015/02/02/docker-intro/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2015/01/23/mime-golang-parsing/">golang解析MIME数据格式的代码示例</a>
+  </h1>
+  <time datetime="2015-01-23T00:00:00Z" class="post-date">Fri, Jan 23, 2015</time>
+  MIME格式 MIME是multipurpose Internet mail extensions 的缩写。它是一种协议，可使电子邮件除包含一般纯文本以外，还可加上彩色图片、视频、声音或二
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2015/01/23/mime-golang-parsing/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2015/01/13/linux-system-programming/">多进程编程</a>
+  </h1>
+  <time datetime="2015-01-13T00:00:00Z" class="post-date">Tue, Jan 13, 2015</time>
+  wait 和 waitpid 当一个进程正常或异常退出时，内核就向其父进程发送SIGCHLD信号。因为子进程退出是一个异步事件，所以该信号也是内核向父进程发送的异步
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2015/01/13/linux-system-programming/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2015/01/12/go-source-code-reading-ConstantTimeByteEq/">Golang源码阅读——crypto/subtle.ConstantTimeByteEq 深度解析</a>
+  </h1>
+  <time datetime="2015-01-12T00:00:00Z" class="post-date">Mon, Jan 12, 2015</time>
+  根据文档说明，ConstantTimeByteEq返回1，如果 x == y；相反则返回0。为什么一个简单整数比较操作要搞一个单独的函数出来实现？并
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2015/01/12/go-source-code-reading-ConstantTimeByteEq/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2015/01/07/golang-udp-client/">golang网络编程-udp客户端示例代码</a>
+  </h1>
+  <time datetime="2015-01-07T00:00:00Z" class="post-date">Wed, Jan 7, 2015</time>
+  最简单的一个客户端 编程步骤： 创建一个udp socket并连接服务器 发送数据给服务器 从服务器接收数据 关闭udp socket package main import ( &#34;fmt&#34; &#34;net&#34; &#34;os&#34; ) func main() { hostport := &#34;10.16.28.17:1053&#34; if
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2015/01/07/golang-udp-client/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2015/01/06/ngx_pool_t/">Nginx源码研究（7）——内存池结构ngx_pool_t</a>
+  </h1>
+  <time datetime="2015-01-06T00:00:00Z" class="post-date">Tue, Jan 6, 2015</time>
+  简介 本文主要介绍Nginx内存池结构ngx_pool_t这一重要的数据结构的使用方法和具体实现。同时为了方便学习和研究，还从ngx_pool
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2015/01/06/ngx_pool_t/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2015/01/04/ngx_list_t/">Nginx源码研究（5）——单向链表结构ngx_list_t</a>
+  </h1>
+  <time datetime="2015-01-04T00:00:00Z" class="post-date">Sun, Jan 4, 2015</time>
+  简介 本文主要介绍Nginx单向链表结构ngx_list_t这一重要的数据结构的使用方法和具体实现。 该链表结构与我们常说的链表结构(例如std
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2015/01/04/ngx_list_t/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2015/01/04/ngx_queue_t/">Nginx源码研究（6）——双向链表结构ngx_queue_t</a>
+  </h1>
+  <time datetime="2015-01-04T00:00:00Z" class="post-date">Sun, Jan 4, 2015</time>
+  简介 本文主要介绍Nginx双向链表结构ngx_queue_t这一重要的数据结构的使用方法和具体实现。 ngx_queue_t 是Nginx提供的一个轻量级双向链表容
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2015/01/04/ngx_queue_t/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2015/01/03/ngx_array_t/">Nginx源码研究（3）——Nginx数组ngx_array_t和示例</a>
+  </h1>
+  <time datetime="2015-01-03T00:00:00Z" class="post-date">Sat, Jan 3, 2015</time>
+  本文主要介绍Nginx数组ngx_array_t这一重要的数据结构的使用方法和具体实现。 ngx_array_t是nginx内部使用的数组结构
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2015/01/03/ngx_array_t/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2015/01/03/ngx_hash_t/">Nginx源码研究（4）——hash结构ngx_hash_t</a>
+  </h1>
+  <time datetime="2015-01-03T00:00:00Z" class="post-date">Sat, Jan 3, 2015</time>
+  简介 本文主要介绍Nginx的hash结构ngx_hash_t这一重要的数据结构的使用方法和具体实现。nginx实现的hash表特点是构建一次
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2015/01/03/ngx_hash_t/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2015/01/03/gbk2utf8-by-golang/">发布一个批量转码工具:gbk2utf8</a>
+  </h1>
+  <time datetime="2015-01-03T00:00:00Z" class="post-date">Sat, Jan 3, 2015</time>
+  Linux下的iconv是针对单个文件处理，但是转码后的数据直接输出到STDOUT，不方便批量处理。gbk2utf8工具可以针对一个目录以及
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2015/01/03/gbk2utf8-by-golang/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2015/01/02/nginx-research-readme/">Nginx源码研究（1）——项目介绍</a>
+  </h1>
+  <time datetime="2015-01-02T00:00:00Z" class="post-date">Fri, Jan 2, 2015</time>
+  nginx-research 本项目是为了研究Nginx源码而建立的。该项目有以下几点比较不错的优点： VS2013源码编译和调试 将Nginx看做一个优秀的C库使用，已经
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2015/01/02/nginx-research-readme/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2015/01/01/c&#43;&#43;11-move/">C&#43;&#43;11中std::move示例</a>
+  </h1>
+  <time datetime="2015-01-01T00:00:00Z" class="post-date">Thu, Jan 1, 2015</time>
+  std::move作用：如果其类型支持移动的话，会无条件的将其参数（可能是左值）强制转换为右值引用，从而表示其可以移动，它使得编译器随后能够
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2015/01/01/c&#43;&#43;11-move/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2014/12/31/compile-nginx-to-static-lib-and-1st-usage/">Nginx源码研究（2）——编译Nginx为静(动)态库以及验证</a>
+  </h1>
+  <time datetime="2014-12-31T00:00:00Z" class="post-date">Wed, Dec 31, 2014</time>
+  最近编程哥又开始阅读和研究Nginx源码，这一过程中做了一些笔记，从而形成本系列文章。 本文主要介绍如何将nginx编译为一个动态库或静态库，
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2014/12/31/compile-nginx-to-static-lib-and-1st-usage/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2014/12/30/coveralls-io-configuration-info/">测试覆盖率工具coveralls.io的配置介绍</a>
+  </h1>
+  <time datetime="2014-12-30T00:00:00Z" class="post-date">Tue, Dec 30, 2014</time>
+  这是一个测试覆盖率图标，非常的漂亮。我们可以在很多github的项目主页上看到，本文将介绍如何自动生成这个图标。 1. 在其主页上https://
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2014/12/30/coveralls-io-configuration-info/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2014/12/28/go-source-code-reading/">Golang源码阅读</a>
+  </h1>
+  <time datetime="2014-12-28T00:00:00Z" class="post-date">Sun, Dec 28, 2014</time>
+  总览 src/cmd/dist/buf.c 该文件提供两个数据结构：Buf、Vec，分别用来取代char*和char**的相关操作。Buf和Vec这两个数据结构非常简单易懂，其他
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2014/12/28/go-source-code-reading/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2014/12/27/gochart-info/">发布一个使用简单的绘图工具</a>
+  </h1>
+  <time datetime="2014-12-27T00:00:00Z" class="post-date">Sat, Dec 27, 2014</time>
+  gochart是仿照goplot使用golang和highcharts开源库制作的一个使用起来非常简单的绘制图表的工具，图表风格有曲线图、折
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2014/12/27/gochart-info/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2014/12/15/golang1.4-resource-download/">Golang1.4资源下载</a>
+  </h1>
+  <time datetime="2014-12-15T00:00:00Z" class="post-date">Mon, Dec 15, 2014</time>
+  当前golang官方主页背墙，且有些golang.org/x下面的库也下载不到，因此我将这项资源统一放在这里供大家下载。 golang.org
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2014/12/15/golang1.4-resource-download/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2014/12/15/ubuntu-source-list-of-china/">Ubuntu中国源地址列表及更改方法</a>
+  </h1>
+  <time datetime="2014-12-15T00:00:00Z" class="post-date">Mon, Dec 15, 2014</time>
+  首先备份Ubuntu源列表 sudo cp /etc/apt/sources.list /etc/apt/sources.list.backup （备份下当前的源列表） sudo vim /etc/apt/sources.list 将下面的代码粘贴进去（“#”开头的那一行为注释，可以直接复制进文件中）之后，再
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2014/12/15/ubuntu-source-list-of-china/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2014/12/14/gc-cpp-java/">C&#43;&#43;与Java垃圾回收的区别</a>
+  </h1>
+  <time datetime="2014-12-14T00:00:00Z" class="post-date">Sun, Dec 14, 2014</time>
+  
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2014/12/14/jekyll-install-on-win7/">Jekyll在github上构建免费的Web应用</a>
+  </h1>
+  <time datetime="2014-12-14T00:00:00Z" class="post-date">Sun, Dec 14, 2014</time>
+  1. Jekyll介绍 Jekyll是一个静态站点生成器，它会根据网页源码生成静态文件。它提供了模板、变量、插件等功能，可以用来生成整个网站。 Je
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2014/12/14/jekyll-install-on-win7/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2014/12/14/Shang-Yang/">战国策·卫鞅亡魏入秦</a>
+  </h1>
+  <time datetime="2014-12-14T00:00:00Z" class="post-date">Sun, Dec 14, 2014</time>
+  卫鞅亡魏入秦，孝公以为相，封之于商，号曰商君。 商君治秦，法令至行，公平无私，罚不讳强大，赏不私亲近，法及太子，黥劓其傅。 期年之后，道不拾遗，
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2014/12/14/Shang-Yang/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2014/12/13/golang-vs-nginx-at-httpecho/">Golang写的HTTP服务与Nginx对比</a>
+  </h1>
+  <time datetime="2014-12-13T00:00:00Z" class="post-date">Sat, Dec 13, 2014</time>
+  Golang写网络程序的确很简单，一个HTTP Echo服务，几行源码就可以搞定。Golang源码如下： package main import ( &#34;log&#34; &#34;net/http&#34; &#34;io/ioutil&#34; ) func handler(w http.ResponseWriter, r *http.Request) { buf, err := ioutil.ReadAll(r.Body) //Read
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2014/12/13/golang-vs-nginx-at-httpecho/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2014/12/13/Hello-CodeG/">你好，编程哥</a>
+  </h1>
+  <time datetime="2014-12-13T00:00:00Z" class="post-date">Sat, Dec 13, 2014</time>
+  哥都不记得上次写博客的具体时间了，中间一直说写点什么，就是没有动手。原因有几： 哥的文笔不太好 总觉得技术水平不够高，文章写起来总没深度，不好意
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2014/12/13/Hello-CodeG/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2014/12/13/github-pages/">使用Github Pages建独立博客</a>
+  </h1>
+  <time datetime="2014-12-13T00:00:00Z" class="post-date">Sat, Dec 13, 2014</time>
+  本博客框架是直接在 BeiYuu：使用Github Pages建独立博客 上改造而来的。增加了下列特性： 文章Tags Tags聚合 时间显示 作者显示 感
+  
+  <div class="read-more-link">
+    <a href="http://blog.codeg.cn/2014/12/13/github-pages/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="http://blog.codeg.cn/2013/04/12/nothing/">Nothing</a>
+  </h1>
+  <time datetime="2013-04-12T00:00:00Z" class="post-date">Fri, Apr 12, 2013</time>
+  
+  
+</article>
+</div>
+    </main>
 
-<script>
-    function loadAsync(u, c) {
-      var d = document, t = 'script',
-          o = d.createElement(t),
-          s = d.getElementsByTagName(t)[0];
-      o.src = u;
-      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
-      s.parentNode.insertBefore(o, s);
-    }
-</script>
-
-
-
-
-
-
-<script>
     
-    if($('#tag_cloud').length !== 0){
-        loadAsync("/js/jquery.tagcloud.js",function(){
-            $.fn.tagcloud.defaults = {
-                
-                color: {start: '#bbbbee', end: '#0085a1'},
-            };
-            $('#tag_cloud a').tagcloud();
-        })
-    }
-</script>
+      
+  
 
-
-<script>
-    loadAsync("https://cdn.jsdelivr.net/npm/fastclick@1.0.6/lib/fastclick.min.js", function(){
-        var $nav = document.querySelector("nav");
-        if($nav) FastClick.attach($nav);
-    })
-</script>
-
-
-
-
-
-
-<script type="text/javascript">
-    function generateCatalog(selector) {
-
-        
-        
-        
-        
-            _containerSelector = 'div.post-container'
-        
-
-        
-        var P = $(_containerSelector), a, n, t, l, i, c;
-        a = P.find('h1,h2,h3,h4,h5,h6');
-
-        
-        $(selector).html('')
-
-        
-        a.each(function () {
-            n = $(this).prop('tagName').toLowerCase();
-            i = "#" + $(this).prop('id');
-            t = $(this).text();
-            c = $('<a href="' + i + '" rel="nofollow">' + t + '</a>');
-            l = $('<li class="' + n + '_nav"></li>').append(c);
-            $(selector).append(l);
-        });
-        return true;
-    }
-
-    generateCatalog(".catalog-body");
 
     
-    $(".catalog-toggle").click((function (e) {
-        e.preventDefault();
-        $('.side-catalog').toggleClass("fold")
-    }))
-
-    
-
-
-    loadAsync("\/js\/jquery.nav.js", function () {
-        $('.catalog-body').onePageNav({
-            currentClass: "active",
-            changeHash: !1,
-            easing: "swing",
-            filter: "",
-            scrollSpeed: 700,
-            scrollOffset: 0,
-            scrollThreshold: .2,
-            begin: null,
-            end: null,
-            scrollChange: null,
-            padding: 80
-        });
-    });
-</script>
-
-
-
-
-
-
-</body>
+  </body>
 </html>
