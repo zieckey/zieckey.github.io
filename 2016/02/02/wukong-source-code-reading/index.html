@@ -12,16 +12,16 @@
   <meta name="description" content="悟空开源项目是用Go语言编写的全文搜索引擎。它不是一个完整的搜索引擎，是一个容易被修改的、能融入你的业务需求的基础代码，这些代码只实现基本功能，同时也足够精简，让你能了然于心，可以快速修改实现你想要的功能。" />
 
   
-  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/print.css" media="print">
-  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/poole.css">
-  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/syntax.css">
-  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/hyde.css">
+  <link type="text/css" rel="stylesheet" href="https://blog.codeg.cn/css/print.css" media="print">
+  <link type="text/css" rel="stylesheet" href="https://blog.codeg.cn/css/poole.css">
+  <link type="text/css" rel="stylesheet" href="https://blog.codeg.cn/css/syntax.css">
+  <link type="text/css" rel="stylesheet" href="https://blog.codeg.cn/css/hyde.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
 
 
   
-  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="http://blog.codeg.cn/apple-touch-icon-144-precomposed.png">
-  <link rel="shortcut icon" href="http://blog.codeg.cn/favicon.png">
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="https://blog.codeg.cn/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="https://blog.codeg.cn/favicon.png">
 
   
   
@@ -31,7 +31,7 @@
   <aside class="sidebar">
   <div class="container sidebar-sticky">
     <div class="sidebar-about">
-      <a href="http://blog.codeg.cn/"><h1>CodeG Blog</h1></a>
+      <a href="https://blog.codeg.cn/"><h1>CodeG Blog</h1></a>
       <p class="lead">
        思路决定出路，态度决定高度。 
       </p>
@@ -39,8 +39,8 @@
 
     <nav>
       <ul class="sidebar-nav">
-        <li><a href="http://blog.codeg.cn/">Home</a> </li>
-        <li><a href="http://blog.codeg.cn/categories/"> 归档 </a></li><li><a href="http://blog.codeg.cn/post/"> 技术文章 </a></li><li><a href="http://blog.codeg.cn/about/"> 关于我 </a></li>
+        <li><a href="https://blog.codeg.cn/">Home</a> </li>
+        <li><a href="https://blog.codeg.cn/categories/"> 归档 </a></li><li><a href="https://blog.codeg.cn/post/"> 技术文章 </a></li><li><a href="https://blog.codeg.cn/about/"> 关于我 </a></li>
       </ul>
     </nav>
 
@@ -105,7 +105,7 @@
 <li>索引器（indexer）协程，负责建立和查找索引表</li>
 <li>排序器（ranker）协程，负责对文档评分排序</li>
 </ol>
-<p><img src="http://blog.codeg.cn/images/githubpages/wukong-framework.png" alt=""></p>
+<p><img src="https://blog.codeg.cn/images/githubpages/wukong-framework.png" alt=""></p>
 <h2 id="引擎初始化过程">引擎初始化过程</h2>
 <p>从上面最简单的那个例子可以看出，我们所有的操作都是基于<code>searcher</code>对象（engine.Engine类型），初始化引擎、将文档加入索引列表中、Flush索引列表、执行搜索任务。下面我们详细分析一下初始化过程：</p>
 <h4 id="加载分词词典">加载分词词典</h4>

@@ -12,16 +12,16 @@
   <meta name="description" content="可以在很多github的项目主页上看到很漂亮的测试覆盖率图标，本文将介绍如何自动生成这个图标。" />
 
   
-  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/print.css" media="print">
-  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/poole.css">
-  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/syntax.css">
-  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/hyde.css">
+  <link type="text/css" rel="stylesheet" href="https://blog.codeg.cn/css/print.css" media="print">
+  <link type="text/css" rel="stylesheet" href="https://blog.codeg.cn/css/poole.css">
+  <link type="text/css" rel="stylesheet" href="https://blog.codeg.cn/css/syntax.css">
+  <link type="text/css" rel="stylesheet" href="https://blog.codeg.cn/css/hyde.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
 
 
   
-  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="http://blog.codeg.cn/apple-touch-icon-144-precomposed.png">
-  <link rel="shortcut icon" href="http://blog.codeg.cn/favicon.png">
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="https://blog.codeg.cn/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="https://blog.codeg.cn/favicon.png">
 
   
   
@@ -31,7 +31,7 @@
   <aside class="sidebar">
   <div class="container sidebar-sticky">
     <div class="sidebar-about">
-      <a href="http://blog.codeg.cn/"><h1>CodeG Blog</h1></a>
+      <a href="https://blog.codeg.cn/"><h1>CodeG Blog</h1></a>
       <p class="lead">
        思路决定出路，态度决定高度。 
       </p>
@@ -39,8 +39,8 @@
 
     <nav>
       <ul class="sidebar-nav">
-        <li><a href="http://blog.codeg.cn/">Home</a> </li>
-        <li><a href="http://blog.codeg.cn/categories/"> 归档 </a></li><li><a href="http://blog.codeg.cn/post/"> 技术文章 </a></li><li><a href="http://blog.codeg.cn/about/"> 关于我 </a></li>
+        <li><a href="https://blog.codeg.cn/">Home</a> </li>
+        <li><a href="https://blog.codeg.cn/categories/"> 归档 </a></li><li><a href="https://blog.codeg.cn/post/"> 技术文章 </a></li><li><a href="https://blog.codeg.cn/about/"> 关于我 </a></li>
       </ul>
     </nav>
 
@@ -57,7 +57,7 @@
 <h3 id="1-在其主页上httpscoverallsiohttpscoverallsio上开通你的项目">1. 在其主页上<a href="https://coveralls.io/">https://coveralls.io/</a>上开通你的项目</h3>
 <h3 id="2-找到项目的-repo_token">2. 找到项目的 repo_token</h3>
 <p>请参考下图中的标红部分：</p>
-<p><!-- raw HTML omitted --><img src="http://blog.codeg.cn/images/githubpages/coverall/repo_token.png" alt=""><!-- raw HTML omitted --></p>
+<p><!-- raw HTML omitted --><img src="https://blog.codeg.cn/images/githubpages/coverall/repo_token.png" alt=""><!-- raw HTML omitted --></p>
 <h3 id="3-加密repo_token">3. 加密repo_token</h3>
 <p>为什么要加密repo_token?因为，这个repo_token是你的项目在coverall.io网站的唯一token，不能公开，但是又希望travis-ci.com网站使用这个repo_token，因此travis提供一个非对称加密工具来加密这个token串。详细原因和使用介绍可以参考<a href="http://docs.travis-ci.com/user/encryption-keys/">官方文档</a></p>
 <p>进入你的github项目所在目录，输入下列命令<code>travis encrypt COVERALLS_TOKEN=aaaaa</code>(记得替换你自己的repo_token)来加密上述repo_token，如下：</p>

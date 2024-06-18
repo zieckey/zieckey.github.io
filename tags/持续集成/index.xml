@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>持续集成 on CodeG Blog</title>
-    <link>http://blog.codeg.cn/tags/%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90/</link>
+    <link>https://blog.codeg.cn/tags/%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90/</link>
     <description>Recent content in 持续集成 on CodeG Blog</description>
     <generator>Hugo</generator>
     <language>zh-CN</language>
     <lastBuildDate>Tue, 30 Dec 2014 00:00:00 +0000</lastBuildDate>
-    <atom:link href="http://blog.codeg.cn/tags/%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://blog.codeg.cn/tags/%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>测试覆盖率工具coveralls.io的配置介绍</title>
-      <link>http://blog.codeg.cn/2014/12/30/coveralls-io-configuration-info/</link>
+      <link>https://blog.codeg.cn/2014/12/30/coveralls-io-configuration-info/</link>
       <pubDate>Tue, 30 Dec 2014 00:00:00 +0000</pubDate>
-      <guid>http://blog.codeg.cn/2014/12/30/coveralls-io-configuration-info/</guid>
+      <guid>https://blog.codeg.cn/2014/12/30/coveralls-io-configuration-info/</guid>
       <description>这是一个测试覆盖率图标，非常的漂亮。我们可以在很多github的项目主页上看到，本文将介绍如何自动生成这个图标。 1. 在其主页上https://</description>
     </item>
   </channel>

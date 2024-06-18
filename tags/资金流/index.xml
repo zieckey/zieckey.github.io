@@ -2,24 +2,24 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>资金流 on CodeG Blog</title>
-    <link>http://blog.codeg.cn/tags/%E8%B5%84%E9%87%91%E6%B5%81/</link>
+    <link>https://blog.codeg.cn/tags/%E8%B5%84%E9%87%91%E6%B5%81/</link>
     <description>Recent content in 资金流 on CodeG Blog</description>
     <generator>Hugo</generator>
     <language>zh-CN</language>
     <lastBuildDate>Mon, 06 Dec 2021 01:00:00 +0000</lastBuildDate>
-    <atom:link href="http://blog.codeg.cn/tags/%E8%B5%84%E9%87%91%E6%B5%81/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://blog.codeg.cn/tags/%E8%B5%84%E9%87%91%E6%B5%81/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>跨境汇款的资金流过程简析（支付宝网络）</title>
-      <link>http://blog.codeg.cn/post/finance/2021-12-06-Cross-board-remittance/</link>
+      <link>https://blog.codeg.cn/post/finance/2021-12-06-Cross-board-remittance/</link>
       <pubDate>Mon, 06 Dec 2021 01:00:00 +0000</pubDate>
-      <guid>http://blog.codeg.cn/post/finance/2021-12-06-Cross-board-remittance/</guid>
+      <guid>https://blog.codeg.cn/post/finance/2021-12-06-Cross-board-remittance/</guid>
       <description>假设张三在美国，准备通过华美银行给中国的李四的工行卡汇款。假设汇款网络走的支付宝渠道。 前期各机构准备工作 美国华美银行跟支付宝国际进行系统对接</description>
     </item>
     <item>
       <title>两个用户通过银行转账的资金流过程简析</title>
-      <link>http://blog.codeg.cn/post/finance/2021-12-06-Transfer-between-commercial-banks/</link>
+      <link>https://blog.codeg.cn/post/finance/2021-12-06-Transfer-between-commercial-banks/</link>
       <pubDate>Mon, 06 Dec 2021 00:00:00 +0000</pubDate>
-      <guid>http://blog.codeg.cn/post/finance/2021-12-06-Transfer-between-commercial-banks/</guid>
+      <guid>https://blog.codeg.cn/post/finance/2021-12-06-Transfer-between-commercial-banks/</guid>
       <description>本示例显示了客户A准备用自己的工行卡给客户B的农行卡转一笔钱的各个机构之间的信息流和资金流交互过程。有任何疑问欢迎指正。 附录：http://</description>
     </item>
   </channel>

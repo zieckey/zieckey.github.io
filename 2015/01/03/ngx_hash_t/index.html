@@ -12,16 +12,16 @@
   <meta name="description" content="本文主要介绍Nginx数组ngx_hash_t这一重要的数据结构的使用方法和具体实现。nginx实现的hash表特点是构建一次, 初始化后无法动态的增删，之后就只用于&lt;k,v&gt;查找。" />
 
   
-  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/print.css" media="print">
-  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/poole.css">
-  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/syntax.css">
-  <link type="text/css" rel="stylesheet" href="http://blog.codeg.cn/css/hyde.css">
+  <link type="text/css" rel="stylesheet" href="https://blog.codeg.cn/css/print.css" media="print">
+  <link type="text/css" rel="stylesheet" href="https://blog.codeg.cn/css/poole.css">
+  <link type="text/css" rel="stylesheet" href="https://blog.codeg.cn/css/syntax.css">
+  <link type="text/css" rel="stylesheet" href="https://blog.codeg.cn/css/hyde.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
 
 
   
-  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="http://blog.codeg.cn/apple-touch-icon-144-precomposed.png">
-  <link rel="shortcut icon" href="http://blog.codeg.cn/favicon.png">
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="https://blog.codeg.cn/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="https://blog.codeg.cn/favicon.png">
 
   
   
@@ -31,7 +31,7 @@
   <aside class="sidebar">
   <div class="container sidebar-sticky">
     <div class="sidebar-about">
-      <a href="http://blog.codeg.cn/"><h1>CodeG Blog</h1></a>
+      <a href="https://blog.codeg.cn/"><h1>CodeG Blog</h1></a>
       <p class="lead">
        思路决定出路，态度决定高度。 
       </p>
@@ -39,8 +39,8 @@
 
     <nav>
       <ul class="sidebar-nav">
-        <li><a href="http://blog.codeg.cn/">Home</a> </li>
-        <li><a href="http://blog.codeg.cn/categories/"> 归档 </a></li><li><a href="http://blog.codeg.cn/post/"> 技术文章 </a></li><li><a href="http://blog.codeg.cn/about/"> 关于我 </a></li>
+        <li><a href="https://blog.codeg.cn/">Home</a> </li>
+        <li><a href="https://blog.codeg.cn/categories/"> 归档 </a></li><li><a href="https://blog.codeg.cn/post/"> 技术文章 </a></li><li><a href="https://blog.codeg.cn/about/"> 关于我 </a></li>
       </ul>
     </nav>
 
@@ -103,9 +103,9 @@
 </span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">ngx_pool_t</span>       <span class="o">*</span><span class="n">temp_pool</span><span class="p">;</span>    <span class="c1">//分配临时数据空间的内存池
 </span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span> <span class="kt">ngx_hash_init_t</span><span class="p">;</span>
 </span></span></code></pre></div><h2 id="内存结构图">内存结构图</h2>
-<p><a href="http://blog.codeg.cn/images/githubpages/nginx/ngx_hash_t-2.png"><img src="http://blog.codeg.cn/images/githubpages/nginx/ngx_hash_t-2.png" alt=""></a>
+<p><a href="https://blog.codeg.cn/images/githubpages/nginx/ngx_hash_t-2.png"><img src="https://blog.codeg.cn/images/githubpages/nginx/ngx_hash_t-2.png" alt=""></a>
 备注：从参考文档7摘录</p>
-<p><a href="http://blog.codeg.cn/images/githubpages/nginx/ngx_hash_t-1.png"><img src="http://blog.codeg.cn/images/githubpages/nginx/ngx_hash_t-1.png" alt=""></a>
+<p><a href="https://blog.codeg.cn/images/githubpages/nginx/ngx_hash_t-1.png"><img src="https://blog.codeg.cn/images/githubpages/nginx/ngx_hash_t-1.png" alt=""></a>
 备注：从参考博客6摘录</p>
 <h2 id="初始化函数">初始化函数</h2>
 <p>直接上增加了注释的代码，这个需要结合上面两个图片来看。</p>
