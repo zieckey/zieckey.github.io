@@ -2,22 +2,22 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>https://blog.codeg.cn/</loc>
+    <lastmod>2024-06-19T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://blog.codeg.cn/post/</loc>
+    <lastmod>2024-06-19T00:00:00+00:00</lastmod>
+  </url><url>
     <loc>https://blog.codeg.cn/categories/blog/</loc>
     <lastmod>2021-12-12T20:43:00+00:00</lastmod>
   </url><url>
     <loc>https://blog.codeg.cn/categories/</loc>
     <lastmod>2021-12-12T20:43:00+00:00</lastmod>
   </url><url>
-    <loc>https://blog.codeg.cn/</loc>
-    <lastmod>2021-12-12T20:43:00+00:00</lastmod>
-  </url><url>
     <loc>https://blog.codeg.cn/about/</loc>
     <lastmod>2021-12-12T20:43:00+00:00</lastmod>
   </url><url>
     <loc>https://blog.codeg.cn/categories/finance/</loc>
-    <lastmod>2021-12-06T01:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://blog.codeg.cn/post/</loc>
     <lastmod>2021-12-06T01:00:00+00:00</lastmod>
   </url><url>
     <loc>https://blog.codeg.cn/tags/</loc>
