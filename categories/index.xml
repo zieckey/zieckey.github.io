@@ -6,8 +6,15 @@
     <description>Recent content in Categories on CodeG Blog</description>
     <generator>Hugo</generator>
     <language>zh-CN</language>
-    <lastBuildDate>Sun, 12 Dec 2021 20:43:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 19 Jun 2024 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://blog.codeg.cn/categories/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Opinion</title>
+      <link>https://blog.codeg.cn/categories/opinion/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://blog.codeg.cn/categories/opinion/</guid>
+      <description></description>
+    </item>
     <item>
       <title>Blog</title>
       <link>https://blog.codeg.cn/categories/blog/</link>
@@ -27,13 +34,6 @@
       <link>https://blog.codeg.cn/categories/study/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://blog.codeg.cn/categories/study/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>Opinion</title>
-      <link>https://blog.codeg.cn/categories/opinion/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://blog.codeg.cn/categories/opinion/</guid>
       <description></description>
     </item>
     <item>
